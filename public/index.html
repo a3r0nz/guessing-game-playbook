@@ -253,6 +253,19 @@
   }
   .chip:hover{border-color:var(--accent);color:var(--accent)}
 
+  /* Grouped chips inside result */
+  .chip-group{margin-top:10px}
+  .chip-group:first-of-type{margin-top:0}
+  .chip-group-title{
+    font-size:11px;
+    font-weight:700;
+    color:var(--purple);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin-bottom:6px;
+    padding-left:2px;
+  }
+
   /* ======= TREE MODE ======= */
   .search-wrap{
     position:relative;
@@ -505,7 +518,13 @@
   // q(question, yes-branch, no-branch, hint)
   // L(category-name, [examples...], description)
   const q = (text, yes, no, hint) => ({t:'q', q:text, y:yes, n:no, h:hint||''});
-  const L = (cat, ex, desc) => ({t:'L', cat, ex, desc:desc||''});
+  // L accepts either a flat array OR a {groupName: [...]} object.
+  // Grouped leaves render with section headers (e.g. "One Piece" → Luffy, Zoro, ...)
+  const L = (cat, ex, desc) => {
+    if(Array.isArray(ex)) return {t:'L', cat, ex, desc:desc||''};
+    const flat = Object.values(ex).flat();
+    return {t:'L', cat, ex:flat, groups:ex, desc:desc||''};
+  };
 
   const TREE = q("เป็นสิ่งมีชีวิตหรือตัวละครมั้ย?",
     // ====== YES: LIVING / CHARACTER ======
@@ -590,14 +609,100 @@
         q("เป็นตัวการ์ตูน/อนิเมะมั้ย?",
           q("เป็นอนิเมะญี่ปุ่น?",
             q("เป็นแนวต่อสู้ (Shonen) มั้ย?",
-              L("ตัวเอก Shonen",["Naruto Uzumaki","Sasuke Uchiha","Sakura Haruno","Kakashi Hatake","Itachi Uchiha","Madara Uchiha","Goku","Vegeta","Gohan","Trunks","Frieza","Cell","Majin Buu","Luffy","Zoro","Sanji","Nami","Usopp","Chopper","Robin","Franky","Brook","Jinbei","Ace","Shanks","Blackbeard","Ichigo Kurosaki","Rukia","Byakuya","Kenpachi","Aizen","Natsu Dragneel","Lucy Heartfilia","Erza Scarlet","Gray Fullbuster","Happy (Fairy Tail)","Tanjiro Kamado","Nezuko","Zenitsu","Inosuke","Muzan","Giyu","Rengoku","Shinobu","Muichiro","Eren Yeager","Mikasa Ackerman","Armin Arlert","Levi Ackerman","Historia","Annie","Reiner","Zeke","Deku (Midoriya)","Bakugo","Todoroki","All Might","Endeavor","Saitama","Genos","Tatsumaki","Garou","Yuji Itadori","Megumi","Nobara","Satoru Gojo","Sukuna","Geto","Yuta Okkotsu","Maki","Panda","Edward Elric","Alphonse","Roy Mustang","Scar","Gon (HxH)","Killua","Kurapika","Leorio","Hisoka","Meruem","Asta (Black Clover)","Yuno","Yami","Noelle","Tatsumi (Akame ga Kill)","Akame","Esdeath","Meliodas (7DS)","Ban","King","Diane","Escanor","Elizabeth","Allen Walker (D.Gray-man)","Lelouch (Code Geass)","Suzaku","Light Yagami","L","Misa","Ryuk","Kaneki (Tokyo Ghoul)","Touka","Ayato","Rimuru (Slime)","Mikey (Tokyo Rev)","Takemichi","Draken","Baji","Senku (Dr. Stone)","Power (CSM)","Denji","Makima","Aki","Gabimaru (Hell's Paradise)","Thorfinn (Vinland Saga)","Guts (Berserk)","Griffith","Frieren (Beyond Journey's End)"]),
+              L("ตัวเอก Shonen",{
+                "One Piece":["Luffy","Zoro","Sanji","Nami","Usopp","Chopper","Robin","Franky","Brook","Jinbei","Ace","Shanks","Blackbeard"],
+                "Naruto":["Naruto Uzumaki","Sasuke Uchiha","Sakura Haruno","Kakashi Hatake","Itachi Uchiha","Madara Uchiha"],
+                "Dragon Ball":["Goku","Vegeta","Gohan","Trunks","Frieza","Cell","Majin Buu"],
+                "Bleach":["Ichigo Kurosaki","Rukia","Byakuya","Kenpachi","Aizen"],
+                "Demon Slayer":["Tanjiro Kamado","Nezuko","Zenitsu","Inosuke","Muzan","Giyu","Rengoku","Shinobu","Muichiro"],
+                "Attack on Titan":["Eren Yeager","Mikasa Ackerman","Armin Arlert","Levi Ackerman","Historia","Annie","Reiner","Zeke"],
+                "My Hero Academia":["Deku (Midoriya)","Bakugo","Todoroki","All Might","Endeavor"],
+                "Jujutsu Kaisen":["Yuji Itadori","Megumi","Nobara","Satoru Gojo","Sukuna","Geto","Yuta Okkotsu","Maki","Panda"],
+                "One Punch Man":["Saitama","Genos","Tatsumaki","Garou"],
+                "Hunter x Hunter":["Gon (HxH)","Killua","Kurapika","Leorio","Hisoka","Meruem"],
+                "Fullmetal Alchemist":["Edward Elric","Alphonse","Roy Mustang","Scar"],
+                "Fairy Tail":["Natsu Dragneel","Lucy Heartfilia","Erza Scarlet","Gray Fullbuster","Happy (Fairy Tail)"],
+                "Black Clover":["Asta (Black Clover)","Yuno","Yami","Noelle"],
+                "Seven Deadly Sins":["Meliodas (7DS)","Ban","King","Diane","Escanor","Elizabeth"],
+                "Death Note":["Light Yagami","L","Misa","Ryuk"],
+                "Code Geass":["Lelouch (Code Geass)","Suzaku"],
+                "Tokyo Ghoul":["Kaneki (Tokyo Ghoul)","Touka","Ayato"],
+                "Tokyo Revengers":["Mikey (Tokyo Rev)","Takemichi","Draken","Baji"],
+                "Chainsaw Man":["Denji","Power (CSM)","Makima","Aki"],
+                "Akame ga Kill":["Tatsumi (Akame ga Kill)","Akame","Esdeath"],
+                "D.Gray-man":["Allen Walker (D.Gray-man)"],
+                "Slime Isekai":["Rimuru (Slime)"],
+                "Dr. Stone":["Senku (Dr. Stone)"],
+                "Hell's Paradise":["Gabimaru (Hell's Paradise)"],
+                "Vinland Saga":["Thorfinn (Vinland Saga)"],
+                "Berserk":["Guts (Berserk)","Griffith"],
+                "Frieren":["Frieren (Beyond Journey's End)"]
+              }),
               q("เป็นแนวน่ารัก/เด็ก?",
-                L("การ์ตูนเด็กญี่ปุ่น",["Doraemon","Pikachu","Charizard","Bulbasaur","Squirtle","Eevee","Mewtwo","Mew","Lugia","Ho-Oh","Rayquaza","Nobita Nobi","Shizuka","Suneo","Gian","Dorami","Shin-chan (Shinnosuke)","Misae","Hiroshi","Himawari","Shiro (หมา)","Totoro","Mei & Satsuki","Kiki (Witch)","Ponyo","Chihiro (Spirited Away)","No-Face","Calcifer (Howl's)","Howl","Sophie","Princess Mononoke (San)","Ashitaka","Porco Rosso","Hello Kitty","Melody","Kuromi","Cinnamoroll","Pompompurin","Pochacco","Keroppi","Gudetama","Pom Pom Purin","My Melody","Little Twin Stars","Anpanman","Shokupanman","Baikinman","Dokinchan","Conan (Edogawa)","Ran Mouri","Heiji Hattori","Kaito Kid","Chibi Maruko-chan","Tamaechan","Crayon Shin-chan","Rilakkuma","Korilakkuma","Kiiroitori","Sumikko Gurashi","Kapibarasan","Afro Ken","Mofusand","Chiikawa","Hachiware","Usagi (Chiikawa)"]),
-                L("อนิเมะอื่น",["Sailor Moon (Usagi)","Tuxedo Mask","Sailor Mercury","Sailor Mars","Sailor Jupiter","Sailor Venus","Inuyasha","Kagome","Sesshomaru","Kikyo","Miroku","Sango","Shippo","Naraku","Shinji Ikari","Asuka Langley","Rei Ayanami","Misato Katsuragi","Gendo Ikari","Kaworu","Anya Forger","Loid Forger","Yor Forger","Bond (dog)","Becky","Damian","Gojo Satoru","Megumi Fushiguro","Tanjiro (duplicate เคยเอ่ยแล้ว)","Light Yagami (Death Note)","L Lawliet","Near","Mello","Chainsaw Man (Denji)","Makima","Power","Aki","Kobeni","Quanxi","Oshi no Ko (Aqua)","Ruby","Akane","Kana","Ai Hoshino","Dandadan (Momo, Okarun)","Spy Family","Zom 100","Horimiya (Hori, Miyamura)","Toradora (Taiga, Ryuuji)","Clannad (Tomoya, Nagisa)","Kaguya-sama (Kaguya, Shirogane, Chika)","Monogatari (Araragi, Senjougahara)","Violet Evergarden","Your Name (Taki, Mitsuha)","Weathering with You (Hodaka, Hina)","Suzume","K-On! (Yui, Mio, Ritsu, Tsumugi, Azusa)","Haruhi Suzumiya","Lucky Star","Madoka Magica","Revolutionary Girl Utena","Revue Starlight","Bang Dream","Love Live","iDOLiSH7","Free! (Haruka, Rin, Makoto)","Yuri!!! on Ice","Haikyuu (Hinata, Kageyama, Tsukishima)","Kuroko no Basket (Kuroko, Kagami)","Prince of Tennis (Ryoma)","Slam Dunk (Sakuragi, Rukawa)","Captain Tsubasa (Tsubasa)","Blue Lock (Isagi, Bachira, Rin, Bachira)","Ao Ashi","Cells at Work (Red Blood Cell, White Blood Cell)","March Comes in Like a Lion","ReLIFE","Dr. Stone (Senku, Chrome)","Vinland Saga (Thorfinn, Einar)","Berserk (Guts, Casca)","Monster (Dr. Tenma, Johan)","Golden Kamuy (Sugimoto, Asirpa)","Grand Blue","Welcome to the NHK","Steins;Gate (Okabe, Kurisu)","Re:Zero (Subaru, Rem, Emilia)","Konosuba (Kazuma, Aqua, Megumin, Darkness)","Overlord (Ainz)","Sword Art Online (Kirito, Asuna)","Accel World","No Game No Life","That Time I Got Reincarnated as a Slime","Mushoku Tensei","Frieren","Ranking of Kings","Apothecary Diaries","Oshi no Ko"]))),
+                L("การ์ตูนเด็กญี่ปุ่น",{
+                  "Doraemon":["Doraemon","Nobita Nobi","Shizuka","Suneo","Gian","Dorami"],
+                  "Pokemon":["Pikachu","Charizard","Bulbasaur","Squirtle","Eevee","Mewtwo","Mew","Lugia","Ho-Oh","Rayquaza"],
+                  "Crayon Shin-chan":["Shin-chan (Shinnosuke)","Misae","Hiroshi","Himawari","Shiro (หมา)","Crayon Shin-chan"],
+                  "Studio Ghibli":["Totoro","Mei & Satsuki","Kiki (Witch)","Ponyo","Chihiro (Spirited Away)","No-Face","Calcifer (Howl's)","Howl","Sophie","Princess Mononoke (San)","Ashitaka","Porco Rosso"],
+                  "Sanrio":["Hello Kitty","Melody","Kuromi","Cinnamoroll","Pompompurin","Pochacco","Keroppi","Gudetama","Pom Pom Purin","My Melody","Little Twin Stars"],
+                  "Anpanman":["Anpanman","Shokupanman","Baikinman","Dokinchan"],
+                  "Detective Conan":["Conan (Edogawa)","Ran Mouri","Heiji Hattori","Kaito Kid"],
+                  "Chibi Maruko-chan":["Chibi Maruko-chan","Tamaechan"],
+                  "San-X / Kawaii Characters":["Rilakkuma","Korilakkuma","Kiiroitori","Sumikko Gurashi","Kapibarasan","Afro Ken","Mofusand"],
+                  "Chiikawa":["Chiikawa","Hachiware","Usagi (Chiikawa)"]
+                }),
+                L("อนิเมะอื่น",{
+                  "Sailor Moon":["Sailor Moon (Usagi)","Tuxedo Mask","Sailor Mercury","Sailor Mars","Sailor Jupiter","Sailor Venus"],
+                  "Inuyasha":["Inuyasha","Kagome","Sesshomaru","Kikyo","Miroku","Sango","Shippo","Naraku"],
+                  "Evangelion":["Shinji Ikari","Asuka Langley","Rei Ayanami","Misato Katsuragi","Gendo Ikari","Kaworu"],
+                  "Spy x Family":["Anya Forger","Loid Forger","Yor Forger","Bond (dog)","Becky","Damian","Spy Family"],
+                  "Jujutsu Kaisen":["Gojo Satoru","Megumi Fushiguro"],
+                  "Death Note":["Light Yagami (Death Note)","L Lawliet","Near","Mello"],
+                  "Chainsaw Man":["Chainsaw Man (Denji)","Makima","Power","Aki","Kobeni","Quanxi"],
+                  "Oshi no Ko":["Oshi no Ko (Aqua)","Ruby","Akane","Kana","Ai Hoshino","Oshi no Ko"],
+                  "Romance / Slice of life":["Horimiya (Hori, Miyamura)","Toradora (Taiga, Ryuuji)","Clannad (Tomoya, Nagisa)","Kaguya-sama (Kaguya, Shirogane, Chika)","Monogatari (Araragi, Senjougahara)","Violet Evergarden"],
+                  "Makoto Shinkai films":["Your Name (Taki, Mitsuha)","Weathering with You (Hodaka, Hina)","Suzume"],
+                  "Idol / Music":["K-On! (Yui, Mio, Ritsu, Tsumugi, Azusa)","Bang Dream","Love Live","iDOLiSH7","Revue Starlight"],
+                  "Sports anime":["Haikyuu (Hinata, Kageyama, Tsukishima)","Kuroko no Basket (Kuroko, Kagami)","Prince of Tennis (Ryoma)","Slam Dunk (Sakuragi, Rukawa)","Captain Tsubasa (Tsubasa)","Blue Lock (Isagi, Bachira, Rin)","Ao Ashi","Free! (Haruka, Rin, Makoto)","Yuri!!! on Ice"],
+                  "Isekai":["Re:Zero (Subaru, Rem, Emilia)","Konosuba (Kazuma, Aqua, Megumin, Darkness)","Overlord (Ainz)","Sword Art Online (Kirito, Asuna)","Accel World","No Game No Life","That Time I Got Reincarnated as a Slime","Mushoku Tensei"],
+                  "Sci-fi / Mystery":["Steins;Gate (Okabe, Kurisu)","Dandadan (Momo, Okarun)","Zom 100","Monster (Dr. Tenma, Johan)"],
+                  "Historical / Seinen":["Dr. Stone (Senku, Chrome)","Vinland Saga (Thorfinn, Einar)","Berserk (Guts, Casca)","Golden Kamuy (Sugimoto, Asirpa)","Frieren","Ranking of Kings","Apothecary Diaries"],
+                  "Classics / Others":["Haruhi Suzumiya","Lucky Star","Madoka Magica","Revolutionary Girl Utena","Cells at Work (Red Blood Cell, White Blood Cell)","March Comes in Like a Lion","ReLIFE","Grand Blue","Welcome to the NHK"]
+                }))),
             q("เป็นดิสนีย์/พิกซาร์?",
               q("เป็นเจ้าหญิงดิสนีย์?",
                 L("เจ้าหญิงดิสนีย์",["Elsa","Anna","Belle","Cinderella","Snow White","Rapunzel","Moana","Mulan","Ariel","Jasmine","Tiana","Aurora","Pocahontas","Merida (Brave)","Sleeping Beauty (Aurora)","Encanto (Mirabel, Isabela, Dolores, Luisa)","Raya (Last Dragon)","Sisu","Asha (Wish)","Anna & Kristoff","Olaf","Sven","Hans","Prince Charming","Prince Eric","Prince Philip","Prince Naveen","Aladdin","Flynn Rider","Kristoff","Li Shang","Shrek's Fiona (ไม่ใช่ดิสนีย์-ตัดออก)","Princess Giselle (Enchanted)"]),
-                L("ดิสนีย์/พิกซาร์ อื่น",["Mickey Mouse","Minnie Mouse","Donald Duck","Daisy Duck","Goofy","Pluto","Chip & Dale","Scrooge McDuck","Simba","Mufasa","Scar","Nala","Rafiki","Timon & Pumbaa","Zazu","Baloo (Jungle Book)","Mowgli","Bagheera","Shere Khan","Woody","Buzz Lightyear","Jessie","Bullseye","Rex","Slinky Dog","Hamm","Mr. Potato Head","Nemo","Dory","Marlin","Hank (Finding Dory)","Mike Wazowski","Sully","Boo","Randall","Lightning McQueen","Mater","Sally","WALL-E","EVE","Remy","Linguini","Ego","Carl (Up)","Russell","Dug","Kevin","Joy (Inside Out)","Sadness","Anger","Fear","Disgust","Bing Bong","Miguel (Coco)","Héctor","Ernesto","Imelda","Dante","Pepita","Soul (Joe Gardner, 22)","Luca","Alberto","Giulia","Mei (Turning Red)","Red Panda Mei","Bruno (Encanto)","Alma","Mirabel","Abuela","Antonio","Camilo","Dolores","Pepa","Flora, Fauna, Merryweather","Hades","Hercules","Mushu","Pascal (Tangled)","Maximus","Tiana (Frog)","Charlotte","Dr. Facilier","Ursula","Maleficent","Evil Queen","Cruella de Vil","Jafar","Captain Hook","Gaston","Tinkerbell","Peter Pan","Wendy","Alice (Wonderland)","Cheshire Cat","Mad Hatter","White Rabbit","Queen of Hearts","Scar","Stitch","Lilo","Jumba","Pleakley","Bolt","Penny","Milo (Atlantis)","Atlantis Princess Kida","Prince Phillip","Hercules","Meg","Pegasus","Baymax","Hiro","Wasabi","GoGo","Fred","Honey Lemon","Anna (Frozen)","Olaf","Sven","Kristoff","Hans","Oaken","Pabbie"])),
+                L("ดิสนีย์/พิกซาร์ อื่น",{
+                  "Mickey & Friends":["Mickey Mouse","Minnie Mouse","Donald Duck","Daisy Duck","Goofy","Pluto","Chip & Dale","Scrooge McDuck"],
+                  "The Lion King":["Simba","Mufasa","Scar","Nala","Rafiki","Timon & Pumbaa","Zazu"],
+                  "The Jungle Book":["Baloo (Jungle Book)","Mowgli","Bagheera","Shere Khan"],
+                  "Toy Story":["Woody","Buzz Lightyear","Jessie","Bullseye","Rex","Slinky Dog","Hamm","Mr. Potato Head"],
+                  "Finding Nemo/Dory":["Nemo","Dory","Marlin","Hank (Finding Dory)"],
+                  "Monsters Inc":["Mike Wazowski","Sully","Boo","Randall"],
+                  "Cars":["Lightning McQueen","Mater","Sally"],
+                  "WALL-E":["WALL-E","EVE"],
+                  "Ratatouille":["Remy","Linguini","Ego"],
+                  "Up":["Carl (Up)","Russell","Dug","Kevin"],
+                  "Inside Out":["Joy (Inside Out)","Sadness","Anger","Fear","Disgust","Bing Bong"],
+                  "Coco":["Miguel (Coco)","Héctor","Ernesto","Imelda","Dante","Pepita"],
+                  "Soul":["Soul (Joe Gardner, 22)"],
+                  "Luca":["Luca","Alberto","Giulia"],
+                  "Turning Red":["Mei (Turning Red)","Red Panda Mei"],
+                  "Encanto":["Bruno (Encanto)","Alma","Mirabel","Abuela","Antonio","Camilo","Dolores","Pepa"],
+                  "Sleeping Beauty":["Flora, Fauna, Merryweather","Prince Phillip"],
+                  "Hercules":["Hades","Hercules","Meg","Pegasus"],
+                  "Mulan":["Mushu"],
+                  "Tangled":["Pascal (Tangled)","Maximus"],
+                  "Princess and the Frog":["Tiana (Frog)","Charlotte","Dr. Facilier"],
+                  "Classic villains":["Ursula","Maleficent","Evil Queen","Cruella de Vil","Jafar","Captain Hook","Gaston"],
+                  "Peter Pan":["Tinkerbell","Peter Pan","Wendy"],
+                  "Alice in Wonderland":["Alice (Wonderland)","Cheshire Cat","Mad Hatter","White Rabbit","Queen of Hearts"],
+                  "Lilo & Stitch":["Stitch","Lilo","Jumba","Pleakley"],
+                  "Bolt":["Bolt","Penny"],
+                  "Atlantis":["Milo (Atlantis)","Atlantis Princess Kida"],
+                  "Big Hero 6":["Baymax","Hiro","Wasabi","GoGo","Fred","Honey Lemon"],
+                  "Frozen":["Anna (Frozen)","Olaf","Sven","Kristoff","Hans","Oaken","Pabbie"]
+                })),
               L("การ์ตูนตะวันตกอื่น",["SpongeBob SquarePants","Patrick Star","Squidward","Sandy","Mr. Krabs","Plankton","Gary","Mermaid Man","Shrek","Fiona","Donkey","Puss in Boots","Dragon","Lord Farquaad","Scooby-Doo","Shaggy","Fred","Daphne","Velma","Tom & Jerry","Spike","Butch","Bugs Bunny","Daffy Duck","Porky Pig","Elmer Fudd","Tweety","Sylvester","Road Runner","Wile E. Coyote","Yosemite Sam","Marvin the Martian","Taz (Tasmanian Devil)","Homer Simpson","Marge Simpson","Bart Simpson","Lisa Simpson","Maggie Simpson","Mr. Burns","Ned Flanders","Moe","Apu","Krusty","Peter Griffin","Lois Griffin","Stewie Griffin","Chris Griffin","Meg Griffin","Brian Griffin","Quagmire","Cleveland","Joe","Rick Sanchez","Morty","Summer","Beth","Jerry","Mr. Meeseeks","Pink Panther","Inspector Clouseau","Garfield","Odie","Jon","Nermal","Pooky","Snoopy","Charlie Brown","Linus","Lucy","Peppermint Patty","Schroeder","Woodstock","Sally","Popeye","Olive Oyl","Bluto","Felix the Cat","Mighty Mouse","Yogi Bear","Boo Boo","Fred Flintstone","Wilma","Barney Rubble","Betty","Pebbles","George Jetson","Jane","Judy","Elroy","Rosie","Jimmy Neutron","Carl","Sheen","Cindy","SpongeBob Characters (duplicate)","Dexter (Laboratory)","Dee Dee","Powerpuff Girls (Blossom, Bubbles, Buttercup)","Mojo Jojo","Courage the Cowardly Dog","Samurai Jack","Ed, Edd n Eddy","Johnny Bravo","Beavis & Butt-Head","Daria","South Park (Stan, Kyle, Cartman, Kenny)","Bob's Burgers (Bob, Linda, Tina, Gene, Louise)","Adventure Time (Finn, Jake)","Princess Bubblegum","Marceline","Ice King","Regular Show (Mordecai, Rigby)","Gumball Watterson","Darwin","Anais","Steven Universe","Garnet","Pearl","Amethyst","Avatar Aang","Katara","Sokka","Toph","Zuko","Azula","Iroh","Korra","Ben 10","Gwen","Max","Kim Possible","Ron Stoppable","Rufus","Arthur (PBS)","DW","Buster","Francine","Postman Pat","Thomas the Tank Engine","Bob the Builder","Barney (Purple Dinosaur)","Pingu","Peppa Pig","George Pig","Pig Family","Bluey","Bingo","Paw Patrol (Ryder, Chase, Marshall, Skye, Rubble, Rocky, Zuma)","Masha and the Bear","Mr. Bean (animated)","Fireman Sam","Baby Shark","Cocomelon (JJ)","Caillou","Dora the Explorer","Boots","Backpack","Go Diego Go","Blue's Clues","Handy Manny","Sesame Street (Elmo, Big Bird, Cookie Monster, Oscar, Bert, Ernie, Grover)","Teletubbies (Tinky Winky, Dipsy, Laa-Laa, Po)","Boohbah","In the Night Garden"]))),
           q("เป็นซูเปอร์ฮีโร่?",
             q("เป็น Marvel มั้ย?",
@@ -606,10 +711,86 @@
                 L("Marvel Hero",["Iron Man (Tony Stark)","Spider-Man (Peter Parker)","Miles Morales","Gwen Stacy (Spider-Gwen)","Captain America (Steve Rogers)","Sam Wilson (Falcon/Cap)","Bucky Barnes (Winter Soldier)","Thor","Loki (anti-hero)","Hulk (Bruce Banner)","She-Hulk","Black Widow","Hawkeye","Kate Bishop","Doctor Strange","Wong","Black Panther (T'Challa, Shuri)","Wolverine (Logan)","Sabretooth (anti)","Deadpool","Scarlet Witch (Wanda)","Vision","Quicksilver","Ant-Man (Scott Lang)","Wasp (Hope)","Hank Pym","Captain Marvel (Carol Danvers)","Ms. Marvel (Kamala Khan)","Monica Rambeau","Star-Lord","Gamora","Drax","Rocket Raccoon","Groot","Mantis","Nebula","Yondu","Adam Warlock","Nick Fury","Maria Hill","Daredevil","Elektra","Punisher","Jessica Jones","Luke Cage","Iron Fist","Moon Knight","Moon Girl","She-Hulk","Cyclops","Jean Grey","Storm","Nightcrawler","Rogue","Gambit","Beast","Colossus","Kitty Pryde","Psylocke","Emma Frost","Iceman","Jubilee","X-23","Dazzler","Fantastic Four (Mr. Fantastic, Invisible Woman, Human Torch, Thing)","Ghost Rider","Blade","Morbius (anti)","Silver Surfer","Namor","Squirrel Girl","America Chavez","Kid Loki","Ikaris (Eternals)","Sersi","Thena","Gilgamesh","Makkari","Phastos","Sprite","Druig","Kingo","Ajak"])),
               L("DC",["Batman (Bruce Wayne)","Superman (Clark Kent)","Wonder Woman (Diana)","Flash (Barry Allen)","Flash (Wally West)","Aquaman (Arthur Curry)","Green Lantern (Hal Jordan, John Stewart)","Joker","Harley Quinn","Cyborg","Nightwing (Dick Grayson)","Catwoman (Selina Kyle)","Lex Luthor","Robin (Damian Wayne, Tim Drake, Jason Todd)","Red Hood","Red Robin","Batgirl (Barbara Gordon)","Oracle","Batwoman","Martian Manhunter","Green Arrow","Black Canary","Hawkgirl","Zatanna","Constantine","Shazam","Black Adam","Supergirl","Superboy","Krypto","Steel","Power Girl","Raven","Starfire","Beast Boy","Terra","Deathstroke","Deadshot","Penguin","Riddler","Two-Face","Bane","Scarecrow","Poison Ivy","Mr. Freeze","Clayface","Killer Croc","Ra's al Ghul","Talia al Ghul","Hush","Man-Bat","Firefly","Mad Hatter","Ventriloquist","Black Mask","Azrael","Huntress","Spoiler","Cassandra Cain (Black Bat)","Stephanie Brown","Swamp Thing","John Stewart","Blue Beetle","Booster Gold","Dr. Fate","Dr. Manhattan","Ozymandias","Rorschach","Nite Owl","Silk Spectre","Comedian","Darkseid","Brainiac","Doomsday","Parallax","Sinestro","Starro","Trigon","Anti-Monitor","Amazo","Bizarro","Mongul","Metallo","General Zod","Lobo","Harley (again)","Gorilla Grodd","Reverse Flash","Captain Cold","Mirror Master","Cheetah","Ares","Medusa (not)","Hades (DC)","Cheshire","Vixen","Vandal Savage","Solomon Grundy"])),
             q("เป็นตัวละครจากหนังคนจริง/ซีรีส์?",
-              L("ตัวละครหนัง/ซีรีส์",["Harry Potter","Hermione Granger","Ron Weasley","Dumbledore","Snape","McGonagall","Hagrid","Voldemort","Bellatrix","Sirius Black","Lupin","Draco Malfoy","Luna Lovegood","Neville","Ginny","Fred & George Weasley","Dobby","Moaning Myrtle","Cedric Diggory","Darth Vader","Yoda","Luke Skywalker","Leia Organa","Han Solo","Chewbacca","Obi-Wan Kenobi","Anakin Skywalker","Padmé Amidala","Palpatine","Mace Windu","Qui-Gon Jinn","Rey","Finn","Poe","Kylo Ren","BB-8","R2-D2","C-3PO","Din Djarin (Mandalorian)","Grogu (Baby Yoda)","Ahsoka Tano","Boba Fett","Jango Fett","Gandalf","Frodo Baggins","Sam Gamgee","Aragorn","Legolas","Gimli","Boromir","Pippin","Merry","Bilbo Baggins","Gollum","Sauron","Saruman","Galadriel","Elrond","Arwen","Faramir","Théoden","Éowyn","Jack Sparrow","Will Turner","Elizabeth Swann","Davy Jones","Barbossa","James Bond (007)","M","Q","Moneypenny","Le Chiffre","Blofeld","Indiana Jones","Sallah","Marion","Mutt","Walter White","Jesse Pinkman","Saul Goodman","Skyler","Gustavo Fring","Mike Ehrmantraut","Ted Mosby","Marshall","Lily","Barney Stinson","Robin Scherbatsky","Sherlock Holmes","Dr. Watson","Moriarty","Mycroft","Irene Adler","Tony Soprano","Don Draper","Peggy Olson","Roger Sterling","Frank Underwood","Claire Underwood","Eleven (Stranger Things)","Will Byers","Mike Wheeler","Dustin","Lucas","Max","Steve Harrington","Nancy Wheeler","Jonathan","Hopper","Joyce","Eddie Munson","Vecna","Demogorgon","Ned Stark","Jon Snow","Daenerys Targaryen","Tyrion Lannister","Cersei Lannister","Jaime Lannister","Sansa Stark","Arya Stark","Bran Stark","Robb Stark","Robert Baratheon","Joffrey","Ramsay Bolton","The Mountain","The Hound","Khal Drogo","Brienne","Varys","Littlefinger","Melisandre","Hodor","Ghost","Drogon, Rhaegal, Viserion","Tywin Lannister","Margaery Tyrell","Olenna Tyrell","Rhaenyra Targaryen (HOTD)","Daemon","Alicent","Aegon","House of the Dragon","The Witcher (Geralt)","Yennefer","Ciri","Jaskier","Michael Scott (The Office)","Jim Halpert","Pam Beesly","Dwight Schrute","Stanley","Kevin","Creed","Andy","Ryan","Kelly","Leslie Knope (Parks & Rec)","Ron Swanson","Tom Haverford","April","Andy Dwyer","Ben Wyatt","Chris Traeger","Jerry/Larry/Terry","Pawnee characters","Rachel Green (Friends)","Ross","Monica","Chandler","Joey","Phoebe","Gunther","Janice","Richard","Emily","Mike Hannigan","Lorelai (Gilmore Girls)","Rory","Luke","Jess","Dean","Logan","Ted Lasso","Roy Kent","Jamie Tartt","Rebecca","Keeley","Coach Beard","Nate","Will","Sam","Dani Rojas","Frasier Crane","Roz","Niles","Martin","Daphne","Raymond (Everybody Loves Raymond)","Carrie Bradshaw (SATC)","Samantha","Charlotte","Miranda","Big","Aidan","Dexter Morgan","Rita","Debra","Hannah","Lumen","Jack Bauer (24)","Chloe","Tony Almeida","President Palmer","House (Dr. House)","Wilson","Cuddy","Foreman","Chase","Cameron","Grey's Anatomy (Meredith, Derek, Cristina, Alex)","ER (Dr. Greene)","Scrubs (JD, Turk, Elliot, Dr. Cox)","Community (Jeff, Britta, Abed, Troy, Annie, Shirley, Pierce)","New Girl (Jess, Nick, Schmidt, Winston, Cece)","The Big Bang Theory (Sheldon, Leonard, Howard, Raj, Penny, Bernadette, Amy)","Young Sheldon","How I Met Your Father","Modern Family (Phil, Claire, Jay, Gloria, Manny, Mitchell, Cam, Lily)"]),
+              L("ตัวละครหนัง/ซีรีส์",{
+                "Harry Potter":["Harry Potter","Hermione Granger","Ron Weasley","Dumbledore","Snape","McGonagall","Hagrid","Voldemort","Bellatrix","Sirius Black","Lupin","Draco Malfoy","Luna Lovegood","Neville","Ginny","Fred & George Weasley","Dobby","Moaning Myrtle","Cedric Diggory"],
+                "Star Wars":["Darth Vader","Yoda","Luke Skywalker","Leia Organa","Han Solo","Chewbacca","Obi-Wan Kenobi","Anakin Skywalker","Padmé Amidala","Palpatine","Mace Windu","Qui-Gon Jinn","Rey","Finn","Poe","Kylo Ren","BB-8","R2-D2","C-3PO","Din Djarin (Mandalorian)","Grogu (Baby Yoda)","Ahsoka Tano","Boba Fett","Jango Fett"],
+                "Lord of the Rings":["Gandalf","Frodo Baggins","Sam Gamgee","Aragorn","Legolas","Gimli","Boromir","Pippin","Merry","Bilbo Baggins","Gollum","Sauron","Saruman","Galadriel","Elrond","Arwen","Faramir","Théoden","Éowyn"],
+                "Pirates of the Caribbean":["Jack Sparrow","Will Turner","Elizabeth Swann","Davy Jones","Barbossa"],
+                "James Bond":["James Bond (007)","M","Q","Moneypenny","Le Chiffre","Blofeld"],
+                "Indiana Jones":["Indiana Jones","Sallah","Marion","Mutt"],
+                "Breaking Bad / Better Call Saul":["Walter White","Jesse Pinkman","Saul Goodman","Skyler","Gustavo Fring","Mike Ehrmantraut"],
+                "How I Met Your Mother":["Ted Mosby","Marshall","Lily","Barney Stinson","Robin Scherbatsky"],
+                "Sherlock":["Sherlock Holmes","Dr. Watson","Moriarty","Mycroft","Irene Adler"],
+                "Drama classics":["Tony Soprano","Don Draper","Peggy Olson","Roger Sterling","Frank Underwood","Claire Underwood"],
+                "Stranger Things":["Eleven (Stranger Things)","Will Byers","Mike Wheeler","Dustin","Lucas","Max","Steve Harrington","Nancy Wheeler","Jonathan","Hopper","Joyce","Eddie Munson","Vecna","Demogorgon"],
+                "Game of Thrones / HOTD":["Ned Stark","Jon Snow","Daenerys Targaryen","Tyrion Lannister","Cersei Lannister","Jaime Lannister","Sansa Stark","Arya Stark","Bran Stark","Robb Stark","Robert Baratheon","Joffrey","Ramsay Bolton","The Mountain","The Hound","Khal Drogo","Brienne","Varys","Littlefinger","Melisandre","Hodor","Ghost","Drogon, Rhaegal, Viserion","Tywin Lannister","Margaery Tyrell","Olenna Tyrell","Rhaenyra Targaryen (HOTD)","Daemon","Alicent","Aegon","House of the Dragon"],
+                "The Witcher":["The Witcher (Geralt)","Yennefer","Ciri","Jaskier"],
+                "The Office":["Michael Scott (The Office)","Jim Halpert","Pam Beesly","Dwight Schrute","Stanley","Kevin","Creed","Andy","Ryan","Kelly"],
+                "Parks & Rec":["Leslie Knope (Parks & Rec)","Ron Swanson","Tom Haverford","April","Andy Dwyer","Ben Wyatt","Chris Traeger","Jerry/Larry/Terry","Pawnee characters"],
+                "Friends":["Rachel Green (Friends)","Ross","Monica","Chandler","Joey","Phoebe","Gunther","Janice","Richard","Emily","Mike Hannigan"],
+                "Gilmore Girls":["Lorelai (Gilmore Girls)","Rory","Luke","Jess","Dean","Logan"],
+                "Ted Lasso":["Ted Lasso","Roy Kent","Jamie Tartt","Rebecca","Keeley","Coach Beard","Nate","Will","Sam","Dani Rojas"],
+                "Frasier / Everybody Loves Raymond":["Frasier Crane","Roz","Niles","Martin","Daphne","Raymond (Everybody Loves Raymond)"],
+                "Sex and the City":["Carrie Bradshaw (SATC)","Samantha","Charlotte","Miranda","Big","Aidan"],
+                "Dexter":["Dexter Morgan","Rita","Debra","Hannah","Lumen"],
+                "24":["Jack Bauer (24)","Chloe","Tony Almeida","President Palmer"],
+                "Medical dramas":["House (Dr. House)","Wilson","Cuddy","Foreman","Chase","Cameron","Grey's Anatomy (Meredith, Derek, Cristina, Alex)","ER (Dr. Greene)","Scrubs (JD, Turk, Elliot, Dr. Cox)"],
+                "Sitcoms":["Community (Jeff, Britta, Abed, Troy, Annie, Shirley, Pierce)","New Girl (Jess, Nick, Schmidt, Winston, Cece)","The Big Bang Theory (Sheldon, Leonard, Howard, Raj, Penny, Bernadette, Amy)","Young Sheldon","How I Met Your Father","Modern Family (Phil, Claire, Jay, Gloria, Manny, Mitchell, Cam, Lily)"]
+              }),
               q("เป็นตัวละครจากเกม?",
-                L("ตัวละครเกม",["Mario","Luigi","Peach","Daisy","Bowser","Koopa","Yoshi","Toad","Wario","Waluigi","Donkey Kong","Diddy Kong","Sonic","Tails","Knuckles","Shadow","Amy Rose","Dr. Eggman","Link","Princess Zelda","Ganondorf","Navi","Epona","Sheik","Tetra","Samus Aran (Metroid)","Metroid","Ridley","Pac-Man","Ms. Pac-Man","Ghosts (Blinky, Pinky, Inky, Clyde)","Kratos","Atreus","Mimir","Baldur","Freya","Master Chief","Cortana","Arbiter","Kirby","King Dedede","Meta Knight","Lara Croft","Solid Snake","Big Boss","Revolver Ocelot","Psycho Mantis","Geralt of Rivia","Yennefer","Triss","Ciri","Kazuya Mishima","Heihachi","Jin Kazama","Nina Williams","Paul Phoenix","King","Yoshimitsu","Eddy Gordo","Law","Ryu","Ken","Akuma","Chun-Li","M. Bison","Sagat","Guile","Zangief","Dhalsim","Cammy","Juri","Scorpion (MK)","Sub-Zero","Raiden","Liu Kang","Kitana","Mileena","Shao Kahn","Johnny Cage","Sonya","Kano","Goro","Cloud Strife","Tifa","Aerith","Sephiroth","Zack Fair","Barret","Yuffie","Vincent Valentine","Red XIII","Cait Sith","Noctis","Lightning","Squall","Rinoa","Zidane","Tidus","Yuna","Auron","Aerith","Lightning","Cecil (FF4)","Cid","Moogle","Chocobo","Dante (DMC)","Nero","Vergil","Lady","Trish","Bayonetta","Jeanne","Cereza","Joel (TLOU)","Ellie","Abby","Tommy","Nathan Drake (Uncraft)","Elena","Sully","Sam Drake","Chloe","Aloy (Horizon)","Rost","Spider-Man (Miles Morales - duplicate)","Batman (Arkham)","Commander Shepard (Mass Effect)","Garrus","Liara","Tali","Wrex","Geralt (dupe)","Ezio Auditore","Altair","Bayek","Eivor","Kassandra","Alexios","Connor","Edward Kenway","Arno","Jacob Frye","Evie Frye","Niko Bellic (GTA)","Trevor Philips","Franklin","Michael","CJ","Tommy Vercetti","Lamar","Chop","Agent 47","Diana","Sam Fisher (Splinter Cell)","Leon Kennedy (RE)","Jill Valentine","Chris Redfield","Claire Redfield","Ada Wong","Albert Wesker","Ethan Winters","Lady Dimitrescu","Isaac Clarke (Dead Space)","Artyom (Metro)","Gordon Freeman (Half-Life)","Alyx Vance","Chell (Portal)","GLaDOS","Wheatley","Jack (Bioshock)","Big Daddy","Little Sister","Booker DeWitt","Elizabeth","Andrew Ryan","Atlas","Steve (Minecraft)","Alex (Minecraft)","Creeper","Zombie","Enderman","Ender Dragon","Iron Golem","Herobrine","Among Us Crewmate/Impostor","Fall Guys","Peely (Fortnite)","Jonesy","Midas","Doomslayer","Master Chief (dupe)","Marcus Fenix (Gears)","Sam Porter (Death Stranding)","Arthur Morgan (RDR2)","John Marston","Dutch","Sadie","Bill","Javier","Micah","Sean","Charles","Kirito (SAO - already listed in anime)","Sonic chars","Lucario (Pokemon)","Ash Ketchum (Pokemon - cross)","Misty","Brock","Jessie & James","Meowth","Squirtle"]),
-                L("ตัวละครนิทาน/อื่น",["Santa Claus","Rudolph","Easter Bunny","Tooth Fairy","Jack Frost","Mother Nature","Father Time","Grim Reaper","Cupid","Peter Pan","Captain Hook","Tinker Bell","Wendy","Alice in Wonderland","Mad Hatter","Cheshire Cat","White Rabbit","Queen of Hearts","Pinocchio","Geppetto","Jiminy Cricket","Blue Fairy","Little Red Riding Hood","Big Bad Wolf","Snow White","7 Dwarfs","Evil Queen","Cinderella","Fairy Godmother","Prince Charming","Rapunzel","Sleeping Beauty","Gingerbread Man","Three Little Pigs","Three Billy Goats Gruff","Goldilocks & Three Bears","Rumpelstiltskin","Hansel & Gretel","Jack and the Beanstalk","Robin Hood","Maid Marian","Little John","Friar Tuck","Sheriff of Nottingham","King Arthur","Merlin","Lancelot","Guinevere","Morgana","Excalibur","Beauty and the Beast","Frog Prince","Ugly Duckling","Thumbelina","Dracula","Frankenstein's Monster","Wolfman","Mummy","Zombie","The Grinch","Scrooge","Tiny Tim","Ghosts of Christmas","Jack-O-Lantern","Headless Horseman","Sleepy Hollow (Ichabod)","Paul Bunyan","John Henry","Johnny Appleseed","Davy Crockett","Pecos Bill","King Midas","Odysseus","Hercules","Achilles","Zeus","Hades","Poseidon","Medusa","Minotaur","Cyclops","Pandora","Prometheus","Icarus","Thor (myth)","Odin","Loki (myth)","Freya","Yggdrasil","Krampus","Baba Yaga","Leprechaun","Gnome","Troll","Dwarf","Elf","Fairy","Dragon","Unicorn","Phoenix","Griffin","Mermaid","Centaur","Pegasus","Sphinx","Kraken","Loch Ness Monster","Bigfoot","Yeti","Chupacabra","Jackalope","Hydra","Cerberus"]))))),
+                L("ตัวละครเกม",{
+                  "Mario":["Mario","Luigi","Peach","Daisy","Bowser","Koopa","Yoshi","Toad","Wario","Waluigi","Donkey Kong","Diddy Kong"],
+                  "Sonic":["Sonic","Tails","Knuckles","Shadow","Amy Rose","Dr. Eggman"],
+                  "Zelda":["Link","Princess Zelda","Ganondorf","Navi","Epona","Sheik","Tetra"],
+                  "Metroid":["Samus Aran (Metroid)","Metroid","Ridley"],
+                  "Pac-Man":["Pac-Man","Ms. Pac-Man","Ghosts (Blinky, Pinky, Inky, Clyde)"],
+                  "God of War":["Kratos","Atreus","Mimir","Baldur","Freya"],
+                  "Halo":["Master Chief","Cortana","Arbiter"],
+                  "Kirby":["Kirby","King Dedede","Meta Knight"],
+                  "Tomb Raider":["Lara Croft"],
+                  "Metal Gear":["Solid Snake","Big Boss","Revolver Ocelot","Psycho Mantis"],
+                  "The Witcher (game)":["Geralt of Rivia","Yennefer","Triss","Ciri"],
+                  "Tekken":["Kazuya Mishima","Heihachi","Jin Kazama","Nina Williams","Paul Phoenix","King","Yoshimitsu","Eddy Gordo","Law"],
+                  "Street Fighter":["Ryu","Ken","Akuma","Chun-Li","M. Bison","Sagat","Guile","Zangief","Dhalsim","Cammy","Juri"],
+                  "Mortal Kombat":["Scorpion (MK)","Sub-Zero","Raiden","Liu Kang","Kitana","Mileena","Shao Kahn","Johnny Cage","Sonya","Kano","Goro"],
+                  "Final Fantasy":["Cloud Strife","Tifa","Aerith","Sephiroth","Zack Fair","Barret","Yuffie","Vincent Valentine","Red XIII","Cait Sith","Noctis","Lightning","Squall","Rinoa","Zidane","Tidus","Yuna","Auron","Cecil (FF4)","Cid","Moogle","Chocobo"],
+                  "Devil May Cry":["Dante (DMC)","Nero","Vergil","Lady","Trish"],
+                  "Bayonetta":["Bayonetta","Jeanne","Cereza"],
+                  "The Last of Us":["Joel (TLOU)","Ellie","Abby","Tommy"],
+                  "Uncharted":["Nathan Drake (Uncraft)","Elena","Sully","Sam Drake","Chloe"],
+                  "Horizon":["Aloy (Horizon)","Rost"],
+                  "Mass Effect":["Commander Shepard (Mass Effect)","Garrus","Liara","Tali","Wrex"],
+                  "Assassin's Creed":["Ezio Auditore","Altair","Bayek","Eivor","Kassandra","Alexios","Connor","Edward Kenway","Arno","Jacob Frye","Evie Frye"],
+                  "GTA":["Niko Bellic (GTA)","Trevor Philips","Franklin","Michael","CJ","Tommy Vercetti","Lamar","Chop"],
+                  "Hitman":["Agent 47","Diana"],
+                  "Splinter Cell":["Sam Fisher (Splinter Cell)"],
+                  "Resident Evil":["Leon Kennedy (RE)","Jill Valentine","Chris Redfield","Claire Redfield","Ada Wong","Albert Wesker","Ethan Winters","Lady Dimitrescu"],
+                  "Dead Space / Metro":["Isaac Clarke (Dead Space)","Artyom (Metro)"],
+                  "Half-Life / Portal":["Gordon Freeman (Half-Life)","Alyx Vance","Chell (Portal)","GLaDOS","Wheatley"],
+                  "BioShock":["Jack (Bioshock)","Big Daddy","Little Sister","Booker DeWitt","Elizabeth","Andrew Ryan","Atlas"],
+                  "Minecraft":["Steve (Minecraft)","Alex (Minecraft)","Creeper","Zombie","Enderman","Ender Dragon","Iron Golem","Herobrine"],
+                  "Fortnite / Among Us / Fall Guys":["Among Us Crewmate/Impostor","Fall Guys","Peely (Fortnite)","Jonesy","Midas"],
+                  "Doom / Gears / Death Stranding":["Doomslayer","Marcus Fenix (Gears)","Sam Porter (Death Stranding)"],
+                  "Red Dead Redemption":["Arthur Morgan (RDR2)","John Marston","Dutch","Sadie","Bill","Javier","Micah","Sean","Charles"],
+                  "Pokemon (game)":["Lucario (Pokemon)","Ash Ketchum (Pokemon - cross)","Misty","Brock","Jessie & James","Meowth","Squirtle"]
+                }),
+                L("ตัวละครนิทาน/อื่น",{
+                  "Holiday figures":["Santa Claus","Rudolph","Easter Bunny","Tooth Fairy","Jack Frost","Mother Nature","Father Time","Grim Reaper","Cupid","Krampus"],
+                  "Peter Pan":["Peter Pan","Captain Hook","Tinker Bell","Wendy"],
+                  "Alice in Wonderland":["Alice in Wonderland","Mad Hatter","Cheshire Cat","White Rabbit","Queen of Hearts"],
+                  "Pinocchio":["Pinocchio","Geppetto","Jiminy Cricket","Blue Fairy"],
+                  "Fairy tales (Grimm/classic)":["Little Red Riding Hood","Big Bad Wolf","Snow White","7 Dwarfs","Evil Queen","Cinderella","Fairy Godmother","Prince Charming","Rapunzel","Sleeping Beauty","Gingerbread Man","Three Little Pigs","Three Billy Goats Gruff","Goldilocks & Three Bears","Rumpelstiltskin","Hansel & Gretel","Jack and the Beanstalk","Beauty and the Beast","Frog Prince","Ugly Duckling","Thumbelina"],
+                  "Robin Hood":["Robin Hood","Maid Marian","Little John","Friar Tuck","Sheriff of Nottingham"],
+                  "Arthurian legend":["King Arthur","Merlin","Lancelot","Guinevere","Morgana","Excalibur"],
+                  "Monsters (western)":["Dracula","Frankenstein's Monster","Wolfman","Mummy","Zombie","Headless Horseman","Sleepy Hollow (Ichabod)","Baba Yaga"],
+                  "A Christmas Carol / Grinch":["The Grinch","Scrooge","Tiny Tim","Ghosts of Christmas","Jack-O-Lantern"],
+                  "American folklore":["Paul Bunyan","John Henry","Johnny Appleseed","Davy Crockett","Pecos Bill","King Midas"],
+                  "Greek mythology":["Odysseus","Hercules","Achilles","Zeus","Hades","Poseidon","Medusa","Minotaur","Cyclops","Pandora","Prometheus","Icarus"],
+                  "Norse mythology":["Thor (myth)","Odin","Loki (myth)","Freya","Yggdrasil"],
+                  "Magical creatures":["Leprechaun","Gnome","Troll","Dwarf","Elf","Fairy","Dragon","Unicorn","Phoenix","Griffin","Mermaid","Centaur","Pegasus","Sphinx"],
+                  "Cryptids":["Kraken","Loch Ness Monster","Bigfoot","Yeti","Chupacabra","Jackalope"],
+                  "Mythical beasts":["Hydra","Cerberus"]
+                }))))),
         "รวมถึงตัวการ์ตูนที่มีรูปร่างคน/สัตว์ที่มีบุคลิก"),
       // NO: Animal or Plant
       q("เป็นสัตว์มั้ย?",
@@ -798,7 +979,15 @@
           <h3>สรุปผล</h3>
           <div class="cat-name">${escapeHTML(currentNode.cat)}</div>
           ${currentNode.desc ? `<div class="cat-desc">${escapeHTML(currentNode.desc)}</div>` : ''}
-          <div class="chips">${currentNode.ex.map(e => `<span class="chip">${escapeHTML(e)}</span>`).join('')}</div>
+          ${currentNode.groups
+            ? Object.entries(currentNode.groups).map(([g, items]) => `
+                <div class="chip-group">
+                  <div class="chip-group-title">${escapeHTML(g)}</div>
+                  <div class="chips">${items.map(e => `<span class="chip">${escapeHTML(e)}</span>`).join('')}</div>
+                </div>
+              `).join('')
+            : `<div class="chips">${currentNode.ex.map(e => `<span class="chip">${escapeHTML(e)}</span>`).join('')}</div>`
+          }
         </div>
         <div class="callout" style="margin-top:12px">
           <b>คำแนะนำ:</b> ถ้ายังไม่ใช่ในรายการ ลองคิดของคล้ายๆ ในหมวดเดียวกัน หรือย้อนกลับไปลองเปลี่ยนคำตอบคำถามก่อนหน้า
