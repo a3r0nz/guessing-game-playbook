@@ -1,11 +1,11 @@
-// Reference data (legacy mindmap tree) — used only by the Browse reference
-// flattener. The main Playbook uses src/data/books/.
-interface RefQNode { t: 'q'; q: string; y: TreeNode; n: TreeNode; h: string; }
-interface RefLNode { t: 'L'; cat: string; ex: string[]; desc: string; }
-export type TreeNode = RefQNode | RefLNode;
+import type { QNode, LNode, TreeNode } from '../types';
 
-const q = (text: string, yes: TreeNode, no: TreeNode, hint?: string): RefQNode => ({ t: 'q', q: text, y: yes, n: no, h: hint || '' });
-const L = (cat: string, ex: string[], desc?: string): RefLNode => ({ t: 'L', cat, ex, desc: desc || '' });
+const q = (text: string, yes: TreeNode, no: TreeNode, hint?: string): QNode =>
+  ({ t: 'q', q: text, y: yes, n: no, h: hint || '' });
+const L = (cat: string, ex: string[], desc?: string): LNode =>
+  ({ t: 'L', cat, ex, desc: desc || '' });
+
+export type { TreeNode };
 
 export const TREE: TreeNode = q("เป็นสิ่งมีชีวิตหรือตัวละครมั้ย?",
     // ====== YES: LIVING / CHARACTER ======

@@ -3,29 +3,27 @@ import { mountPlay } from './ui/play';
 import { mountBrowse } from './ui/browse';
 import { mountTips } from './ui/tips';
 
-type PaneName = 'play' | 'browse' | 'tips';
+type PaneName = 'quiz' | 'tree' | 'tips';
 
 const TABS: Array<{ id: PaneName; label: string }> = [
-  { id: 'play', label: 'เล่นเกม' },
-  { id: 'browse', label: 'คลัง' },
+  { id: 'quiz', label: 'เล่นเกม' },
+  { id: 'tree', label: 'ต้นไม้' },
   { id: 'tips', label: 'เทคนิค' }
 ];
-
-let active: PaneName = 'play';
 
 function bootstrap() {
   const app = document.getElementById('app')!;
   app.innerHTML = `
     <header>
       <h1>อะไรอยู่บนหัวกูวะ</h1>
-      <div class="tag">คู่มือตั้งคำถาม • Tag-based filtering</div>
+      <div class="tag">คู่มือตั้งคำถามแบบ Binary Search</div>
       <nav class="tabs" role="tablist">
         ${TABS.map(t => `<button class="tab" data-pane="${t.id}" role="tab">${t.label}</button>`).join('')}
       </nav>
     </header>
     <main>
-      <section id="play" class="pane"></section>
-      <section id="browse" class="pane"></section>
+      <section id="quiz" class="pane"></section>
+      <section id="tree" class="pane"></section>
       <section id="tips" class="pane"></section>
     </main>
   `;
@@ -34,14 +32,13 @@ function bootstrap() {
     btn.addEventListener('click', () => switchTo(btn.dataset.pane as PaneName));
   });
 
-  mountPlay(document.getElementById('play')!);
+  mountPlay(document.getElementById('quiz')!, () => switchTo('tree'));
+  mountBrowse(document.getElementById('tree')!);
   mountTips(document.getElementById('tips')!);
-  mountBrowse(document.getElementById('browse')!);
-  switchTo('play');
+  switchTo('quiz');
 }
 
 function switchTo(name: PaneName) {
-  active = name;
   document.querySelectorAll<HTMLButtonElement>('.tab').forEach(t =>
     t.classList.toggle('active', t.dataset.pane === name)
   );
@@ -50,8 +47,5 @@ function switchTo(name: PaneName) {
   );
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-// silence
-void active;
 
 bootstrap();

@@ -1,132 +1,129 @@
-import type { Entity } from '../types';
-import { ENTITIES, entitiesByCategory } from '../data/entities';
-import { TAG_META, TAG_GROUPS } from '../data/tags';
-
-let query = '';
-let activeTag: string | null = null;
+import type { TreeNode } from '../types';
+import { TREE } from '../engine';
 
 export function mountBrowse(root: HTMLElement) {
-  root.innerHTML = '';
-
-  // Search
-  const searchWrap = document.createElement('div');
-  searchWrap.className = 'search-wrap';
-  searchWrap.innerHTML = `
-    <input class="search" type="search" placeholder="ค้นหา... (เช่น: Thor, หมา, ต้มยำ)" autocomplete="off" />
-    <span class="search-icon">⌕</span>
+  root.innerHTML = `
+    <div class="search-wrap">
+      <input id="search" type="search" class="search" placeholder="ค้นหา... (เช่น: หมา, ต้มยำ, มาริโอ้)" autocomplete="off">
+      <span class="search-icon">⌕</span>
+    </div>
+    <div class="search-count" id="searchCount"></div>
+    <div class="tree-controls">
+      <button class="action-btn" id="expandAll">เปิดทั้งหมด</button>
+      <button class="action-btn" id="collapseAll">ปิดทั้งหมด</button>
+      <button class="action-btn" id="expand2">เปิด 2 ชั้น</button>
+    </div>
+    <div id="treeRoot"></div>
   `;
-  const input = searchWrap.querySelector<HTMLInputElement>('input')!;
+  const treeRoot = root.querySelector<HTMLDivElement>('#treeRoot')!;
+  treeRoot.appendChild(buildNode(TREE, null));
+
+  root.querySelector<HTMLButtonElement>('#expandAll')!.onclick = () => toggleAll(true);
+  root.querySelector<HTMLButtonElement>('#collapseAll')!.onclick = () => toggleAll(false);
+  root.querySelector<HTMLButtonElement>('#expand2')!.onclick = () => expandLevel(2);
+
+  setupSearch(root);
+}
+
+function buildNode(node: TreeNode, answerLabel: 'yes' | 'no' | null): HTMLElement {
+  if (node.t === 'L') {
+    const el = document.createElement('div');
+    el.className = 'node leaf-node';
+    el.setAttribute('data-searchable', (node.cat + ' ' + node.ex.join(' ')).toLowerCase());
+    el.innerHTML = `
+      <div class="leaf-wrap">
+        <div class="leaf-title">${answerLabel ? `<span class="node-badge ${answerLabel}">${answerLabel === 'yes' ? 'ใช่' : 'ไม่'}</span> ` : ''}${escapeHTML(node.cat)}</div>
+        <div class="chips">${node.ex.map(e => `<span class="chip">${escapeHTML(e)}</span>`).join('')}</div>
+      </div>
+    `;
+    return el;
+  }
+
+  const el = document.createElement('div');
+  el.className = 'node';
+  el.setAttribute('data-searchable', node.q.toLowerCase());
+
+  const head = document.createElement('div');
+  head.className = 'node-head';
+  head.innerHTML = `
+    <span class="node-arrow">▶</span>
+    ${answerLabel ? `<span class="node-badge ${answerLabel}">${answerLabel === 'yes' ? 'ใช่' : 'ไม่'}</span>` : ''}
+    <span class="node-text"><span class="q">${escapeHTML(node.q)}</span></span>
+  `;
+  head.onclick = () => el.classList.toggle('open');
+  el.appendChild(head);
+
+  const body = document.createElement('div');
+  body.className = 'node-body';
+  body.appendChild(buildNode(node.y, 'yes'));
+  body.appendChild(buildNode(node.n, 'no'));
+  el.appendChild(body);
+
+  return el;
+}
+
+function toggleAll(open: boolean) {
+  document.querySelectorAll<HTMLDivElement>('#treeRoot .node').forEach(n => {
+    n.classList.toggle('open', open);
+  });
+}
+function expandLevel(n: number) {
+  toggleAll(false);
+  const walk = (el: Element, depth: number) => {
+    if (depth > n) return;
+    if (el.classList.contains('node')) el.classList.add('open');
+    [...el.children].forEach(c => {
+      const isNode = c.classList.contains('node');
+      walk(c, depth + (isNode ? 1 : 0));
+    });
+  };
+  document.querySelectorAll<HTMLDivElement>('#treeRoot > .node').forEach(n => walk(n, 1));
+}
+
+function setupSearch(root: HTMLElement) {
+  const input = root.querySelector<HTMLInputElement>('#search')!;
+  const countEl = root.querySelector<HTMLDivElement>('#searchCount')!;
   let timer: number | undefined;
   input.addEventListener('input', () => {
     window.clearTimeout(timer);
-    timer = window.setTimeout(() => { query = input.value.trim().toLowerCase(); renderList(list); }, 120);
+    timer = window.setTimeout(() => doSearch(input.value.trim().toLowerCase(), countEl), 150);
   });
-  root.appendChild(searchWrap);
-
-  // Tag filter bar
-  const tagBar = document.createElement('div');
-  tagBar.className = 'browse-tag-bar';
-  const allBtn = document.createElement('button');
-  allBtn.className = 'browse-tag' + (activeTag === null ? ' active' : '');
-  allBtn.textContent = 'ทั้งหมด';
-  allBtn.onclick = () => { activeTag = null; renderTagBar(tagBar); renderList(list); };
-  tagBar.appendChild(allBtn);
-  renderTagBar(tagBar);
-  root.appendChild(tagBar);
-
-  const list = document.createElement('div');
-  root.appendChild(list);
-  renderList(list);
 }
 
-function renderTagBar(tagBar: HTMLElement) {
-  // keep first "all" button, replace rest
-  while (tagBar.children.length > 1) tagBar.removeChild(tagBar.lastChild!);
-  // Show a curated set of quick-filter tags (top-level nature/profession)
-  const quickTags = [
-    'humanoid', 'animal', 'physical', 'abstract',
-    'thai', 'western', 'asian',
-    'entertainment', 'athlete', 'politician',
-    'cartoon', 'superhero', 'video_game',
-    'food', 'fruit', 'brand'
-  ];
-  for (const t of quickTags) {
-    const meta = TAG_META[t];
-    if (!meta) continue;
-    const b = document.createElement('button');
-    b.className = 'browse-tag' + (activeTag === t ? ' active' : '');
-    b.textContent = meta.label;
-    b.onclick = () => { activeTag = activeTag === t ? null : t; renderTagBar(tagBar); renderList(document.querySelector('#browse > div:last-child')!); };
-    tagBar.appendChild(b);
-  }
-  // Update "all" active state
-  const first = tagBar.firstElementChild as HTMLElement;
-  first.classList.toggle('active', activeTag === null);
-}
-
-function renderList(listEl: HTMLElement) {
-  listEl.innerHTML = '';
-  const filtered = filterEntities();
-  if (filtered.length === 0) {
-    listEl.innerHTML = `<div class="callout"><b>ไม่พบ</b> — ลองเปลี่ยนคำค้นหา หรือลบ tag filter</div>`;
+function doSearch(query: string, countEl: HTMLElement) {
+  const nodes = document.querySelectorAll<HTMLDivElement>('#treeRoot .node, #treeRoot .leaf-node');
+  if (!query) {
+    nodes.forEach(n => {
+      n.style.display = '';
+      n.classList.remove('highlight');
+    });
+    toggleAll(false);
+    countEl.textContent = '';
     return;
   }
-
-  // Group by category, sorted by size desc
-  const byCat = new Map<string, Entity[]>();
-  for (const e of filtered) {
-    const arr = byCat.get(e.category) ?? [];
-    arr.push(e);
-    byCat.set(e.category, arr);
-  }
-  const sorted = [...byCat.entries()].sort((a, b) => b[1].length - a[1].length);
-
-  for (const [cat, items] of sorted) {
-    const block = document.createElement('div');
-    block.className = 'cat-block';
-    const h = document.createElement('h4');
-    h.innerHTML = `<span>${escapeHTML(cat)}</span><span class="count">${items.length} รายการ</span>`;
-    block.appendChild(h);
-    const chips = document.createElement('div');
-    chips.className = 'chips';
-    for (const e of items.slice(0, 60)) {
-      const chip = document.createElement('span');
-      chip.className = 'chip';
-      chip.textContent = e.name;
-      chips.appendChild(chip);
+  let matchCount = 0;
+  const matched = new Set<Element>();
+  nodes.forEach(n => {
+    const text = n.getAttribute('data-searchable') || '';
+    if (text.includes(query)) {
+      matched.add(n);
+      matchCount++;
     }
-    if (items.length > 60) {
-      const more = document.createElement('span');
-      more.className = 'chip muted';
-      more.textContent = `+${items.length - 60} อีก`;
-      chips.appendChild(more);
+  });
+  nodes.forEach(n => {
+    const isMatch = matched.has(n);
+    const hasMatchChild = [...n.querySelectorAll('.node, .leaf-node')].some(c => matched.has(c));
+    if (isMatch || hasMatchChild) {
+      n.style.display = '';
+      if (n.classList.contains('node')) n.classList.add('open');
+      if (isMatch) n.classList.add('highlight'); else n.classList.remove('highlight');
+    } else {
+      n.style.display = 'none';
     }
-    block.appendChild(chips);
-    listEl.appendChild(block);
-  }
-
-  const summary = document.createElement('div');
-  summary.className = 'callout small';
-  summary.innerHTML = `พบ <b>${filtered.length.toLocaleString('th-TH')}</b> รายการ จากทั้งหมด ${ENTITIES.length.toLocaleString('th-TH')} • จัดกลุ่ม ${sorted.length} หมวด`;
-  listEl.prepend(summary);
-}
-
-function filterEntities(): Entity[] {
-  let list = ENTITIES;
-  if (activeTag) list = list.filter(e => e.tags.has(activeTag!));
-  if (query) {
-    list = list.filter(e =>
-      e.name.toLowerCase().includes(query) ||
-      e.category.toLowerCase().includes(query)
-    );
-  }
-  return list;
+  });
+  countEl.textContent = `พบ ${matchCount} รายการ`;
 }
 
 function escapeHTML(s: string): string {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 }
-
-// Silence "declared but never used" when tags.ts only re-exports groups
-void entitiesByCategory;
-void TAG_GROUPS;
