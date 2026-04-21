@@ -64,11 +64,74 @@ export const TREE_Q_MAP: Record<string, { yes: string; no?: string }> = {
   'เป็นผลไม้ไทย/เมืองร้อน?':          { yes: 'tropical_fruit' },
   'มีแอลกอฮอล์?':                     { yes: 'alcoholic' },
   'ใหญ่กว่าคนมั้ย?':                   { yes: 'larger_than_person' },
+  'ใหญ่กว่าตัวคน?':                    { yes: 'larger_than_person' },
+  'ใหญ่กว่ามือถือมั้ย?':               { yes: 'larger_than_phone' },
   'ใส่/สวมได้?':                       { yes: 'wearable' },
   'เป็นแบรนด์/บริษัท?':                { yes: 'brand' },
   'เป็นอารมณ์/ความรู้สึก?':            { yes: 'emotion' },
   'เป็นดาราศาสตร์/อวกาศ?':            { yes: 'space' },
-  'ภาคเหนือ?':                        { yes: 'northern' },
+
+  // === Food subtree ===
+  'กินได้มั้ย?':                       { yes: 'food' },
+  'เป็นขนมไทย?':                      { yes: 'thai_sweet' },
+  'เป็นอาหารเอเชีย?':                 { yes: 'asian_cuisine' },
+  'เป็นอาหารญี่ปุ่น?':                 { yes: 'japanese_food' },
+  'เป็นอาหารเกาหลี?':                 { yes: 'korean_food' },
+  'เป็นอาหารจีน?':                    { yes: 'chinese_food' },
+  'เป็นเครื่องดื่ม?':                  { yes: 'drink' },
+  'เป็นผัก?':                         { yes: 'vegetable' },
+
+  // === Places ===
+  'เป็นสถานที่?':                     { yes: 'place' },
+  'อยู่ในประเทศไทย?':                 { yes: 'thai_place' },
+  'อยู่ในกรุงเทพ?':                   { yes: 'bangkok' },
+  'ภาคเหนือ?':                        { yes: 'thai_north' },
+  'ภาคใต้?':                          { yes: 'thai_south' },
+  'เป็นแลนด์มาร์กระดับโลก?':          { yes: 'landmark' },
+  'เป็นประเทศ?':                      { yes: 'country' },
+  'เป็นเมืองใหญ่?':                   { yes: 'city' },
+
+  // === Animals (more specific) ===
+  'เป็นนก?':                          { yes: 'bird' },
+  'เป็นแมลง/อาร์ทโรพอด?':             { yes: 'insect' },
+  'เป็นสัตว์เลื้อยคลาน?':              { yes: 'reptile' },
+  'เป็นดอกไม้?':                      { yes: 'flower' },
+
+  // === Objects ===
+  'ใช้ไฟฟ้า/อิเล็กทรอนิกส์?':           { yes: 'electronic' },
+  'เป็นอุปกรณ์คอม/สื่อสาร?':           { yes: 'it_device' },
+  'อุปกรณ์บันเทิง?':                   { yes: 'entertainment_gear' },
+  'เป็นของใช้ในครัว?':                 { yes: 'kitchen' },
+  'เป็นของใช้ในห้องน้ำ?':              { yes: 'bathroom' },
+  'เป็นเฟอร์นิเจอร์?':                 { yes: 'furniture' },
+  'เป็นเสื้อผ้า?':                     { yes: 'clothing' },
+  'เป็นรองเท้า?':                      { yes: 'shoes' },
+  'เป็นเครื่องประดับ?':                { yes: 'jewelry' },
+  'เป็นเครื่องสำอาง?':                 { yes: 'cosmetic' },
+  'เป็นเครื่องดนตรี?':                 { yes: 'instrument' },
+  'เป็นเครื่องเขียน/ออฟฟิศ?':         { yes: 'stationery' },
+  'เป็นอาวุธ?':                        { yes: 'weapon' },
+  'เป็นยานพาหนะ?':                    { yes: 'vehicle' },
+  'เป็นของเล่น/กีฬา?':                 { yes: 'toy_sport' },
+
+  // === Brand subtypes ===
+  'เป็นแบรนด์เทคโนโลยี?':              { yes: 'tech_brand' },
+  'แบรนด์อาหาร/เครื่องดื่ม?':          { yes: 'food_brand' },
+  'แบรนด์แฟชั่น/กีฬา?':                { yes: 'fashion_brand' },
+  'แบรนด์รถ?':                         { yes: 'car_brand' },
+
+  // === Media ===
+  'เป็นหนัง/ซีรีส์?':                  { yes: 'film_or_show' },
+  'เป็นหนัง?':                         { yes: 'movie' },
+  'เป็นซีรีส์ต่างประเทศ?':             { yes: 'foreign_series' },
+  'เป็นเพลง?':                         { yes: 'song' },
+
+  // === Activity / concept ===
+  'เป็นกีฬา?':                         { yes: 'sport' },
+  'เป็นอาชีพ?':                        { yes: 'profession_noun' },
+  'เป็นปรากฏการณ์ธรรมชาติ?':          { yes: 'natural' },
+  'เป็นเทศกาล/วันสำคัญ?':             { yes: 'festival' },
+  'เทศกาลไทย?':                        { yes: 'thai_festival' },
 };
 
 /**
@@ -181,11 +244,60 @@ export const QUESTIONS: Question[] = [
   { id: 'brand',          text: 'เป็นแบรนด์/บริษัทมั้ย?',             tag: 'brand',   weight: 55 },
 
   // --- Abstract ---
-  { id: 'abstract',       text: 'เป็นนามธรรมมั้ย (จับต้องไม่ได้)?',   tag: 'abstract', weight: 70 },
+  { id: 'abstract',       text: 'เป็นนามธรรมมั้ย (จับต้องไม่ได้)?',   tag: 'abstract', weight: 45 },
   { id: 'emotion',        text: 'เป็นอารมณ์/ความรู้สึกมั้ย?',         tag: 'emotion', weight: 50 },
   { id: 'natural',        text: 'เป็นปรากฏการณ์ธรรมชาติมั้ย?',       tag: 'natural', weight: 50 },
   { id: 'space',          text: 'เกี่ยวกับดาราศาสตร์/อวกาศมั้ย?',    tag: 'space',   weight: 50 },
   { id: 'concept',        text: 'เป็นแนวคิด/นามธรรมอื่นๆ มั้ย?',     tag: 'concept', weight: 45 },
+
+  // --- Places ---
+  { id: 'place',          text: 'เป็นสถานที่มั้ย?',                   tag: 'place',   weight: 85 },
+  { id: 'thai_place',     text: 'อยู่ในประเทศไทยมั้ย?',               tag: 'thai_place', weight: 65 },
+  { id: 'bangkok',        text: 'อยู่ในกรุงเทพมั้ย?',                 tag: 'bangkok', weight: 55 },
+  { id: 'landmark',       text: 'เป็นแลนด์มาร์กระดับโลกมั้ย?',        tag: 'landmark', weight: 65, hint: 'เช่น หอไอเฟล, แกรนด์แคนยอน, ทัชมาฮาล, ภูเขาไฟฟูจิ' },
+  { id: 'country',        text: 'เป็นประเทศมั้ย?',                    tag: 'country', weight: 70 },
+  { id: 'city',           text: 'เป็นเมืองใหญ่มั้ย?',                  tag: 'city',    weight: 60 },
+
+  // --- Food specifics ---
+  { id: 'drink',          text: 'เป็นเครื่องดื่มมั้ย?',                tag: 'drink',   weight: 55 },
+  { id: 'vegetable',      text: 'เป็นผักมั้ย?',                       tag: 'vegetable', weight: 45 },
+  { id: 'asian_cuisine',  text: 'เป็นอาหารเอเชียมั้ย?',               tag: 'asian_cuisine', weight: 50 },
+  { id: 'japanese_food',  text: 'เป็นอาหารญี่ปุ่นมั้ย?',               tag: 'japanese_food', weight: 45 },
+  { id: 'korean_food',    text: 'เป็นอาหารเกาหลีมั้ย?',                tag: 'korean_food',   weight: 45 },
+  { id: 'chinese_food',   text: 'เป็นอาหารจีนมั้ย?',                   tag: 'chinese_food',  weight: 45 },
+
+  // --- Media / work ---
+  { id: 'movie',          text: 'เป็นหนังมั้ย?',                      tag: 'movie',   weight: 65 },
+  { id: 'film_or_show',   text: 'เป็นหนัง/ซีรีส์มั้ย?',               tag: 'film_or_show', weight: 60 },
+  { id: 'foreign_series', text: 'เป็นซีรีส์ต่างประเทศมั้ย?',          tag: 'foreign_series', weight: 50 },
+  { id: 'song',           text: 'เป็นเพลงมั้ย?',                      tag: 'song',    weight: 65 },
+  { id: 'sport',          text: 'เป็นกีฬา (ประเภท) มั้ย?',             tag: 'sport',   weight: 60, hint: 'เช่น ฟุตบอล, เทนนิส — ไม่ใช่นักกีฬา' },
+
+  // --- Objects (detailed) ---
+  { id: 'vehicle',        text: 'เป็นยานพาหนะมั้ย?',                  tag: 'vehicle', weight: 70 },
+  { id: 'clothing',       text: 'เป็นเสื้อผ้ามั้ย?',                  tag: 'clothing', weight: 55 },
+  { id: 'shoes',          text: 'เป็นรองเท้ามั้ย?',                  tag: 'shoes',   weight: 45 },
+  { id: 'furniture',      text: 'เป็นเฟอร์นิเจอร์มั้ย?',              tag: 'furniture', weight: 55 },
+  { id: 'kitchen',        text: 'เป็นของใช้ในครัวมั้ย?',              tag: 'kitchen', weight: 50 },
+  { id: 'bathroom',       text: 'เป็นของใช้ในห้องน้ำมั้ย?',           tag: 'bathroom', weight: 45 },
+  { id: 'instrument',     text: 'เป็นเครื่องดนตรีมั้ย?',              tag: 'instrument', weight: 55 },
+  { id: 'jewelry',        text: 'เป็นเครื่องประดับมั้ย?',             tag: 'jewelry', weight: 45 },
+  { id: 'cosmetic',       text: 'เป็นเครื่องสำอางมั้ย?',              tag: 'cosmetic', weight: 45 },
+  { id: 'stationery',     text: 'เป็นเครื่องเขียน/ของใช้ออฟฟิศมั้ย?', tag: 'stationery', weight: 45 },
+  { id: 'toy_sport',      text: 'เป็นของเล่น/อุปกรณ์กีฬามั้ย?',        tag: 'toy_sport', weight: 50 },
+  { id: 'larger_than_phone', text: 'ใหญ่กว่ามือถือมั้ย?',              tag: 'larger_than_phone', weight: 60 },
+
+  // --- Brand specifics ---
+  { id: 'tech_brand',     text: 'เป็นแบรนด์เทคโนโลยีมั้ย?',           tag: 'tech_brand', weight: 50 },
+  { id: 'food_brand',     text: 'เป็นแบรนด์อาหาร/เครื่องดื่มมั้ย?',  tag: 'food_brand', weight: 45 },
+  { id: 'fashion_brand',  text: 'เป็นแบรนด์แฟชั่น/กีฬามั้ย?',         tag: 'fashion_brand', weight: 45 },
+  { id: 'car_brand',      text: 'เป็นแบรนด์รถมั้ย?',                  tag: 'car_brand', weight: 45 },
+
+  // --- Profession (noun, not person) ---
+  { id: 'profession_noun',text: 'เป็นชื่ออาชีพ (ไม่ใช่คน) มั้ย?',      tag: 'profession_noun', weight: 55, hint: 'เช่น หมอ, ครู — ไม่ใช่คนดังที่เป็นหมอ' },
+
+  // --- Festival ---
+  { id: 'festival',       text: 'เป็นเทศกาล/วันสำคัญมั้ย?',           tag: 'festival', weight: 55 },
 ];
 
 export const QUESTIONS_BY_ID = new Map(QUESTIONS.map(q => [q.id, q]));

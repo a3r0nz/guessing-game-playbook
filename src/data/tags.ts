@@ -94,12 +94,56 @@ export const TAG_META: Record<string, TagMeta> = {
   space:         { label: 'ดาราศาสตร์/อวกาศ',       group: 'abstract' },
   concept:       { label: 'แนวคิด/นามธรรมอื่น',      group: 'abstract' },
 
-  // ===== Regional =====
-  northern:      { label: 'ภาคเหนือ',                group: 'regional' },
+  // ===== Regional / Places =====
+  place:          { label: 'สถานที่',                group: 'place' },
+  thai_place:     { label: 'สถานที่ในไทย',           group: 'place' },
+  bangkok:        { label: 'กรุงเทพ',                group: 'place' },
+  thai_north:     { label: 'ภาคเหนือ',               group: 'place' },
+  thai_south:     { label: 'ภาคใต้',                 group: 'place' },
+  landmark:       { label: 'แลนด์มาร์กโลก',          group: 'place' },
+  country:        { label: 'ประเทศ',                 group: 'place' },
+  city:           { label: 'เมืองใหญ่',              group: 'place' },
 
   // ===== Extras inferred from category names =====
-  flower:        { label: 'ดอกไม้',                 group: 'plant' },
-  movie:         { label: 'หนัง',                   group: 'media' },
+  flower:         { label: 'ดอกไม้',                 group: 'plant' },
+  movie:          { label: 'หนัง',                   group: 'media' },
+  film_or_show:   { label: 'หนัง/ซีรีส์',            group: 'media' },
+  foreign_series: { label: 'ซีรีส์ต่างประเทศ',        group: 'media' },
+  song:           { label: 'เพลง',                   group: 'media' },
+  sport:          { label: 'กีฬา (ประเภท)',          group: 'media' },
+  profession_noun:{ label: 'อาชีพ (ชื่อ)',           group: 'profession' },
+  festival:       { label: 'เทศกาล/วันสำคัญ',        group: 'abstract' },
+  thai_festival:  { label: 'เทศกาลไทย',              group: 'abstract' },
+
+  // ===== Food subtypes =====
+  drink:          { label: 'เครื่องดื่ม',             group: 'food' },
+  vegetable:      { label: 'ผัก',                    group: 'food' },
+  thai_sweet:     { label: 'ขนมไทย',                 group: 'food' },
+  asian_cuisine:  { label: 'อาหารเอเชีย',            group: 'food' },
+  japanese_food:  { label: 'อาหารญี่ปุ่น',            group: 'food' },
+  korean_food:    { label: 'อาหารเกาหลี',             group: 'food' },
+  chinese_food:   { label: 'อาหารจีน',               group: 'food' },
+
+  // ===== Object subtypes =====
+  larger_than_phone: { label: 'ใหญ่กว่ามือถือ',      group: 'object' },
+  vehicle:        { label: 'ยานพาหนะ',               group: 'object' },
+  clothing:       { label: 'เสื้อผ้า',                group: 'object' },
+  shoes:          { label: 'รองเท้า',                 group: 'object' },
+  furniture:      { label: 'เฟอร์นิเจอร์',            group: 'object' },
+  kitchen:        { label: 'ของใช้ในครัว',           group: 'object' },
+  bathroom:       { label: 'ของใช้ในห้องน้ำ',        group: 'object' },
+  instrument:     { label: 'เครื่องดนตรี',            group: 'object' },
+  jewelry:        { label: 'เครื่องประดับ',           group: 'object' },
+  cosmetic:       { label: 'เครื่องสำอาง',            group: 'object' },
+  stationery:     { label: 'เครื่องเขียน/ออฟฟิศ',    group: 'object' },
+  toy_sport:      { label: 'ของเล่น/อุปกรณ์กีฬา',    group: 'object' },
+  entertainment_gear:{ label: 'อุปกรณ์บันเทิง',      group: 'object' },
+
+  // ===== Brand subtypes =====
+  tech_brand:     { label: 'แบรนด์เทค',              group: 'object' },
+  food_brand:     { label: 'แบรนด์อาหาร',            group: 'object' },
+  fashion_brand:  { label: 'แบรนด์แฟชั่น',            group: 'object' },
+  car_brand:      { label: 'แบรนด์รถ',               group: 'object' },
 };
 
 export const TAG_GROUPS: Record<string, { label: string; order: number }> = {
@@ -114,6 +158,6 @@ export const TAG_GROUPS: Record<string, { label: string; order: number }> = {
   plant:      { label: 'พืช',            order: 9 },
   food:       { label: 'อาหาร',          order: 10 },
   object:     { label: 'สิ่งของ',        order: 11 },
-  abstract:   { label: 'นามธรรม',        order: 12 },
-  regional:   { label: 'ภูมิภาค',         order: 13 },
+  place:      { label: 'สถานที่',         order: 12 },
+  abstract:   { label: 'นามธรรม',        order: 13 },
 };

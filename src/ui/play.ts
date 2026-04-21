@@ -46,7 +46,12 @@ export function renderPlay(root: HTMLElement) {
   }
 
   // Candidates visible?
-  if (frame.candidates.length <= CANDIDATE_REVEAL_THRESHOLD) {
+  // - Always if narrowed below threshold
+  // - Also when engine runs out of useful questions, regardless of count
+  const shouldShowCandidates =
+    frame.candidates.length <= CANDIDATE_REVEAL_THRESHOLD ||
+    !frame.nextQuestion;
+  if (shouldShowCandidates) {
     root.appendChild(candidatesBlock(frame.scored, frame.candidates.length <= GUESS_PROMPT_THRESHOLD));
   }
 
@@ -132,12 +137,14 @@ function answerButtons(questionId: string): HTMLElement {
 function candidatesBlock(scored: ReturnType<typeof computeFrame>['scored'], prominent: boolean): HTMLElement {
   const d = document.createElement('div');
   d.className = 'candidates';
-  const top = scored.slice(0, prominent ? 15 : 30);
+  const limit = prominent ? 15 : 40;
+  const top = scored.slice(0, limit);
+  const total = scored.length;
   d.innerHTML = `
-    <h3>🎯 ${prominent ? 'ใกล้เดาได้แล้ว — เลือกเลย' : 'เข้าวินแคบลงแล้ว'}</h3>
+    <h3>🎯 ${prominent ? 'ใกล้เดาได้แล้ว — เลือกเลย' : 'ตัวเลือกที่เป็นไปได้'}</h3>
     <div class="desc">${prominent
-      ? 'แตะชื่อที่คิดว่าใช่ หรือ ตอบคำถามต่อไปเพื่อกรองต่อ'
-      : 'เรียงตามความนิยม — ถ้าเห็นคำตอบแล้ว แตะเพื่อเดา'}
+      ? 'แตะชื่อที่คิดว่าใช่ หรือตอบคำถามต่อไปเพื่อกรองต่อ'
+      : `เรียงตามความนิยม — แสดง ${Math.min(limit, total).toLocaleString('th-TH')}/${total.toLocaleString('th-TH')} รายการ`}
     </div>
   `;
   const chips = document.createElement('div');
@@ -148,6 +155,12 @@ function candidatesBlock(scored: ReturnType<typeof computeFrame>['scored'], prom
     chip.innerHTML = `<span class="chip-cat">${escapeHTML(shortCat(sc.entity.category))}</span>${escapeHTML(sc.entity.name)}`;
     chip.onclick = () => guess(sc.entity.name);
     chips.appendChild(chip);
+  }
+  if (total > limit) {
+    const more = document.createElement('span');
+    more.className = 'chip muted';
+    more.textContent = `+${(total - limit).toLocaleString('th-TH')} อีก`;
+    chips.appendChild(more);
   }
   d.appendChild(chips);
   return d;

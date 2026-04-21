@@ -60,8 +60,10 @@ export function pickNextQuestion(
     // 0 when all same answer, 1 when perfect 50/50
     const balance = 1 - Math.abs(yesCount - noCount) / candidates.length;
     if (balance < 0.05) continue; // question adds nothing
-    // combine with weight — higher weight = earlier, but balance dominates
-    const gain = balance * 0.8 + (q.weight / 100) * 0.2;
+    // Combine balance (how well it splits) with human-assigned weight.
+    // Higher weight → ask earlier (fundamental questions like "living?").
+    // Balance still matters but weight is a strong nudge so openers feel natural.
+    const gain = balance * 0.6 + (q.weight / 100) * 0.4;
     scored.push({ question: q, gain, yesCount, noCount });
   }
 
