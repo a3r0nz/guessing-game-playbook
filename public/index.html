@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f1419">
+<title>อะไรอยู่บนหัวกูวะ — คู่มือตั้งคำถาม</title>
+<style>
+  :root{
+    --bg:#0b0f16;
+    --bg2:#0f1419;
+    --panel:#161c28;
+    --panel2:#1f2735;
+    --border:#2a3548;
+    --text:#e8edf5;
+    --muted:#8a95ab;
+    --accent:#7aa2f7;
+    --accent2:#9ece6a;
+    --warn:#e0af68;
+    --danger:#f7768e;
+    --purple:#bb9af7;
+    --cyan:#7dcfff;
+    --shadow:0 8px 24px rgba(0,0,0,0.4);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;overflow-x:hidden}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Sarabun','Noto Sans Thai','Segoe UI',system-ui,-apple-system,sans-serif;
+    line-height:1.6;
+    font-size:16px;
+    min-height:100vh;
+    min-height:100dvh;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+  /* ======= HEADER ======= */
+  header{
+    padding:20px 16px 16px;
+    text-align:center;
+    background:linear-gradient(180deg,rgba(122,162,247,0.08),transparent);
+    border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:blur(12px);
+    background-color:rgba(11,15,22,0.85);
+  }
+  header h1{
+    margin:0 0 4px;
+    font-size:19px;
+    font-weight:800;
+    background:linear-gradient(90deg,#7aa2f7,#bb9af7,#7dcfff);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  header .tag{color:var(--muted);font-size:12px}
+
+  /* ======= TABS ======= */
+  .tabs{
+    display:flex;
+    background:var(--panel);
+    border-radius:12px;
+    padding:4px;
+    margin:12px auto 0;
+    max-width:420px;
+    gap:4px;
+  }
+  .tab{
+    flex:1;
+    padding:10px 8px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--muted);
+    transition:all .15s;
+    text-align:center;
+    min-height:40px;
+  }
+  .tab.active{
+    background:var(--accent);
+    color:#0b0f16;
+    box-shadow:0 2px 6px rgba(122,162,247,0.3);
+  }
+
+  /* ======= LAYOUT ======= */
+  main{
+    max-width:800px;
+    margin:0 auto;
+    padding:16px;
+    padding-bottom:120px;
+  }
+  .pane{display:none}
+  .pane.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* ======= QUIZ MODE ======= */
+  .quiz-progress{
+    height:6px;
+    background:var(--panel);
+    border-radius:3px;
+    overflow:hidden;
+    margin-bottom:16px;
+  }
+  .quiz-progress-bar{
+    height:100%;
+    background:linear-gradient(90deg,var(--accent),var(--purple));
+    transition:width .35s;
+  }
+  .breadcrumb{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:14px;
+    min-height:28px;
+  }
+  .crumb{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    padding:4px 10px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .crumb.yes{border-color:rgba(158,206,106,0.4);color:var(--accent2)}
+  .crumb.no{border-color:rgba(247,118,142,0.4);color:var(--danger)}
+  .crumb b{color:var(--text)}
+
+  .question-card{
+    background:linear-gradient(135deg,var(--panel),var(--panel2));
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:24px 20px;
+    margin-bottom:16px;
+    box-shadow:var(--shadow);
+    text-align:center;
+    min-height:160px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+  }
+  .question-step{
+    color:var(--muted);
+    font-size:12px;
+    letter-spacing:1px;
+    margin-bottom:8px;
+    text-transform:uppercase;
+  }
+  .question-text{
+    font-size:22px;
+    font-weight:700;
+    line-height:1.4;
+    margin:0 0 8px;
+  }
+  .question-hint{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:6px;
+  }
+
+  .answer-buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .answer-btn{
+    padding:18px 14px;
+    border-radius:var(--radius);
+    font-size:17px;
+    font-weight:700;
+    min-height:60px;
+    transition:transform .1s, box-shadow .15s;
+    border:2px solid transparent;
+  }
+  .answer-btn:active{transform:scale(0.97)}
+  .answer-btn.yes{
+    background:linear-gradient(135deg,#9ece6a,#73a857);
+    color:#0b0f16;
+    box-shadow:0 4px 12px rgba(158,206,106,0.3);
+  }
+  .answer-btn.no{
+    background:linear-gradient(135deg,#f7768e,#c95b70);
+    color:#fff;
+    box-shadow:0 4px 12px rgba(247,118,142,0.3);
+  }
+  .answer-btn.maybe{
+    grid-column:1/-1;
+    background:var(--panel);
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:14px;
+    min-height:44px;
+    padding:10px;
+  }
+
+  .action-row{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin-top:12px;
+    flex-wrap:wrap;
+  }
+  .action-btn{
+    padding:10px 16px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    font-size:13px;
+    color:var(--muted);
+    min-height:40px;
+  }
+  .action-btn:hover,.action-btn:active{color:var(--accent);border-color:var(--accent)}
+
+  /* ======= RESULT ======= */
+  .result-card{
+    background:linear-gradient(135deg,rgba(158,206,106,0.15),rgba(122,162,247,0.1));
+    border:2px solid rgba(158,206,106,0.35);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:16px;
+    box-shadow:var(--shadow);
+  }
+  .result-card h3{
+    margin:0 0 4px;
+    font-size:13px;
+    color:var(--accent2);
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .result-card .cat-name{
+    font-size:22px;
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  .result-card .cat-desc{color:var(--muted);font-size:13px;margin-bottom:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{
+    display:inline-block;
+    padding:6px 12px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    font-size:13.5px;
+    color:var(--text);
+    transition:all .15s;
+  }
+  .chip:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* ======= TREE MODE ======= */
+  .search-wrap{
+    position:relative;
+    margin-bottom:12px;
+  }
+  .search{
+    width:100%;
+    padding:12px 40px 12px 16px;
+    font-size:15px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:var(--text);
+    min-height:44px;
+    outline:none;
+    font-family:inherit;
+  }
+  .search:focus{border-color:var(--accent)}
+  .search-icon{
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    color:var(--muted);pointer-events:none;font-size:16px;
+  }
+  .search-count{
+    font-size:12px;color:var(--muted);
+    margin-bottom:8px;text-align:right;
+    min-height:16px;
+  }
+
+  .tree-controls{
+    display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;
+  }
+  .tree-controls .action-btn{font-size:12px;padding:8px 12px}
+
+  .node{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    margin-bottom:6px;
+    overflow:hidden;
+    transition:border-color .15s;
+  }
+  .node.highlight{border-color:var(--warn);box-shadow:0 0 0 2px rgba(224,175,104,0.2)}
+  .node-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    cursor:pointer;
+    min-height:48px;
+    user-select:none;
+  }
+  .node-head:active{background:var(--panel2)}
+  .node-arrow{
+    width:16px;height:16px;
+    flex-shrink:0;
+    color:var(--accent);
+    transition:transform .2s;
+    font-size:11px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .node.open>.node-head>.node-arrow{transform:rotate(90deg)}
+  .node-text{flex:1;font-size:14.5px;font-weight:500}
+  .node-text .q{color:var(--cyan)}
+  .node-badge{
+    font-size:10px;
+    padding:2px 7px;
+    border-radius:10px;
+    background:var(--panel2);
+    color:var(--muted);
+    border:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .node-badge.yes{color:var(--accent2);border-color:rgba(158,206,106,0.4)}
+  .node-badge.no{color:var(--danger);border-color:rgba(247,118,142,0.4)}
+  .node-body{
+    display:none;
+    padding:4px 14px 12px;
+    border-top:1px solid var(--border);
+    background:var(--bg2);
+  }
+  .node.open>.node-body{display:block}
+  .node-body .node{margin:6px 0 6px 0}
+
+  .leaf-wrap{padding:10px 14px 14px}
+  .leaf-title{
+    color:var(--accent2);
+    font-weight:600;
+    font-size:14px;
+    margin-bottom:8px;
+  }
+
+  /* ======= STRATEGY ======= */
+  .strat-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-left:4px solid var(--purple);
+    border-radius:10px;
+    padding:14px 16px;
+    margin-bottom:10px;
+  }
+  .strat-card h4{
+    margin:0 0 4px;
+    color:var(--purple);
+    font-size:15px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .strat-card .num{
+    background:var(--purple);
+    color:#0b0f16;
+    width:22px;height:22px;
+    border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:700;
+  }
+  .strat-card p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55}
+
+  .trap-card{
+    background:rgba(247,118,142,0.06);
+    border:1px solid rgba(247,118,142,0.25);
+    border-left:4px solid var(--danger);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-bottom:8px;
+  }
+  .trap-card b{color:var(--danger)}
+  .trap-card small{color:var(--muted);display:block;margin-top:4px;font-size:12.5px}
+
+  h2{
+    font-size:17px;
+    margin:20px 0 10px;
+    padding-left:10px;
+    border-left:3px solid var(--accent);
+    color:#fff;
+  }
+  h2:first-child{margin-top:0}
+
+  .callout{
+    background:linear-gradient(135deg,rgba(122,162,247,0.1),rgba(187,154,247,0.06));
+    border:1px solid rgba(122,162,247,0.3);
+    padding:14px 16px;
+    border-radius:10px;
+    margin-bottom:14px;
+    font-size:13.5px;
+    color:var(--muted);
+  }
+  .callout b{color:var(--text)}
+
+  /* ======= RESPONSIVE ======= */
+  @media (min-width:640px){
+    header h1{font-size:22px}
+    main{padding:20px}
+    .question-text{font-size:26px}
+    .answer-btn{font-size:18px;min-height:68px}
+  }
+  @media (min-width:960px){
+    main{padding:24px 32px}
+    .answer-buttons{max-width:560px;margin:0 auto 10px}
+    .question-card{padding:32px 24px;min-height:200px}
+  }
+
+  /* Hide scrollbars in tree mode */
+  .node-body::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>อะไรอยู่บนหัวกูวะ</h1>
+  <div class="tag">คู่มือตั้งคำถามแบบ Binary Search</div>
+  <nav class="tabs">
+    <button class="tab active" data-pane="quiz">เล่นเกม</button>
+    <button class="tab" data-pane="tree">ต้นไม้</button>
+    <button class="tab" data-pane="tips">เทคนิค</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ========== QUIZ PANE ========== -->
+  <section id="quiz" class="pane active">
+    <div class="callout">
+      <b>วิธีใช้:</b> สมมติว่าคุณเป็นคนถาม กดตอบ "ใช่/ไม่ใช่" ตามสิ่งที่คุณคิดว่าคำตอบน่าจะเป็น จะค่อยๆ แคบลงจนได้หมวดที่น่าจะตรง พร้อมตัวอย่างคำตอบ
+    </div>
+
+    <div class="quiz-progress">
+      <div class="quiz-progress-bar" id="progressBar" style="width:0%"></div>
+    </div>
+
+    <div class="breadcrumb" id="breadcrumb"></div>
+
+    <div id="quizBody"></div>
+
+    <div class="action-row">
+      <button class="action-btn" onclick="goBack()" id="backBtn" style="display:none">← ย้อนกลับ</button>
+      <button class="action-btn" onclick="resetQuiz()">↻ เริ่มใหม่</button>
+      <button class="action-btn" onclick="switchTo('tree')">ดูต้นไม้ทั้งหมด</button>
+    </div>
+  </section>
+
+  <!-- ========== TREE PANE ========== -->
+  <section id="tree" class="pane">
+    <div class="search-wrap">
+      <input id="search" type="search" class="search" placeholder="ค้นหา... (เช่น: หมา, ต้มยำ, มาริโอ้)" autocomplete="off">
+      <span class="search-icon">⌕</span>
+    </div>
+    <div class="search-count" id="searchCount"></div>
+
+    <div class="tree-controls">
+      <button class="action-btn" onclick="expandAll()">เปิดทั้งหมด</button>
+      <button class="action-btn" onclick="collapseAll()">ปิดทั้งหมด</button>
+      <button class="action-btn" onclick="expandLevel(2)">เปิด 2 ชั้น</button>
+    </div>
+
+    <div id="treeRoot"></div>
+  </section>
+
+  <!-- ========== TIPS PANE ========== -->
+  <section id="tips" class="pane">
+    <h2>5 คำถามทองเปิดเกม</h2>
+    <div class="strat-card"><h4><span class="num">1</span>เป็นสิ่งมีชีวิต/ตัวละครมั้ย?</h4><p>แบ่งโลกออกเป็น entity (คน/สัตว์/ตัวการ์ตูน) vs thing (ของ/สถานที่/นามธรรม)</p></div>
+    <div class="strat-card"><h4><span class="num">2</span>เป็นคนมั้ย?</h4><p>ถ้าใช่ → ไปสายบุคคล/ตัวละคร; ถ้าไม่ → สัตว์/พืช (ถ้าเป็น entity)</p></div>
+    <div class="strat-card"><h4><span class="num">3</span>เป็นของไทยมั้ย?</h4><p>ตัดฝั่งต่างประเทศออก 50%+ — รายการไทยมักเอียงไปทางคนไทย/สิ่งที่คนไทยรู้จัก</p></div>
+    <div class="strat-card"><h4><span class="num">4</span>เป็นเรื่องจริง หรือ สมมติ?</h4><p>คนจริง vs การ์ตูน/ตัวละคร — ใช้แยกเร็วก่อนเจาะลึก</p></div>
+    <div class="strat-card"><h4><span class="num">5</span>คนทั่วไปรู้จักมั้ย?</h4><p>ถ้าใช่ → เดาจากคนดังระดับชาติได้เลย ไม่ต้องเดา niche</p></div>
+
+    <h2>เทคนิคขั้นสูง</h2>
+    <div class="strat-card"><h4>Binary Search</h4><p>คำถามที่ดีต้องตัดออก 50/50 อย่าถามสิ่งที่คำตอบแทบชัวร์อยู่แล้ว</p></div>
+    <div class="strat-card"><h4>กว้าง → แคบ</h4><p>ถามหมวดใหญ่ก่อน ค่อยเจาะ อย่ากระโดดเดาชื่อเร็ว</p></div>
+    <div class="strat-card"><h4>Rule of Three</h4><p>ได้ "ไม่" 3 ครั้งติด → สมมติฐานน่าจะผิด เปลี่ยนกิ่ง</p></div>
+    <div class="strat-card"><h4>Age/Era Filter</h4><p>"อยู่ในยุคปัจจุบัน?" / "อายุเกิน 40 มั้ย?" ตัดประวัติศาสตร์/รุ่นเก่าออกไว</p></div>
+    <div class="strat-card"><h4>Anchor Example</h4><p>โยนตัวอย่างใกล้ๆ "คล้าย X มั้ย?" ให้ยืนยัน/ปฏิเสธเร็วกว่าอธิบายคุณสมบัติ</p></div>
+    <div class="strat-card"><h4>Elimination Memory</h4><p>จำ "สิ่งที่ไม่ใช่" ทุกข้อ — อย่าถามซ้ำ และจะวาดภาพคำตอบจริงจาก by-product ได้</p></div>
+    <div class="strat-card"><h4>อ่านสีหน้า</h4><p>สังเกตคนตอบ หัวเราะ/ลังเล = มาถูก, เงียบ = หลงทาง</p></div>
+    <div class="strat-card"><h4>Compound Question</h4><p>ถ้ากติกาอนุญาต ถาม 2-in-1 เช่น "ผู้ชายไทยในบันเทิง?" — ระวังคำตอบกำกวม</p></div>
+    <div class="strat-card"><h4>Time Pressure</h4><p>เวลาเหลือน้อย → เดาชื่อ popular สุดในกิ่งที่เหลือ ดีกว่าคิดต่อ</p></div>
+
+    <h2>กับดักที่ต้องระวัง</h2>
+    <div class="trap-card"><b>ถามเจาะเร็วเกินไป</b><small>"เป็นนักร้องมั้ย?" ตั้งแต่คำถามแรก — ยังไม่รู้เลยว่าเป็นคนจริงรึเปล่า</small></div>
+    <div class="trap-card"><b>เดาชื่อเร็วเกินไป</b><small>เหลือความเป็นไปได้ 10+ คน แล้วเดาสุ่ม โอกาสผิดสูงมาก</small></div>
+    <div class="trap-card"><b>คำถามกำกวม</b><small>"สีน้ำเงินมั้ย?" — ตีความได้หลายแบบ คนตอบอาจลังเล</small></div>
+    <div class="trap-card"><b>ล็อกสมองกับ mindset เดียว</b><small>คิดว่า "ต้องเป็นดารา" ทั้งที่จริงเป็นของกิน</small></div>
+    <div class="trap-card"><b>ไม่ฟังเบาะแสข้างเคียง</b><small>คนอื่นให้ hint นอกคำถาม (ยิ้ม, ท่าทาง) แต่มัวถามไม่สังเกต</small></div>
+    <div class="trap-card"><b>ถามซ้ำโดยไม่รู้ตัว</b><small>ลืมว่าเพิ่งถามคล้ายๆ กัน เสียเทิร์นฟรี — จำ breadcrumb ให้ดี</small></div>
+  </section>
+
+</main>
+
+<script>
+  // ========== DATA STRUCTURE ==========
+  // q(question, yes-branch, no-branch, hint)
+  // L(category-name, [examples...], description)
+  const q = (text, yes, no, hint) => ({t:'q', q:text, y:yes, n:no, h:hint||''});
+  const L = (cat, ex, desc) => ({t:'L', cat, ex, desc:desc||''});
+
+  const TREE = q("เป็นสิ่งมีชีวิตหรือตัวละครมั้ย?",
+    // ====== YES: LIVING / CHARACTER ======
+    q("เป็นคนหรือตัวละคร(รูปคน)มั้ย?",
+      // YES: Person/Character
+      q("เป็นคนจริง (ไม่ใช่การ์ตูน/สมมติ) มั้ย?",
+        // YES: Real person
+        q("เป็นคนไทยมั้ย?",
+          // YES: Thai
+          q("ยังมีชีวิตอยู่มั้ย?",
+            // Alive
+            q("อยู่ในวงการบันเทิงมั้ย?",
+              // Entertainment
+              q("เป็นผู้หญิงมั้ย?",
+                // Female
+                q("เป็นนักแสดงเป็นหลักมั้ย?",
+                  L("ดาราหญิงไทย",
+                    ["ญาญ่า อุรัสยา","เบลล่า ราณี","ใหม่ ดาวิกา","มิว นิษฐา","เจนี่ เทียนโพธิ์สุวรรณ","มิ้นต์ ชาลิดา","คิม คิมเบอร์ลี่","เบเบ้ ธันย์ชนก","เอสเธอร์ สุปรีย์ลีลา","แพตตี้ อังศุมาลิน","ไอซ์ ปรีชญา","แต้ว ณฐพร","เจี๊ยบ โสภิตนภา","อั้ม พัชราภา","แพนเค้ก เขมนิจ","แอน ทองประสม","นุ่น วรนุช","อารยา อัษฎาวุธ (ชมพู่)","วิโอเลต วอเทียร์","มิ้นท์ ณัฐวรา","หลิงหลิง","ออม กรณ์นภัส","เจนนี่ ได้หมดถ้าสดชื่น","จูเน่ เพลินพิชญา","พลอย ชิดจันทร์","แพรวา สุธรรมพงษ์","ลูกเกด เมทินี","พลอย เฌอมาลย์","ซาร่า เล็กจ์","แนท อนิพรณ์","แพท ณปภา","ปุ๊กลุก ฝนทิพย์","ทราย เจริญปุระ","กุ๊บกิ๊บ สุมณทิพย์","ซาบีน่า ริชมันด์","พัตเตอร์ (สายดาร์ก)","หนูน้อย กานต์พิชชา"],
+                    "นักแสดงละคร/ภาพยนตร์หญิง"),
+                  q("เป็นนักร้องเป็นหลักมั้ย?",
+                    L("นักร้องหญิงไทย",["ดา เอ็นโดรฟิน","ปนัดดา เรืองวุฒิ","โบ สุนิตา","Ink Waruntorn","ต่าย อรทัย","มาช่า วัฒนพานิช","อิ้งค์ วรันธร","พลอยชมพู","MILLI","ลุลา","ลูกปัด ไพลิน","แพรวา","เจนนิเฟอร์ คิ้ม","ปาล์มมี่","ตู่ นันทิดา","ใหม่ เจริญปุระ","อ๊อฟ ปองศักดิ์ (ดูโอ)","แก้ม วิชญาณี","แพรว คณิตกุล","พลอยใส จันทกานต์","โบ ปิ่นปินัทธ์","โบว์ลิ่ง ปริศนา","แจ้ ดนุพล","PUN","เจนนิเฟอร์ Zai","ลิลลี่ ได้หมดถ้าสดชื่น","ตรัย ภูมิรัตน์ (ตุ่ย AF)","ปราง กัญญ์ณรัณ","มิ้นท์ เพลงพินอิน","แอนนา จิน","Jannine Weigel","Violette Wautier","Gym and Swim","TILLY BIRDS","Slot Machine (วงชาย)","POLYCAT (วง)"]),
+                    q("เป็น Influencer/YouTuber มั้ย?",
+                      L("อินฟลูฯ หญิง",["ฮาย ปวีณสุดา","พาย ณฐมน","ไข่มุก รุ่งรัตน์","ทับทิม","น้องฉัตร","แพท พาวเวอร์แพท","โอปอล์ สุชาตา (Miss Universe)","ลิซ่า BLACKPINK","แอมเบอร์ มิกซ์","มะเหมี่ยว (Nontachai)","บี เดอะดริฟเตอร์","ยิปซี คีรติ","ซอ พิชชานันท์","มีน นิชา","ฟิล์ม ธนภัทร","ญาญ่าญิ๋ง รจนภัทร","เหมือนฝัน Meanfun","ซาร่า คาซิงกินี","สิตางค์ เพลนิช"]),
+                      q("เป็น T-Pop ไอดอล/กลุ่มมั้ย?",
+                        L("T-Pop ไอดอลหญิง",["BNK48 (เฌอปราง, มิวสิค, ปัญ, จ๋า, เจนนิษฐ์, ไข่มุก, น้ำหนึ่ง)","CGM48 (อิซึรินะ, ปัญ, นิว)","4EVE (Lita, BamBi, Nanan, Nann, Beam, Mei)","Pretzelle","Trinity (หญิง)","ATLAS (หญิง)","Brandnew (BBIIBB)","PiXXiE (ชาล็อตต์ ออสติน)","DVI","LYRA","Rookie BKK","LAZ1 (แพรวา, ไอดอล)","Reboot Lab","FEARS","CANDY (ลัลลาเบล)"]),
+                        L("พิธีกร/นางแบบ/ตลกหญิง",["กาละแมร์","อั้ม พัชราภา","หนูเล็ก ก่อนบ่าย","เปรี้ยว ทัศนา","คะน้า ริญญารัตน์","อรอนงค์ ปัญญาวงศ์","ปู มัณฑนา","แหม่ม จินตหรา","นุ้ย เชิญยิ้ม","ต่าย เพ็ญพักตร์","ดีเจ.ดาด้า","ดีเจ.บุ๊คโกะ","กี้ อริสรา","ซูซี่ สุษิรา","ชมพู่ ก่อนบ่าย","พิ้งกี้ สาวิกา","มาเรียม","ป๋อมแป๋ม เทยเที่ยวไทย","เจนนี่ ปาหนัน","กระแต ศุภักษร","หญิง รฐา","อนันดา เอเวอริ่งแฮม (ไม่ใช่ แต่ยกตัวอย่าง)","ทราย สก็อต","ครีม เปรมสินี"]))))),
+                // Male
+                q("เป็นนักแสดงเป็นหลักมั้ย?",
+                  L("ดาราชายไทย",
+                    ["มาริโอ้ เมาเร่อ","หมาก ปริญ","บอย พิษณุ","ณเดชน์ คูกิมิยะ","โป๊ป ธนวรรธน์","เจมส์ จิรายุ","ไบร์ท วชิรวิชญ์","วิน เมธวิน","กันต์ กันตถาวร","มิว ศุภศิษฏ์","ติ๊ก เจษฎาภรณ์","พีเค ปิยะวัฒน์","เวียร์ ศุกลวัฒน์","อั้ม อธิชาติ","ตูน บอดี้สแลม (แสดง)","ฟิล์ม ธนภัทร","นาย ณภัทร","ต่อ ธนภพ","โตโน่ ภาคิน","ก๊อต จิรายุ","ปั้นจั่น ปรมะ","มาริโอ้ เมาเร่อ","ออฟ จุมพล","กันต์ ออฟโรด","ฟลุค เกริกพล","โอบ โอบนิธิ","ภูภูมิ พงศ์ภาณุ","ไบร์ท พิชญทัฬห์","ซี พฤกษ์","นุนิว ชวรินทร์","พีพี กฤษฏ์","บิวกิ้น พุฒิพงศ์","เอฟ ฐิติพงศ์","เจฟ ซาเตอร์","ต้น จักรกฤษณ์","โดม ปกรณ์ ลัม","เผือก พงศธร","คิมเบอร์ลีย์ (ไม่ใช่ ตัดออก)","ปีเตอร์ คอร์ป","ธีรเดช วงศ์พัวพันธ์","ศรราม เทพพิทักษ์"]),
+                  q("เป็นนักร้อง/แร็ปเปอร์มั้ย?",
+                    L("นักร้องชายไทย",["เบิร์ด ธงไชย","ป้าง นครินทร์","สิงโต นำโชค","YOUNGOHM","UrboyTJ","F.HERO","Stamp อภิวัชร์","ปู่จ๋าน ลองไมค์","NONT TANONT","Phum Viphurit","ตูน บอดี้สแลม","โป่ง หินเหล็กไฟ","แอ๊ด คาราบาว","เสก โลโซ","เจ เจตริน","มอส ปฏิภาณ","บี้ สุกฤษฎิ์","ปีเตอร์ คอร์ป","ตู่ ภพธร","ก้อง สหรัถ","แดน วรเวช","เบน ชลาทิศ","Ben Chalatit","DaBoyWay","Three Man Down","Tilly Birds","The TOYS","Gavin.D","Getsunova","Silly Fools","Potato","Labanoon","Bodyslam","Big Ass","Clash","Klear","Cocktail","Scrubb","Slot Machine","DABOYWAY","MILLI (ไม่ใช่ เป็นหญิง-ตัดออก)","Milli, Lazyloxy","Diamond MQT","VKL","Young Bong","SPRITE","BUDOKAN","เป๊ก ผลิตโชค","ลุลา (ไม่ใช่ชาย-ตัดออก)","แหนม รณเดช"]),
+                    q("เป็น YouTuber/คอนเทนต์ครีเอเตอร์?",
+                      L("YouTuber ชาย",["บี้ เดอะสกา","พี่เอ็ด 7 วิ","โหน่ง ชะชะช่า","พีช พชร","หลวงพี่แจ็ส","กายวิทย์","เอิ๊ก เอ็ด","พิมฐา (ไม่ใช่ ตัดออก)","บังฮาซัน","ซุปตาร์แฟมิลี่","วงศ์ทนง (The Cloud)","ดิว อริสรา (ไม่ใช่)","พี่จอง คัลแลน","ZBING Z.","Heartrocker","Cholito","My Mate Nate","เฟื่องลดา (ไม่ใช่)","เจ้าขุน ขุนพล","เนเน่ พรนับพัน (ไม่ใช่)","แบงค์ กอไผ่","Bryan Tan","Point Of View (ไม่ใช่)","วีกัส VRZO","ท็อป ณัฐเศรษฐ","ดาต้า ลิฟวิ่ง","Salmon House","Xponentiall","อาฟเตอร์สคูล","ชิป ดิอาน่า"]),
+                      L("พิธีกร/ตลก/อื่นๆ ชาย",["หนุ่ม กรรชัย","วู้ดดี้","ปัญญา นิรันดร์กุล","หม่ำ จ๊กมก","เท่ง เถิดเทิง","โน้ส อุดม แต้พานิช","ดู๋ สัญญา","ตูน บอดี้สแลม","ตั๊ก บริบูรณ์","หนุ่ม ศรราม","อาตู่ นายกสมาคม","ไตรภพ ลิมปพัทธ์","สรยุทธ","วิทวัจน์ ฟิลม์","ฟลุค ก่อนบ่าย","โจ๊ก โซคูล","เรย์ แมคโดนัลด์","พี่จอม พลพีร์","อั๋น ภูวนาท","ป๋าเต็ด ยุทธนา","บอย โกสิยพงษ์","พล่ากุ้ง","แจ๊ส ชวนชื่น","มะเดี่ยว ชูเกียรติ","เต๋อ ฉันทวิชช์","อุดม แต้พานิช","หม่อง ซ้ง","ยอร์ช ยงศิลป์","เกียรติ กิจเจริญ","ทูน หิรัญทรัพย์","หม่อมถนัดแดก","มาร์ช จุฑาวุฒิ","นนท์ อัศดาวุธ","กอล์ฟ-ไมค์","แจ็ค แฟนฉัน"]))))),
+              // Not entertainment
+              q("เป็นนักกีฬามั้ย?",
+                q("เป็นนักฟุตบอลมั้ย?",
+                  L("นักฟุตบอลไทย",["ชนาธิป สรงกระสินธ์","ธีราทร บุญมาทัน","ธีรศิลป์ แดงดา","ศศลักษณ์ ไหประโคน","ชนาเมธ จันทา","สารัช อยู่เย็น","เกียรติศักดิ์ เสนาเมือง","ปีเตอร์ เรด","ธนบูรณ์ เกษารัตน์","พิภพ อ่อนโม้","ทริสตอง โด","เอกนิษฐ์ ปัญญา","พีระพัฒน์ โน้ตชัยยา","กวินทร์ ธรรมสัจจานันท์","ฐิติพันธ์ พ่วงจันทร์","ศุภณัฐ เหมือนตา","สุภโชค สารชาติ","ธีรศักดิ์ เผ่าไทย","อดิศักดิ์ ไกรษร","โค้ชเฮง วิทยา","มาโน่ โพลกิ้ง (โค้ช)","ชาญวิทย์ ผลชีวิน (อดีต)"]),
+                  q("เป็นนักมวย/ศิลปะป้องกันตัว?",
+                    L("นักมวยไทย",["บัวขาว บัญชาเมฆ","สมรักษ์ คำสิงห์","เขาทราย แกแล็คซี่","เทนนิส พาณิภัค","แดง ศิริมงคล","สมจิตร จงจอหอ","มนัส บุญจำนงค์","วิจารณ์ พลฤทธิ์","ปวีณา ทองสุก","โผน กิ่งเพชร","พิชิต ศิษย์บางพระจันทร์","แสนชัย ส.คิงสตาร์","บัวขาว บ.บัญชาเมฆ","ก้องศักดิ์ ศิษย์บุญยง","รถถัง จิตรเมืองนนท์","บัวขาว","หญิงไทย กิ่งน้อย (ไม่ใช่ ตัดออก)","สิทธิชัย ศิรโภคา","รามบ่อ (ลูมพินี)","ซุปเปอร์เล็ก","พันธ์ศักดิ์ เจริญสุข (สนุ้กเกอร์? ไม่ใช่)"]),
+                    L("นักกีฬาไทยอื่น",["วิว กุลวุฒิ (แบด)","เมย์ รัชนก (แบด)","โปรเม เอรียา จุฑานุกาล","โปรโม โมรียา จุฑานุกาล","กิตติพงษ์ (ยกน้ำหนัก)","น้องเทนนิส (เทควันโด)","ต๋อง ศิษย์ฉ่อย (สนุ้กเกอร์)","เจ้ต๋อย ภาสกร (กอล์ฟ)","พรานหยิบ ปรเมษฐ์","สุดสาคร เกตุเจริญ","ต้าร์ พีระพงศ์ ชาปุ๊ก","ออย ลูกแดง (วอลเลย์บอล)","อัจฉราพร คงยศ (วอลเลย์)","ปลื้มจิตร์ ถินขาว (วอลเลย์)","นุศรา ต้อมคำ (วอลเลย์)","ภัสพรรณษา (แบด)","รัตนพล ณ สงขลา","อัษฎาวุธ สาคริก","ทรายทิพย์ คำตัน (เทควันโด)","พงศ์เกษม เกษมศรี","ปี่เอี๊ยก บอส (E-sports)"]))),
+                q("เป็นนักการเมืองมั้ย?",
+                  L("นักการเมืองไทย",
+                    ["เศรษฐา ทวีสิน","แพทองธาร ชินวัตร","พิธา ลิ้มเจริญรัตน์","ชัชชาติ สิทธิพันธุ์","ธนาธร จึงรุ่งเรืองกิจ","ปิยบุตร แสงกนกกุล","อนุทิน ชาญวีรกูล","ประวิตร วงษ์สุวรรณ","วราวุธ ศิลปอาชา","ทักษิณ ชินวัตร","ยิ่งลักษณ์ ชินวัตร","อภิสิทธิ์ เวชชาชีวะ","ประยุทธ์ จันทร์โอชา","สุเทพ เทือกสุบรรณ","จาตุรนต์ ฉายแสง","สุริยะ จึงรุ่งเรืองกิจ","ภูมิธรรม เวชยชัย","สมศักดิ์ เทพสุทิน","ไผ่ ดาวดิน","รังสิมันต์ โรม","ศิริกัญญา ตันสกุล","วิโรจน์ ลักขณาอดิศร","ช่อ พรรณิการ์","เบญจา แสงจันทร์","ชลน่าน ศรีแก้ว","ชวน หลีกภัย","บรรหาร ศิลปอาชา","จำลอง ศรีเมือง","สนธิ ลิ้มทองกุล","อภิชาต สถิตนิรามัย"],
+                    "รัฐบาล ฝ่ายค้าน อดีตนายก"),
+                  q("เป็นนักธุรกิจ/มหาเศรษฐีมั้ย?",
+                    L("เศรษฐีไทย",["ธนินท์ เจียรวนนท์ (CP)","เจริญ สิริวัฒนภักดี (เบียร์ช้าง)","ตัน ภาสกรนที (อิชิตัน)","ทศ จิราธิวัฒน์ (Central)","ศุภชัย เจียรวนนท์","วนรัชต์ ตั้งคารวคุณ (TOA)","สารัชถ์ รัตนาวะดี (GULF)","เฉลียว อยู่วิทยา (กระทิงแดง)","เฉลิม อยู่วิทยา","วานิช ไชยวรรณ (ไทยประกันชีวิต)","อิสระ ว่องกุศลกิจ (มิตรผล)","วิชัย ศรีวัฒนประภา (คิง เพาเวอร์)","อัยยวัฒน์ ศรีวัฒนประภา","ชูชาติ เพ็ชรอำไพ (เมืองไทยแคปปิตอล)","สมโภชน์ อาหุนัย (EA)","นวลพรรณ ล่ำซำ (มาดามแป้ง)","แดน เอ็ม (บิทคับ)","ท๊อป จิรายุส (บิทคับ)","กฤษณ์ อภิรักษ์ (มหาเศรษฐีกาแฟ)","เคน นครินทร์ (The Cloud)","ธนพงศ์ วงศ์ชินศรี (Penguin Eat Shabu)","สมยศ สีแสงขำ (เสถียรสเตนเลส)"]),
+                    L("บุคคลอื่นๆ ไทย",["หมอโอ๊ค","หมอเหรียญทอง","หมอแล็บแพนด้า","หมอดู พีเค","อาจารย์ยักษ์ (ธรรมะ)","หลวงพ่อคูณ","ว.วชิรเมธี","พุทธทาส (ล่วงลับ)","พระพุทธเจ้า (ไม่ใช่ ตัดออก)","แม่ชีเทเรซ่า (ไม่ใช่ไทย)","อาจารย์มหาวิทยาลัย","พระสงฆ์ดังๆ","นักข่าวดัง","พี่ตูน ก้าวคนละก้าว","หมอปลา","ดร.เจษฎา เด่นดวงบริพันธ์","หมอวรงค์","ทนายแก้วตา","เสี่ยโป้ อานนท์","ตู่ แนวหน้า (พิธีกรข่าว)","สุทธิชัย หยุ่น"]))))),
+            // Deceased
+            q("เป็นพระมหากษัตริย์/เชื้อพระวงศ์?",
+              L("กษัตริย์/ราชวงศ์ไทย",["รัชกาลที่ 1","รัชกาลที่ 2","รัชกาลที่ 3","รัชกาลที่ 4 (มงกุฎ)","รัชกาลที่ 5 (จุฬาลงกรณ์)","รัชกาลที่ 6 (วชิราวุธ)","รัชกาลที่ 7","รัชกาลที่ 8","รัชกาลที่ 9 (ภูมิพล)","รัชกาลที่ 10 (วชิราลงกรณ)","สมเด็จพระนางเจ้าสิริกิติ์","สมเด็จพระเทพฯ","พ่อขุนรามคำแหง","พ่อขุนศรีอินทราทิตย์","พระเจ้าตากสิน","สมเด็จพระนเรศวร","สมเด็จพระเอกาทศรถ","สมเด็จพระนารายณ์","สมเด็จพระสุริโยไท","ท้าวสุรนารี (ย่าโม)","ท้าวเทพกษัตรีย์-ท้าวศรีสุนทร","พระปิ่นเกล้า","กรมหลวงชุมพร","พระศรีสุริโยทัย","สมเด็จพระเจ้าอุทุมพร","พระเจ้าอู่ทอง"]),
+              L("บุคคลสำคัญไทย (ล่วงลับ)",["สุนทรภู่","ปรีดี พนมยงค์","หลวงปู่ทวด","ป๋วย อึ๊งภากรณ์","เสก โลโซ","พุ่มพวง ดวงจันทร์","ครูสลา คุณวุฒิ","ครูเอื้อ สุนทรสนาน","ครูลำพู","ครูเพลง สลา คุณวุฒิ","ปู พงษ์สิทธิ์ คำภีร์ (ไม่ใช่ล่วงลับ-ตัดออก)","มิตร ชัยบัญชา","เพชรา เชาวราษฎร์ (ไม่ล่วงลับ)","สุรพล สมบัติเจริญ","ชาย เมืองสิงห์","ยอดรัก สลักใจ","สายัณห์ สัญญา","ชรินทร์ นันทนาคร (ล่วงลับ)","รวงทอง ทองลั่นธม","ทูล ทองใจ","ศรีไศล สุชาตวุฒิ","สุเทพ วงศ์กำแหง","ครูไพบูลย์ บุตรขัน","ร.ต.อ.นพดล","หลวงพ่อเงิน","หลวงปู่แหวน","หลวงพ่อคูณ","หลวงปู่มั่น","สมเด็จพระพุฒาจารย์ (โต)","จิตร ภูมิศักดิ์","เตียง ศิริขันธ์","กุหลาบ สายประดิษฐ์ (ศรีบูรพา)","ไพฑูรย์ สุนทร","คำพูน บุญทวี","พ.ต.ท.ทักษิณ (ไม่ใช่ล่วงลับ)"]))),
+          // NOT THAI
+          q("เป็นคนเอเชีย (ไม่ใช่ไทย) มั้ย?",
+            q("เป็นคนเกาหลี (K-Pop / ดารา)?",
+              q("เป็นไอดอล K-Pop มั้ย?",
+                L("K-Pop ไอดอล",
+                  ["BTS (RM, Jin, Suga, J-Hope, Jimin, V, Jungkook)","BLACKPINK (Jennie, Rosé, Jisoo, Lisa)","TWICE (Nayeon, Jeongyeon, Momo, Sana, Jihyo, Mina, Dahyun, Chaeyoung, Tzuyu)","NewJeans (Minji, Hanni, Danielle, Haerin, Hyein)","Stray Kids (Bang Chan, Felix, Han, Hyunjin)","aespa (Karina, Giselle, Winter, Ningning)","IVE (Yujin, Wonyoung, Rei, Liz, Leeseo, Gaeul)","LE SSERAFIM (Sakura, Chaewon, Yunjin, Kazuha, Eunchae)","IU","G-Dragon (BIGBANG)","PSY","ITZY (Yeji, Lia, Ryujin, Chaeryeong, Yuna)","EXO (Baekhyun, Chanyeol, Sehun, Kai, D.O., Xiumin, Suho)","SEVENTEEN","NCT (Dream, 127)","ENHYPEN","TXT (Tomorrow X Together)","Red Velvet (Irene, Seulgi, Wendy, Joy, Yeri)","MAMAMOO (Solar, Moonbyul, Wheein, Hwasa)","(G)I-DLE (Miyeon, Minnie, Soyeon, Yuqi, Shuhua)","GOT7","MONSTA X","ATEEZ","(G)I-DLE","ZEROBASEONE","BOYNEXTDOOR","RIIZE","ILLIT","BABYMONSTER","KISS OF LIFE","TREASURE","P1Harmony","TWS","Super Junior","SHINee (Taemin, Onew, Minho, Key)","TVXQ","BIGBANG (Taeyang, Daesung, T.O.P)","2NE1 (CL, Dara, Bom, Minzy)","Girls' Generation (Taeyeon, Yoona, Tiffany, Sunny)","Wonder Girls","KARA","4Minute","T-ARA","f(x) (Krystal, Amber, Victoria)","Apink","LOONA","PURPLE KISS","Kep1er","STAYC","NMIXX","fromis_9","Weki Meki","Cosmic Girls","Dreamcatcher","Brave Girls","Oh My Girl","Rocket Punch","tripleS","XG"],
+                  "ไอดอลเกาหลี สมาชิกวงต่างๆ"),
+                L("นักแสดงเกาหลี",["Song Joong-ki","Hyun Bin","Gong Yoo","Lee Min-ho","Park Seo-joon","Son Ye-jin","Jun Ji-hyun","Kim Soo-hyun","Park Bo-gum","IU (แสดง)","Lee Jung-jae (Squid Game)","Park Hae-soo","Kim Ji-won","Kim Go-eun","Bae Suzy","Park Shin-hye","Kim Tae-hee","Song Hye-kyo","Jun Hyun-woo","Lee Jong-suk","Kim Woo-bin","Park Hyung-sik","Lee Dong-wook","Ji Chang-wook","Yoo Ah-in","Park Hae-jin","Choi Woo-shik","Seo Kang-joon","Kim Seon-ho","Lee Joon-gi","Jang Ki-yong","Byun Yo-han","Nam Joo-hyuk","Park Bo-young","Kim Yoo-jung","Kim So-hyun","Jung Ho-yeon","Kim Da-mi","Seo Ye-ji","Gong Hyo-jin","Ha Ji-won","Jeon Do-yeon","Ma Dong-seok","Choi Min-shik","Lee Byung-hun"])),
+              q("เป็นคนญี่ปุ่น?",
+                L("คนญี่ปุ่นดัง",["Kimura Takuya","Ken Watanabe","Haruki Murakami","Ohtani Shohei","Hayao Miyazaki","Akira Kurosawa","Naomi Osaka","Masi Oka","Hiroyuki Sanada","Takeshi Kitano","Rinko Kikuchi","Satoshi Kon","Hideaki Anno","Eiichiro Oda (ผู้เขียน One Piece)","Masashi Kishimoto (Naruto)","Akira Toriyama (DB)","Tite Kubo (Bleach)","Hajime Isayama (AOT)","Naoko Yamada","Makoto Shinkai","Koji Kondo","Shigeru Miyamoto (Mario)","Hideo Kojima (MGS)","Hironobu Sakaguchi (FF)","Yusuke Nakamura","Yuki Kaji (seiyuu)","Mamoru Miyano (seiyuu)","Nana Mizuki (seiyuu)","Utada Hikaru","Yoko Ono","Kenshi Yonezu","YOASOBI (Ikura, Ayase)","Ado","Aimer","LiSA","Ryuichi Sakamoto (ล่วงลับ)","Yoshiki (X Japan)","Babymetal","King Gnu","Arashi (Ninomiya, Sakurai)","Perfume","Shohei Ohtani","Kei Nishikori","Rui Hachimura","Hidetoshi Nakata","Akira Nishino (อดีตโค้ช)","Kazuyoshi Miura (King Kazu)","Keisuke Honda","Junichiro Koizumi","Shinzo Abe (ล่วงลับ)","Fumio Kishida","Naruhito (จักรพรรดิ)","Akihito","Bando Mitsugoro","Rola","Koki Kameda (มวย)"]),
+                q("เป็นคนจีน/ฮ่องกง?",
+                  L("คนจีน/ฮ่องกง",["Jackie Chan","Bruce Lee","Jet Li","Jack Ma","Yao Ming","Xi Jinping","Fan Bingbing","Andy Lau","Chow Yun-fat","Tony Leung","Donnie Yen","Stephen Chow","Leslie Cheung (ล่วงลับ)","Aaron Kwok","Jacky Cheung","Anita Mui (ล่วงลับ)","Gong Li","Zhang Ziyi","Maggie Cheung","Michelle Yeoh","Shu Qi","Liu Yifei","Zhao Liying","Yang Mi","Dilraba Dilmurat","Angelababy","Wang Yibo","Xiao Zhan","Hu Ge","Deng Lun","Luhan","Kris Wu","Lay Zhang","Tim Cook (ไม่ใช่ ตัดออก)","Wang Leehom","Jay Chou","JJ Lin","G.E.M.","Joey Yung","Eason Chan","Liu Qiangdong (JD)","Pony Ma (Tencent)","Lei Jun (Xiaomi)","Ren Zhengfei (Huawei)","Robin Li (Baidu)","Colin Huang (Pinduoduo)","Zhang Yiming (ByteDance)","Deng Xiaoping (ล่วงลับ)","Mao Zedong (ล่วงลับ)","Sun Yat-sen","Confucius (ขงจื้อ)","Lao Tzu (เหลาจื๊อ)","Qin Shi Huang","Cao Cao","Liu Bei","Zhuge Liang","Mulan (ตำนาน)","Wu Zetian","Empress Dowager Cixi"]),
+                  L("คนเอเชียอื่น",["Narendra Modi (อินเดีย)","SRK (Shah Rukh Khan)","Amitabh Bachchan","Salman Khan","Aamir Khan","Aishwarya Rai","Priyanka Chopra","Deepika Padukone","A.R. Rahman","Sachin Tendulkar","Virat Kohli","Lee Kuan Yew (สิงคโปร์)","Lee Hsien Loong","Mahathir Mohamad","Anwar Ibrahim","Gandhi (อินเดีย)","Aung San Suu Kyi (พม่า)","Ho Chi Minh (เวียดนาม)","Sukarno (อินโดนีเซีย)","Joko Widodo","Rodrigo Duterte","Ferdinand Marcos Jr.","Bongbong Marcos","Nelson Mandela (ไม่ใช่เอเชีย-ตัดออก)","Nguyen Phu Trong","Jokowi Widodo","Iris Chang","Vikram Seth","Tagore","Lat (การ์ตูนิสต์)","Hideki Tojo","Ferdinand Marcos Sr.","Corazon Aquino","Park Chung-hee (เกาหลี ล่วงลับ)","Moon Jae-in","Yoon Suk-yeol","Thaksin (ไทย ตัดออก)","Nawaz Sharif","Imran Khan","Benazir Bhutto","Indira Gandhi","Rajiv Gandhi","Jawaharlal Nehru","Bhumibol (ไทย ตัดออก)"])))),
+            // Western
+            q("อยู่ในวงการบันเทิงฮอลลีวูด/ตะวันตก?",
+              q("เป็นนักแสดงมั้ย?",
+                q("เป็นผู้ชาย?",
+                  L("ดาราชายฮอลลีวูด",["Tom Cruise","Leonardo DiCaprio","Brad Pitt","Johnny Depp","Tom Hanks","The Rock (Dwayne Johnson)","Robert Downey Jr.","Chris Hemsworth","Chris Evans","Will Smith","Keanu Reeves","Timothée Chalamet","Ryan Reynolds","Ryan Gosling","Hugh Jackman","Denzel Washington","Morgan Freeman","Matt Damon","Ben Affleck","George Clooney","Christian Bale","Jake Gyllenhaal","Bradley Cooper","Nicolas Cage","Adam Sandler","Jim Carrey","Liam Neeson","Daniel Craig","Anthony Hopkins","Al Pacino","Robert De Niro","Jack Nicholson","Samuel L. Jackson","Arnold Schwarzenegger","Sylvester Stallone","Jason Statham","Vin Diesel","Mark Wahlberg","Jason Momoa","Jeff Bridges","Kevin Hart","Michael B. Jordan","Idris Elba","Eddie Murphy","Sean Penn","Mel Gibson","Harrison Ford","Clint Eastwood","Denzel Washington","Joaquin Phoenix","Heath Ledger (ล่วงลับ)","Paul Walker (ล่วงลับ)","Chadwick Boseman (ล่วงลับ)","Robin Williams (ล่วงลับ)","Philip Seymour Hoffman (ล่วงลับ)","Marlon Brando (ล่วงลับ)","Humphrey Bogart (ล่วงลับ)","James Dean (ล่วงลับ)","Paul Newman (ล่วงลับ)","Steve McQueen (ล่วงลับ)","Andrew Garfield","Tobey Maguire","Tom Holland","Henry Cavill","Benedict Cumberbatch","Mads Mikkelsen","Oscar Isaac","Pedro Pascal","Austin Butler","Paul Rudd","Jonah Hill","Seth Rogen","Channing Tatum","Zac Efron","Chris Pratt","Chris Pine","Joe Pesci","Antonio Banderas","John Travolta"]),
+                  L("ดาราหญิงฮอลลีวูด",["Scarlett Johansson","Angelina Jolie","Jennifer Lawrence","Emma Watson","Margot Robbie","Zendaya","Gal Gadot","Meryl Streep","Anne Hathaway","Julia Roberts","Natalie Portman","Nicole Kidman","Charlize Theron","Cate Blanchett","Kate Winslet","Keira Knightley","Emma Stone","Jennifer Aniston","Sandra Bullock","Jessica Alba","Halle Berry","Reese Witherspoon","Viola Davis","Lupita Nyong'o","Jessica Chastain","Amy Adams","Renee Zellweger","Penelope Cruz","Salma Hayek","Rachel McAdams","Eva Green","Mila Kunis","Kristen Stewart","Megan Fox","Emily Blunt","Anya Taylor-Joy","Florence Pugh","Saoirse Ronan","Jennifer Lopez","Selena Gomez","Olivia Wilde","Blake Lively","Sydney Sweeney","Brie Larson","Jenna Ortega","Millie Bobby Brown","Elle Fanning","Dakota Fanning","Kristen Dunst","Drew Barrymore","Cameron Diaz","Marilyn Monroe (ล่วงลับ)","Audrey Hepburn (ล่วงลับ)","Grace Kelly (ล่วงลับ)","Elizabeth Taylor (ล่วงลับ)","Judy Garland (ล่วงลับ)","Jessica Biel","Emma Thompson","Helen Mirren","Judi Dench","Glenn Close","Susan Sarandon","Sharon Stone","Demi Moore","Ali MacGraw"])),
+                L("นักร้องสากล",["Taylor Swift","Beyoncé","Ed Sheeran","Bruno Mars","Ariana Grande","Adele","Billie Eilish","The Weeknd","Drake","Eminem","Michael Jackson","Madonna","Lady Gaga","Rihanna","Justin Bieber","Katy Perry","Miley Cyrus","Shawn Mendes","Harry Styles","Post Malone","Dua Lipa","Olivia Rodrigo","Sabrina Carpenter","Sia","Pink","Kesha","Shakira","Jennifer Lopez","Mariah Carey","Whitney Houston (ล่วงลับ)","Celine Dion","Christina Aguilera","Britney Spears","Avril Lavigne","Fergie","Alicia Keys","Kelly Clarkson","Usher","Ne-Yo","Justin Timberlake","Nick Jonas","John Legend","John Mayer","Sam Smith","James Arthur","Hozier","Charlie Puth","Calvin Harris","David Guetta","Tiësto","Martin Garrix","Marshmello","Zedd","Skrillex","Alan Walker","Avicii (ล่วงลับ)","deadmau5","Coldplay (Chris Martin)","Maroon 5 (Adam Levine)","Imagine Dragons","OneRepublic","Linkin Park (Chester ล่วงลับ)","Green Day","Red Hot Chili Peppers","Queen (Freddie Mercury ล่วงลับ)","The Beatles (John, Paul, George, Ringo)","Rolling Stones (Mick Jagger)","Elton John","Paul McCartney","Mick Jagger","David Bowie (ล่วงลับ)","Prince (ล่วงลับ)","George Michael (ล่วงลับ)","Kurt Cobain (ล่วงลับ)","John Lennon (ล่วงลับ)","Jimi Hendrix (ล่วงลับ)","Bob Marley (ล่วงลับ)","Johnny Cash (ล่วงลับ)","Elvis Presley (ล่วงลับ)","Frank Sinatra (ล่วงลับ)","Tina Turner (ล่วงลับ)","Aretha Franklin (ล่วงลับ)","Stevie Wonder","Paul Simon","Bob Dylan","Lana Del Rey","Doja Cat","Nicki Minaj","Cardi B","Megan Thee Stallion","Ice Spice","Travis Scott","Kendrick Lamar","J. Cole","Lil Wayne","Jay-Z","Kanye West","Snoop Dogg","50 Cent","Dr. Dre","Tupac (ล่วงลับ)","Biggie (ล่วงลับ)","Lil Nas X","21 Savage","Childish Gambino (Donald Glover)","Anderson .Paak","Bruno Mars & Silk Sonic"])),
+              q("เป็นผู้นำการเมืองโลก?",
+                L("ผู้นำ/นักการเมืองโลก",["Donald Trump","Joe Biden","Barack Obama","Vladimir Putin","Xi Jinping","Kim Jong-un","Emmanuel Macron","Angela Merkel","Volodymyr Zelensky","Rishi Sunak","Boris Johnson","Hillary Clinton","Kamala Harris","Bernie Sanders","Elizabeth Warren","Alexandria Ocasio-Cortez","Ron DeSantis","Mike Pence","Ted Cruz","Nancy Pelosi","Mitch McConnell","Chuck Schumer","Vice President JD Vance","George W. Bush","Bill Clinton","George H.W. Bush","Jimmy Carter","Ronald Reagan (ล่วงลับ)","Richard Nixon (ล่วงลับ)","John F. Kennedy (ล่วงลับ)","Lyndon B. Johnson","Dwight Eisenhower","FDR (Franklin D. Roosevelt)","Theodore Roosevelt","Abraham Lincoln","George Washington","Thomas Jefferson","Benjamin Franklin","Tony Blair","David Cameron","Theresa May","Liz Truss","Keir Starmer","Olaf Scholz","Friedrich Merz","Giorgia Meloni","Justin Trudeau","Anthony Albanese","Kishida Fumio","Narendra Modi","Mohammed bin Salman (MBS)","Benjamin Netanyahu","Recep Tayyip Erdogan","Lula da Silva","Javier Milei","King Charles III","Queen Elizabeth II (ล่วงลับ)","Prince William","Prince Harry","Princess Kate Middleton","Meghan Markle","Pope Francis","Pope Benedict XVI (ล่วงลับ)","Pope John Paul II (ล่วงลับ)","Dalai Lama","Greta Thunberg","Malala Yousafzai","Winston Churchill (ล่วงลับ)","Margaret Thatcher (ล่วงลับ)"]),
+                q("เป็นนักธุรกิจ/เทคโนโลยี?",
+                  L("Tech Mogul",["Elon Musk","Bill Gates","Jeff Bezos","Mark Zuckerberg","Steve Jobs (ล่วงลับ)","Sam Altman","Tim Cook","Larry Page","Sergey Brin","Satya Nadella","Warren Buffett","Charlie Munger (ล่วงลับ)","Michael Dell","Larry Ellison","Michael Bloomberg","Oprah Winfrey","Richard Branson","Jack Welch","Jeff Skoll","Peter Thiel","Reid Hoffman","Marc Benioff","Jack Dorsey","Parag Agrawal","Sundar Pichai","Lisa Su (AMD)","Jensen Huang (NVIDIA)","Andy Jassy (Amazon)","Dara Khosrowshahi (Uber)","Evan Spiegel (Snap)","Brian Chesky (Airbnb)","Drew Houston (Dropbox)","Stewart Butterfield (Slack)","Daniel Ek (Spotify)","Reed Hastings (Netflix)","Bob Iger (Disney)","Mary Barra (GM)","Indra Nooyi","Ginni Rometty","Susan Wojcicki (ล่วงลับ)","Sheryl Sandberg","Melinda French Gates","Bernard Arnault (LVMH)","Carlos Slim","Mukesh Ambani","Gautam Adani","Ratan Tata","Henry Ford (ล่วงลับ)","Howard Hughes (ล่วงลับ)","Thomas Edison (ล่วงลับ)","Andrew Carnegie (ล่วงลับ)","John D. Rockefeller (ล่วงลับ)","Sam Walton (ล่วงลับ)","Walt Disney (ล่วงลับ)","George Lucas","Steven Spielberg (กำกับ/โปรดิวเซอร์)","James Cameron","Christopher Nolan","Quentin Tarantino","Martin Scorsese","Francis Ford Coppola","Stanley Kubrick (ล่วงลับ)","Alfred Hitchcock (ล่วงลับ)"]),
+                  q("เป็นนักกีฬาระดับโลก?",
+                    L("นักกีฬาโลก",["Lionel Messi","Cristiano Ronaldo","Neymar","Kylian Mbappé","LeBron James","Michael Jordan","Stephen Curry","Tiger Woods","Serena Williams","Rafael Nadal","Roger Federer","Novak Djokovic","Usain Bolt","Erling Haaland","Jude Bellingham","Vinícius Jr.","Pedri","Gavi","Harry Kane","Heung-min Son","Mohamed Salah","Sadio Mané","Kevin De Bruyne","Luka Modric","Toni Kroos","Robert Lewandowski","Karim Benzema","Antoine Griezmann","Paul Pogba","Thibaut Courtois","Manuel Neuer","Zinedine Zidane (ล่วงลับจากฟุตบอล)","Pelé (ล่วงลับ)","Diego Maradona (ล่วงลับ)","Johan Cruyff (ล่วงลับ)","David Beckham","Zlatan Ibrahimović","Andrea Pirlo","Ronaldinho","Ronaldo (Brazilian)","Kaká","Luis Suárez","Sergio Ramos","Andrés Iniesta","Xavi","Iker Casillas","Muhammad Ali (ล่วงลับ)","Mike Tyson","Floyd Mayweather Jr.","Manny Pacquiao","Canelo Alvarez","Anthony Joshua","Tyson Fury","Conor McGregor","Khabib Nurmagomedov","Israel Adesanya","Jon Jones","Ronda Rousey","Kobe Bryant (ล่วงลับ)","Shaquille O'Neal","Magic Johnson","Larry Bird","Kareem Abdul-Jabbar","Kevin Durant","Giannis Antetokounmpo","Nikola Jokić","Luka Dončić","Jayson Tatum","Joel Embiid","Patrick Mahomes","Tom Brady","Aaron Rodgers","Peyton Manning","Joe Montana","Lewis Hamilton","Max Verstappen","Ayrton Senna (ล่วงลับ)","Michael Schumacher","Charles Leclerc","Lando Norris","Phil Mickelson","Rory McIlroy","Jon Rahm","Venus Williams","Maria Sharapova","Iga Świątek","Coco Gauff","Aryna Sabalenka","Simone Biles","Nadia Comaneci","Michael Phelps","Katie Ledecky","Carl Lewis","Jesse Owens (ล่วงลับ)","Eliud Kipchoge","Mo Farah"]),
+                    L("บุคคลในประวัติศาสตร์/อื่นๆ",["Albert Einstein","Isaac Newton","Leonardo da Vinci","Napoleon Bonaparte","Adolf Hitler","Mahatma Gandhi","Nelson Mandela","Cleopatra","Martin Luther King","Mother Teresa","Marie Curie","Stephen Hawking","Charles Darwin","Galileo Galilei","Nikola Tesla","Alexander Graham Bell","The Wright Brothers","Henry Ford","Walt Disney","Aristotle","Plato","Socrates","Julius Caesar","Alexander the Great","Genghis Khan","Joan of Arc","William Shakespeare","Vincent van Gogh","Pablo Picasso","Michelangelo","Rembrandt","Claude Monet","Frida Kahlo","Salvador Dalí","Andy Warhol","Ludwig van Beethoven","Wolfgang Amadeus Mozart","Johann Sebastian Bach","Frédéric Chopin","Tchaikovsky","Yoko Ono","John Lennon (ล่วงลับ)","Sigmund Freud","Carl Jung","Karl Marx","Friedrich Nietzsche","Winston Churchill","Franklin D. Roosevelt","Joseph Stalin","Mao Zedong","Fidel Castro","Che Guevara","Princess Diana (ล่วงลับ)","Queen Victoria","Elizabeth I","Cleopatra","King Tut (Tutankhamun)","Ramses II","Alexander Fleming","Louis Pasteur","Jonas Salk","Rosalind Franklin","Ada Lovelace","Alan Turing","Grace Hopper","Neil Armstrong (ล่วงลับ)","Buzz Aldrin","Yuri Gagarin (ล่วงลับ)","Carl Sagan (ล่วงลับ)","Richard Feynman (ล่วงลับ)","Oppenheimer","Edwin Hubble","Dmitri Mendeleev","Mark Twain (ล่วงลับ)","Ernest Hemingway (ล่วงลับ)","Jane Austen","Charles Dickens","Leo Tolstoy","Fyodor Dostoevsky","Oscar Wilde","Edgar Allan Poe","Agatha Christie (ล่วงลับ)","J.K. Rowling","George R.R. Martin","Stephen King","J.R.R. Tolkien (ล่วงลับ)","Neil Gaiman","Dan Brown","Malala Yousafzai","Rosa Parks (ล่วงลับ)","Harriet Tubman","Frederick Douglass","Malcolm X (ล่วงลับ)"]))))))),
+        // NO: Fictional character
+        q("เป็นตัวการ์ตูน/อนิเมะมั้ย?",
+          q("เป็นอนิเมะญี่ปุ่น?",
+            q("เป็นแนวต่อสู้ (Shonen) มั้ย?",
+              L("ตัวเอก Shonen",["Naruto Uzumaki","Sasuke Uchiha","Sakura Haruno","Kakashi Hatake","Itachi Uchiha","Madara Uchiha","Goku","Vegeta","Gohan","Trunks","Frieza","Cell","Majin Buu","Luffy","Zoro","Sanji","Nami","Usopp","Chopper","Robin","Franky","Brook","Jinbei","Ace","Shanks","Blackbeard","Ichigo Kurosaki","Rukia","Byakuya","Kenpachi","Aizen","Natsu Dragneel","Lucy Heartfilia","Erza Scarlet","Gray Fullbuster","Happy (Fairy Tail)","Tanjiro Kamado","Nezuko","Zenitsu","Inosuke","Muzan","Giyu","Rengoku","Shinobu","Muichiro","Eren Yeager","Mikasa Ackerman","Armin Arlert","Levi Ackerman","Historia","Annie","Reiner","Zeke","Deku (Midoriya)","Bakugo","Todoroki","All Might","Endeavor","Saitama","Genos","Tatsumaki","Garou","Yuji Itadori","Megumi","Nobara","Satoru Gojo","Sukuna","Geto","Yuta Okkotsu","Maki","Panda","Edward Elric","Alphonse","Roy Mustang","Scar","Gon (HxH)","Killua","Kurapika","Leorio","Hisoka","Meruem","Asta (Black Clover)","Yuno","Yami","Noelle","Tatsumi (Akame ga Kill)","Akame","Esdeath","Meliodas (7DS)","Ban","King","Diane","Escanor","Elizabeth","Allen Walker (D.Gray-man)","Lelouch (Code Geass)","Suzaku","Light Yagami","L","Misa","Ryuk","Kaneki (Tokyo Ghoul)","Touka","Ayato","Rimuru (Slime)","Mikey (Tokyo Rev)","Takemichi","Draken","Baji","Senku (Dr. Stone)","Power (CSM)","Denji","Makima","Aki","Gabimaru (Hell's Paradise)","Thorfinn (Vinland Saga)","Guts (Berserk)","Griffith","Frieren (Beyond Journey's End)"]),
+              q("เป็นแนวน่ารัก/เด็ก?",
+                L("การ์ตูนเด็กญี่ปุ่น",["Doraemon","Pikachu","Charizard","Bulbasaur","Squirtle","Eevee","Mewtwo","Mew","Lugia","Ho-Oh","Rayquaza","Nobita Nobi","Shizuka","Suneo","Gian","Dorami","Shin-chan (Shinnosuke)","Misae","Hiroshi","Himawari","Shiro (หมา)","Totoro","Mei & Satsuki","Kiki (Witch)","Ponyo","Chihiro (Spirited Away)","No-Face","Calcifer (Howl's)","Howl","Sophie","Princess Mononoke (San)","Ashitaka","Porco Rosso","Hello Kitty","Melody","Kuromi","Cinnamoroll","Pompompurin","Pochacco","Keroppi","Gudetama","Pom Pom Purin","My Melody","Little Twin Stars","Anpanman","Shokupanman","Baikinman","Dokinchan","Conan (Edogawa)","Ran Mouri","Heiji Hattori","Kaito Kid","Chibi Maruko-chan","Tamaechan","Crayon Shin-chan","Rilakkuma","Korilakkuma","Kiiroitori","Sumikko Gurashi","Kapibarasan","Afro Ken","Mofusand","Chiikawa","Hachiware","Usagi (Chiikawa)"]),
+                L("อนิเมะอื่น",["Sailor Moon (Usagi)","Tuxedo Mask","Sailor Mercury","Sailor Mars","Sailor Jupiter","Sailor Venus","Inuyasha","Kagome","Sesshomaru","Kikyo","Miroku","Sango","Shippo","Naraku","Shinji Ikari","Asuka Langley","Rei Ayanami","Misato Katsuragi","Gendo Ikari","Kaworu","Anya Forger","Loid Forger","Yor Forger","Bond (dog)","Becky","Damian","Gojo Satoru","Megumi Fushiguro","Tanjiro (duplicate เคยเอ่ยแล้ว)","Light Yagami (Death Note)","L Lawliet","Near","Mello","Chainsaw Man (Denji)","Makima","Power","Aki","Kobeni","Quanxi","Oshi no Ko (Aqua)","Ruby","Akane","Kana","Ai Hoshino","Dandadan (Momo, Okarun)","Spy Family","Zom 100","Horimiya (Hori, Miyamura)","Toradora (Taiga, Ryuuji)","Clannad (Tomoya, Nagisa)","Kaguya-sama (Kaguya, Shirogane, Chika)","Monogatari (Araragi, Senjougahara)","Violet Evergarden","Your Name (Taki, Mitsuha)","Weathering with You (Hodaka, Hina)","Suzume","K-On! (Yui, Mio, Ritsu, Tsumugi, Azusa)","Haruhi Suzumiya","Lucky Star","Madoka Magica","Revolutionary Girl Utena","Revue Starlight","Bang Dream","Love Live","iDOLiSH7","Free! (Haruka, Rin, Makoto)","Yuri!!! on Ice","Haikyuu (Hinata, Kageyama, Tsukishima)","Kuroko no Basket (Kuroko, Kagami)","Prince of Tennis (Ryoma)","Slam Dunk (Sakuragi, Rukawa)","Captain Tsubasa (Tsubasa)","Blue Lock (Isagi, Bachira, Rin, Bachira)","Ao Ashi","Cells at Work (Red Blood Cell, White Blood Cell)","March Comes in Like a Lion","ReLIFE","Dr. Stone (Senku, Chrome)","Vinland Saga (Thorfinn, Einar)","Berserk (Guts, Casca)","Monster (Dr. Tenma, Johan)","Golden Kamuy (Sugimoto, Asirpa)","Grand Blue","Welcome to the NHK","Steins;Gate (Okabe, Kurisu)","Re:Zero (Subaru, Rem, Emilia)","Konosuba (Kazuma, Aqua, Megumin, Darkness)","Overlord (Ainz)","Sword Art Online (Kirito, Asuna)","Accel World","No Game No Life","That Time I Got Reincarnated as a Slime","Mushoku Tensei","Frieren","Ranking of Kings","Apothecary Diaries","Oshi no Ko"]))),
+            q("เป็นดิสนีย์/พิกซาร์?",
+              q("เป็นเจ้าหญิงดิสนีย์?",
+                L("เจ้าหญิงดิสนีย์",["Elsa","Anna","Belle","Cinderella","Snow White","Rapunzel","Moana","Mulan","Ariel","Jasmine","Tiana","Aurora","Pocahontas","Merida (Brave)","Sleeping Beauty (Aurora)","Encanto (Mirabel, Isabela, Dolores, Luisa)","Raya (Last Dragon)","Sisu","Asha (Wish)","Anna & Kristoff","Olaf","Sven","Hans","Prince Charming","Prince Eric","Prince Philip","Prince Naveen","Aladdin","Flynn Rider","Kristoff","Li Shang","Shrek's Fiona (ไม่ใช่ดิสนีย์-ตัดออก)","Princess Giselle (Enchanted)"]),
+                L("ดิสนีย์/พิกซาร์ อื่น",["Mickey Mouse","Minnie Mouse","Donald Duck","Daisy Duck","Goofy","Pluto","Chip & Dale","Scrooge McDuck","Simba","Mufasa","Scar","Nala","Rafiki","Timon & Pumbaa","Zazu","Baloo (Jungle Book)","Mowgli","Bagheera","Shere Khan","Woody","Buzz Lightyear","Jessie","Bullseye","Rex","Slinky Dog","Hamm","Mr. Potato Head","Nemo","Dory","Marlin","Hank (Finding Dory)","Mike Wazowski","Sully","Boo","Randall","Lightning McQueen","Mater","Sally","WALL-E","EVE","Remy","Linguini","Ego","Carl (Up)","Russell","Dug","Kevin","Joy (Inside Out)","Sadness","Anger","Fear","Disgust","Bing Bong","Miguel (Coco)","Héctor","Ernesto","Imelda","Dante","Pepita","Soul (Joe Gardner, 22)","Luca","Alberto","Giulia","Mei (Turning Red)","Red Panda Mei","Bruno (Encanto)","Alma","Mirabel","Abuela","Antonio","Camilo","Dolores","Pepa","Flora, Fauna, Merryweather","Hades","Hercules","Mushu","Pascal (Tangled)","Maximus","Tiana (Frog)","Charlotte","Dr. Facilier","Ursula","Maleficent","Evil Queen","Cruella de Vil","Jafar","Captain Hook","Gaston","Tinkerbell","Peter Pan","Wendy","Alice (Wonderland)","Cheshire Cat","Mad Hatter","White Rabbit","Queen of Hearts","Scar","Stitch","Lilo","Jumba","Pleakley","Bolt","Penny","Milo (Atlantis)","Atlantis Princess Kida","Prince Phillip","Hercules","Meg","Pegasus","Baymax","Hiro","Wasabi","GoGo","Fred","Honey Lemon","Anna (Frozen)","Olaf","Sven","Kristoff","Hans","Oaken","Pabbie"])),
+              L("การ์ตูนตะวันตกอื่น",["SpongeBob SquarePants","Patrick Star","Squidward","Sandy","Mr. Krabs","Plankton","Gary","Mermaid Man","Shrek","Fiona","Donkey","Puss in Boots","Dragon","Lord Farquaad","Scooby-Doo","Shaggy","Fred","Daphne","Velma","Tom & Jerry","Spike","Butch","Bugs Bunny","Daffy Duck","Porky Pig","Elmer Fudd","Tweety","Sylvester","Road Runner","Wile E. Coyote","Yosemite Sam","Marvin the Martian","Taz (Tasmanian Devil)","Homer Simpson","Marge Simpson","Bart Simpson","Lisa Simpson","Maggie Simpson","Mr. Burns","Ned Flanders","Moe","Apu","Krusty","Peter Griffin","Lois Griffin","Stewie Griffin","Chris Griffin","Meg Griffin","Brian Griffin","Quagmire","Cleveland","Joe","Rick Sanchez","Morty","Summer","Beth","Jerry","Mr. Meeseeks","Pink Panther","Inspector Clouseau","Garfield","Odie","Jon","Nermal","Pooky","Snoopy","Charlie Brown","Linus","Lucy","Peppermint Patty","Schroeder","Woodstock","Sally","Popeye","Olive Oyl","Bluto","Felix the Cat","Mighty Mouse","Yogi Bear","Boo Boo","Fred Flintstone","Wilma","Barney Rubble","Betty","Pebbles","George Jetson","Jane","Judy","Elroy","Rosie","Jimmy Neutron","Carl","Sheen","Cindy","SpongeBob Characters (duplicate)","Dexter (Laboratory)","Dee Dee","Powerpuff Girls (Blossom, Bubbles, Buttercup)","Mojo Jojo","Courage the Cowardly Dog","Samurai Jack","Ed, Edd n Eddy","Johnny Bravo","Beavis & Butt-Head","Daria","South Park (Stan, Kyle, Cartman, Kenny)","Bob's Burgers (Bob, Linda, Tina, Gene, Louise)","Adventure Time (Finn, Jake)","Princess Bubblegum","Marceline","Ice King","Regular Show (Mordecai, Rigby)","Gumball Watterson","Darwin","Anais","Steven Universe","Garnet","Pearl","Amethyst","Avatar Aang","Katara","Sokka","Toph","Zuko","Azula","Iroh","Korra","Ben 10","Gwen","Max","Kim Possible","Ron Stoppable","Rufus","Arthur (PBS)","DW","Buster","Francine","Postman Pat","Thomas the Tank Engine","Bob the Builder","Barney (Purple Dinosaur)","Pingu","Peppa Pig","George Pig","Pig Family","Bluey","Bingo","Paw Patrol (Ryder, Chase, Marshall, Skye, Rubble, Rocky, Zuma)","Masha and the Bear","Mr. Bean (animated)","Fireman Sam","Baby Shark","Cocomelon (JJ)","Caillou","Dora the Explorer","Boots","Backpack","Go Diego Go","Blue's Clues","Handy Manny","Sesame Street (Elmo, Big Bird, Cookie Monster, Oscar, Bert, Ernie, Grover)","Teletubbies (Tinky Winky, Dipsy, Laa-Laa, Po)","Boohbah","In the Night Garden"]))),
+          q("เป็นซูเปอร์ฮีโร่?",
+            q("เป็น Marvel มั้ย?",
+              q("เป็นตัวร้าย (Villain) มั้ย?",
+                L("Marvel Villain",["Thanos","Loki","Venom","Magneto","Ultron","Red Skull","Dr. Doom","Green Goblin","Mystique","Apocalypse","Juggernaut","Sabretooth","Carnage","Kingpin","Mysterio","Electro","Vulture","Sandman","Doc Ock","Rhino","Lizard","Shocker","Scorpion","Kraven","Morbius","Galactus","Dormammu","Kang","Mandarin","Hela","Malekith","Dark Phoenix","Sentinel","Stryfe","Cassandra Nova","Onslaught","Bullseye","Taskmaster","Baron Zemo","Crossbones","Whiplash","Abomination","Leader","M.O.D.O.K.","Ego the Living Planet","Nebula (ตอนเป็นร้าย)","Ronan","Thanos's Black Order (Ebony Maw, Proxima Midnight, Cull Obsidian)","Gorr the God Butcher","High Evolutionary","Kang Variants","Namor (ตอนเป็นร้าย)","Count Nefaria","Mole Man","Super-Skrull","Dragon Man","Annihilus","Korvac"]),
+                L("Marvel Hero",["Iron Man (Tony Stark)","Spider-Man (Peter Parker)","Miles Morales","Gwen Stacy (Spider-Gwen)","Captain America (Steve Rogers)","Sam Wilson (Falcon/Cap)","Bucky Barnes (Winter Soldier)","Thor","Loki (anti-hero)","Hulk (Bruce Banner)","She-Hulk","Black Widow","Hawkeye","Kate Bishop","Doctor Strange","Wong","Black Panther (T'Challa, Shuri)","Wolverine (Logan)","Sabretooth (anti)","Deadpool","Scarlet Witch (Wanda)","Vision","Quicksilver","Ant-Man (Scott Lang)","Wasp (Hope)","Hank Pym","Captain Marvel (Carol Danvers)","Ms. Marvel (Kamala Khan)","Monica Rambeau","Star-Lord","Gamora","Drax","Rocket Raccoon","Groot","Mantis","Nebula","Yondu","Adam Warlock","Nick Fury","Maria Hill","Daredevil","Elektra","Punisher","Jessica Jones","Luke Cage","Iron Fist","Moon Knight","Moon Girl","She-Hulk","Cyclops","Jean Grey","Storm","Nightcrawler","Rogue","Gambit","Beast","Colossus","Kitty Pryde","Psylocke","Emma Frost","Iceman","Jubilee","X-23","Dazzler","Fantastic Four (Mr. Fantastic, Invisible Woman, Human Torch, Thing)","Ghost Rider","Blade","Morbius (anti)","Silver Surfer","Namor","Squirrel Girl","America Chavez","Kid Loki","Ikaris (Eternals)","Sersi","Thena","Gilgamesh","Makkari","Phastos","Sprite","Druig","Kingo","Ajak"])),
+              L("DC",["Batman (Bruce Wayne)","Superman (Clark Kent)","Wonder Woman (Diana)","Flash (Barry Allen)","Flash (Wally West)","Aquaman (Arthur Curry)","Green Lantern (Hal Jordan, John Stewart)","Joker","Harley Quinn","Cyborg","Nightwing (Dick Grayson)","Catwoman (Selina Kyle)","Lex Luthor","Robin (Damian Wayne, Tim Drake, Jason Todd)","Red Hood","Red Robin","Batgirl (Barbara Gordon)","Oracle","Batwoman","Martian Manhunter","Green Arrow","Black Canary","Hawkgirl","Zatanna","Constantine","Shazam","Black Adam","Supergirl","Superboy","Krypto","Steel","Power Girl","Raven","Starfire","Beast Boy","Terra","Deathstroke","Deadshot","Penguin","Riddler","Two-Face","Bane","Scarecrow","Poison Ivy","Mr. Freeze","Clayface","Killer Croc","Ra's al Ghul","Talia al Ghul","Hush","Man-Bat","Firefly","Mad Hatter","Ventriloquist","Black Mask","Azrael","Huntress","Spoiler","Cassandra Cain (Black Bat)","Stephanie Brown","Swamp Thing","John Stewart","Blue Beetle","Booster Gold","Dr. Fate","Dr. Manhattan","Ozymandias","Rorschach","Nite Owl","Silk Spectre","Comedian","Darkseid","Brainiac","Doomsday","Parallax","Sinestro","Starro","Trigon","Anti-Monitor","Amazo","Bizarro","Mongul","Metallo","General Zod","Lobo","Harley (again)","Gorilla Grodd","Reverse Flash","Captain Cold","Mirror Master","Cheetah","Ares","Medusa (not)","Hades (DC)","Cheshire","Vixen","Vandal Savage","Solomon Grundy"])),
+            q("เป็นตัวละครจากหนังคนจริง/ซีรีส์?",
+              L("ตัวละครหนัง/ซีรีส์",["Harry Potter","Hermione Granger","Ron Weasley","Dumbledore","Snape","McGonagall","Hagrid","Voldemort","Bellatrix","Sirius Black","Lupin","Draco Malfoy","Luna Lovegood","Neville","Ginny","Fred & George Weasley","Dobby","Moaning Myrtle","Cedric Diggory","Darth Vader","Yoda","Luke Skywalker","Leia Organa","Han Solo","Chewbacca","Obi-Wan Kenobi","Anakin Skywalker","Padmé Amidala","Palpatine","Mace Windu","Qui-Gon Jinn","Rey","Finn","Poe","Kylo Ren","BB-8","R2-D2","C-3PO","Din Djarin (Mandalorian)","Grogu (Baby Yoda)","Ahsoka Tano","Boba Fett","Jango Fett","Gandalf","Frodo Baggins","Sam Gamgee","Aragorn","Legolas","Gimli","Boromir","Pippin","Merry","Bilbo Baggins","Gollum","Sauron","Saruman","Galadriel","Elrond","Arwen","Faramir","Théoden","Éowyn","Jack Sparrow","Will Turner","Elizabeth Swann","Davy Jones","Barbossa","James Bond (007)","M","Q","Moneypenny","Le Chiffre","Blofeld","Indiana Jones","Sallah","Marion","Mutt","Walter White","Jesse Pinkman","Saul Goodman","Skyler","Gustavo Fring","Mike Ehrmantraut","Ted Mosby","Marshall","Lily","Barney Stinson","Robin Scherbatsky","Sherlock Holmes","Dr. Watson","Moriarty","Mycroft","Irene Adler","Tony Soprano","Don Draper","Peggy Olson","Roger Sterling","Frank Underwood","Claire Underwood","Eleven (Stranger Things)","Will Byers","Mike Wheeler","Dustin","Lucas","Max","Steve Harrington","Nancy Wheeler","Jonathan","Hopper","Joyce","Eddie Munson","Vecna","Demogorgon","Ned Stark","Jon Snow","Daenerys Targaryen","Tyrion Lannister","Cersei Lannister","Jaime Lannister","Sansa Stark","Arya Stark","Bran Stark","Robb Stark","Robert Baratheon","Joffrey","Ramsay Bolton","The Mountain","The Hound","Khal Drogo","Brienne","Varys","Littlefinger","Melisandre","Hodor","Ghost","Drogon, Rhaegal, Viserion","Tywin Lannister","Margaery Tyrell","Olenna Tyrell","Rhaenyra Targaryen (HOTD)","Daemon","Alicent","Aegon","House of the Dragon","The Witcher (Geralt)","Yennefer","Ciri","Jaskier","Michael Scott (The Office)","Jim Halpert","Pam Beesly","Dwight Schrute","Stanley","Kevin","Creed","Andy","Ryan","Kelly","Leslie Knope (Parks & Rec)","Ron Swanson","Tom Haverford","April","Andy Dwyer","Ben Wyatt","Chris Traeger","Jerry/Larry/Terry","Pawnee characters","Rachel Green (Friends)","Ross","Monica","Chandler","Joey","Phoebe","Gunther","Janice","Richard","Emily","Mike Hannigan","Lorelai (Gilmore Girls)","Rory","Luke","Jess","Dean","Logan","Ted Lasso","Roy Kent","Jamie Tartt","Rebecca","Keeley","Coach Beard","Nate","Will","Sam","Dani Rojas","Frasier Crane","Roz","Niles","Martin","Daphne","Raymond (Everybody Loves Raymond)","Carrie Bradshaw (SATC)","Samantha","Charlotte","Miranda","Big","Aidan","Dexter Morgan","Rita","Debra","Hannah","Lumen","Jack Bauer (24)","Chloe","Tony Almeida","President Palmer","House (Dr. House)","Wilson","Cuddy","Foreman","Chase","Cameron","Grey's Anatomy (Meredith, Derek, Cristina, Alex)","ER (Dr. Greene)","Scrubs (JD, Turk, Elliot, Dr. Cox)","Community (Jeff, Britta, Abed, Troy, Annie, Shirley, Pierce)","New Girl (Jess, Nick, Schmidt, Winston, Cece)","The Big Bang Theory (Sheldon, Leonard, Howard, Raj, Penny, Bernadette, Amy)","Young Sheldon","How I Met Your Father","Modern Family (Phil, Claire, Jay, Gloria, Manny, Mitchell, Cam, Lily)"]),
+              q("เป็นตัวละครจากเกม?",
+                L("ตัวละครเกม",["Mario","Luigi","Peach","Daisy","Bowser","Koopa","Yoshi","Toad","Wario","Waluigi","Donkey Kong","Diddy Kong","Sonic","Tails","Knuckles","Shadow","Amy Rose","Dr. Eggman","Link","Princess Zelda","Ganondorf","Navi","Epona","Sheik","Tetra","Samus Aran (Metroid)","Metroid","Ridley","Pac-Man","Ms. Pac-Man","Ghosts (Blinky, Pinky, Inky, Clyde)","Kratos","Atreus","Mimir","Baldur","Freya","Master Chief","Cortana","Arbiter","Kirby","King Dedede","Meta Knight","Lara Croft","Solid Snake","Big Boss","Revolver Ocelot","Psycho Mantis","Geralt of Rivia","Yennefer","Triss","Ciri","Kazuya Mishima","Heihachi","Jin Kazama","Nina Williams","Paul Phoenix","King","Yoshimitsu","Eddy Gordo","Law","Ryu","Ken","Akuma","Chun-Li","M. Bison","Sagat","Guile","Zangief","Dhalsim","Cammy","Juri","Scorpion (MK)","Sub-Zero","Raiden","Liu Kang","Kitana","Mileena","Shao Kahn","Johnny Cage","Sonya","Kano","Goro","Cloud Strife","Tifa","Aerith","Sephiroth","Zack Fair","Barret","Yuffie","Vincent Valentine","Red XIII","Cait Sith","Noctis","Lightning","Squall","Rinoa","Zidane","Tidus","Yuna","Auron","Aerith","Lightning","Cecil (FF4)","Cid","Moogle","Chocobo","Dante (DMC)","Nero","Vergil","Lady","Trish","Bayonetta","Jeanne","Cereza","Joel (TLOU)","Ellie","Abby","Tommy","Nathan Drake (Uncraft)","Elena","Sully","Sam Drake","Chloe","Aloy (Horizon)","Rost","Spider-Man (Miles Morales - duplicate)","Batman (Arkham)","Commander Shepard (Mass Effect)","Garrus","Liara","Tali","Wrex","Geralt (dupe)","Ezio Auditore","Altair","Bayek","Eivor","Kassandra","Alexios","Connor","Edward Kenway","Arno","Jacob Frye","Evie Frye","Niko Bellic (GTA)","Trevor Philips","Franklin","Michael","CJ","Tommy Vercetti","Lamar","Chop","Agent 47","Diana","Sam Fisher (Splinter Cell)","Leon Kennedy (RE)","Jill Valentine","Chris Redfield","Claire Redfield","Ada Wong","Albert Wesker","Ethan Winters","Lady Dimitrescu","Isaac Clarke (Dead Space)","Artyom (Metro)","Gordon Freeman (Half-Life)","Alyx Vance","Chell (Portal)","GLaDOS","Wheatley","Jack (Bioshock)","Big Daddy","Little Sister","Booker DeWitt","Elizabeth","Andrew Ryan","Atlas","Steve (Minecraft)","Alex (Minecraft)","Creeper","Zombie","Enderman","Ender Dragon","Iron Golem","Herobrine","Among Us Crewmate/Impostor","Fall Guys","Peely (Fortnite)","Jonesy","Midas","Doomslayer","Master Chief (dupe)","Marcus Fenix (Gears)","Sam Porter (Death Stranding)","Arthur Morgan (RDR2)","John Marston","Dutch","Sadie","Bill","Javier","Micah","Sean","Charles","Kirito (SAO - already listed in anime)","Sonic chars","Lucario (Pokemon)","Ash Ketchum (Pokemon - cross)","Misty","Brock","Jessie & James","Meowth","Squirtle"]),
+                L("ตัวละครนิทาน/อื่น",["Santa Claus","Rudolph","Easter Bunny","Tooth Fairy","Jack Frost","Mother Nature","Father Time","Grim Reaper","Cupid","Peter Pan","Captain Hook","Tinker Bell","Wendy","Alice in Wonderland","Mad Hatter","Cheshire Cat","White Rabbit","Queen of Hearts","Pinocchio","Geppetto","Jiminy Cricket","Blue Fairy","Little Red Riding Hood","Big Bad Wolf","Snow White","7 Dwarfs","Evil Queen","Cinderella","Fairy Godmother","Prince Charming","Rapunzel","Sleeping Beauty","Gingerbread Man","Three Little Pigs","Three Billy Goats Gruff","Goldilocks & Three Bears","Rumpelstiltskin","Hansel & Gretel","Jack and the Beanstalk","Robin Hood","Maid Marian","Little John","Friar Tuck","Sheriff of Nottingham","King Arthur","Merlin","Lancelot","Guinevere","Morgana","Excalibur","Beauty and the Beast","Frog Prince","Ugly Duckling","Thumbelina","Dracula","Frankenstein's Monster","Wolfman","Mummy","Zombie","The Grinch","Scrooge","Tiny Tim","Ghosts of Christmas","Jack-O-Lantern","Headless Horseman","Sleepy Hollow (Ichabod)","Paul Bunyan","John Henry","Johnny Appleseed","Davy Crockett","Pecos Bill","King Midas","Odysseus","Hercules","Achilles","Zeus","Hades","Poseidon","Medusa","Minotaur","Cyclops","Pandora","Prometheus","Icarus","Thor (myth)","Odin","Loki (myth)","Freya","Yggdrasil","Krampus","Baba Yaga","Leprechaun","Gnome","Troll","Dwarf","Elf","Fairy","Dragon","Unicorn","Phoenix","Griffin","Mermaid","Centaur","Pegasus","Sphinx","Kraken","Loch Ness Monster","Bigfoot","Yeti","Chupacabra","Jackalope","Hydra","Cerberus"]))))),
+        "รวมถึงตัวการ์ตูนที่มีรูปร่างคน/สัตว์ที่มีบุคลิก"),
+      // NO: Animal or Plant
+      q("เป็นสัตว์มั้ย?",
+        q("เป็นสัตว์เลี้ยงทั่วไป?",
+          L("สัตว์เลี้ยง",["หมา (โกลเด้น, ชิวาวา, ปั๊ก, บูลด็อก, ชิสุ, ไซบีเรียน, ร็อตไวเลอร์, ปอมเมอเรเนียน, หมาไทย)","แมว (เปอร์เซีย, ไทย, สก็อตติชโฟล์ด, แร็กดอลล์, แมวดำ, แมวส้ม)","ปลาทอง","ปลาหมอสี","ปลาคาร์ป","ปลากัด","ปลานิโม (การ์ตูน)","นกแก้ว (แก้วมาคอร์, แก้วค็อกคาเทล)","นกหงส์หยก","นกกระตั้ว","กระต่าย (Lop, Netherland Dwarf, Rex)","หนูแฮมสเตอร์","หนูตะเภา","หนูเจอร์บิล","เต่าญี่ปุ่น","เต่าบก","เต่าซูการ์","เฟอร์เรท","ชูการ์ไกลเดอร์","กิ้งก่าอีกัวน่า","มังกรเครา (Bearded Dragon)","ตุ๊กแกเกร็คโค","งูคอร์น","งูบอล","ปลาหางนกยูง","ปลาสอด","ปลากัด","ไก่แจ้","ไก่ชน","เม่นแคระ","เฟนเนกฟ็อกซ์","อัลปาก้า"]),
+          q("อยู่ในน้ำเป็นหลัก?",
+            q("เป็นสัตว์เลี้ยงลูกด้วยนมในน้ำ?",
+              L("สัตว์น้ำ mammal",["ปลาวาฬสีน้ำเงิน","ปลาวาฬเพชฌฆาต (Orca)","ปลาวาฬหลังค่อม","ปลาวาฬสเปิร์ม","ปลาวาฬเบลูก้า","ปลาวาฬนาร์วาล","โลมา (Bottlenose)","โลมาปากขวด","โลมาแม่น้ำ","แมวน้ำ","สิงโตทะเล","วอลรัส","พะยูน","มานาที","นากทะเล","นากแม่น้ำ","บีเวอร์"]),
+              q("เป็นปลา?",
+                L("ปลา",["ปลาฉลามขาว","ปลาฉลามหัวค้อน","ปลาฉลามเสือ","ปลาฉลามวาฬ","ปลาฉลามแมว","ปลานีโม (Clownfish)","ปลาการ์ตูน","ปลาทู","ปลาดุก","ปลาไหล","ปลาเก๋า","ปลากระพง","ปลาปิรันย่า","ปลาคาร์ป","ปลาแซลมอน","ปลาทูน่า","ปลาอินทรี","ปลาจาระเม็ด","ปลากะพงดำ","ปลาแมวน้ำ","ปลาสเตอร์เจียน","ปลาซาดีน","ปลาแองโชวี่","ปลามังกร","ปลาเสือ","ปลาหางนกยูง","ปลาสอด","ปลากัด","ปลาบึก","ปลาสวาย","ปลาแรด","ปลากราย","ปลาช่อน","ปลาหมอ","ปลานิล","ปลาตะเพียน","ปลาสลิด","ปลาไหลไฟฟ้า","ปลาหมึก (ไม่ใช่ปลา)","ปลาฉนาก","ปลากระเบน","ปลาสี่ตา","ปลาน้ำแข็ง","ปลาดาว (ไม่ใช่ปลา)"]),
+                L("สัตว์น้ำอื่น",["ปลาหมึกยักษ์ (Octopus)","ปลาหมึกกล้วย (Squid)","ปลาหมึกกระดอง","กุ้ง","กุ้งล็อบสเตอร์","กุ้งมังกร","กั้ง","ปู","ปูเสฉวน","ปูม้า","ปูทะเล","ดาวทะเล","ปลาดาว","เม่นทะเล","แตงกวาทะเล (Sea Cucumber)","แมงกะพรุน (Box Jellyfish, Moon Jellyfish)","ปะการัง","หอยเชลล์","หอยนางรม","หอยแมลงภู่","หอยเป๋าฮื้อ","หอยทาก","หอยโข่ง","เต่าทะเล (Leatherback, Green)","จระเข้น้ำจืด","จระเข้ตีนเป็ด","กบ","คางคก","ซาลาแมนเดอร์","แอกโซลอเติล (Axolotl)","ปลิง","เหล่านกเพนกวิน (ไม่ใช่ นกอยู่ในแยกต่างหาก)","ฮิปโปเฉพาะในน้ำ (ก้ำกึ่ง)","ตัวนิ่ม (Platypus)"]))),
+            q("บินได้?",
+              q("เป็นนก?",
+                L("นก",["นกกระจอก","นกอินทรี","นกเหยี่ยว","นกแร้ง","นกกระทา","นกฮูก","นกเค้าแมว","นกยูง","นกยูงขาว","นกเพนกวิน (จักรพรรดิ, อาเดลี, ชินสแทรป, โกลบอย)","นกกระสา","นกกระยาง","นกกระเรียน","นกกระยางโทน","ไก่ (ไทย, ชน, แจ้)","ไก่ฟ้า","ไก่งวง","เป็ด","เป็ดแมนดาริน","ห่าน","หงส์","นกพิราบ","นกเขา","นกแก้ว (มาคอร์, ค็อกคาทู, ค็อกคาเทล, แอฟริกันเกรย์)","นกหงส์หยก","นกคีรีบูน","นกคานารี","นกกระเต็น","นกนางแอ่น","นกนางนวล","นกกาฮัง","นกเงือก","นกแก้วกระเต็นน้อย","นกอัลบาทรอส","นกโดโด (สูญพันธุ์)","นกกาเหว่า","นกกระเต็นคอหัก","นกตะขาบทุ่ง","นกขมิ้น","นกแสก","นกกรงหัวจุก","นกปรอด","นกกางเขน","นกกาน้ำ","นกกิ้งโครง","นกกะรางหัวขวาน","นกเขนน้อย","นกตีทอง","นกจาบคา","นกเป็ดผี","ฟีนิกซ์ (ตำนาน-ตัดออก)"]),
+                L("แมลงบิน/สัตว์บินอื่น",["ผีเสื้อ (Swallowtail, Monarch, Morpho)","ผีเสื้อกลางคืน","ผึ้ง","ผึ้งต่อ","ต่อ","แตน","ยุง","แมลงปอ","แมลงวัน","แมลงเม่า","แมลงสาบ (บินได้)","ค้างคาว","ค้างคาวแม่ไก่","ค้างคาวดูดเลือดแวมไพร์","แมลงทับ","ตั๊กแตนบิน","ตั๊กแตนใบไม้","จั๊กจั่น","จิ้งหรีด","แมลงดานา","แมลงวันผลไม้","ไรฝุ่น (ไม่บิน-ตัดออก)","กระรอกบิน","บ่างบิน (Colugo)","งูบิน (Paradise Tree Snake)","ปลาบิน (Flying Fish)","กระรอกบินแดง","นกแก้วบิน"])),
+              q("ใหญ่กว่าคนมั้ย?",
+                L("สัตว์ใหญ่",["ช้างแอฟริกา","ช้างเอเชีย","ช้างแมมมอธ (สูญพันธุ์)","ยีราฟ","ฮิปโปโปเตมัส","แรดขาว","แรดดำ","แรดอินเดีย","แรดสุมาตรา","วัว (ฮอลสไตน์, เจอร์ซีย์)","ควายไทย","ควายน้ำ","ควายป่า (Bison)","ม้า (อาระเบียน, ควอเตอร์, ไคลด์สเดล)","ม้าลาย","ม้าลายเกรวี่","ลา","ล่อ","หมี (กริซลี่, ขั้วโลก, ดำ, แพนด้าแดง, ควาย, หมาจากัว)","หมีขาว","หมีขั้วโลก","หมีแพนด้า","หมีหมาลาย","อูฐ (อาหรับ, แบ็กเตรียน)","ลามา","อัลปาก้า","กวางมูส","กวางเรนเดียร์","กวางคาริบู","กวางชะมด","กวางแดง","กวางลายจุด","ควายป่า (Wildebeest)","นกกระจอกเทศ (ใหญ่)","ยักษ์ช้างน้ำ (Manatee)"]),
+                q("เป็นสัตว์เลื้อยคลาน?",
+                  L("สัตว์เลื้อยคลาน/สะเทินน้ำ",["งูเห่า","งูจงอาง","งูหลาม","งูเหลือม","งูเขียวหางไหม้","งูปี่แก้ว","งูแสมรัง","งูปล้องฉนวน","งูอนาคอนด้า","งูราชา (King Cobra)","งูหางกระดิ่ง","งูเขียวมังกร","งูทะเล","งูน้ำ","งูเห่าอียิปต์","งูบูมสแลง","กิ้งก่า","กิ้งก่าคาเมเลี่ยน","กิ้งก่าบิน","กิ้งก่าสวน","อิกัวน่า","มังกรโคโมโด","มังกรเครา (Bearded Dragon)","จระเข้น้ำจืด","จระเข้น้ำเค็ม","ตะโขง (Gharial)","ไคแมน","อัลลิเกเตอร์","ตะกวด","เหี้ย","เต่า (ยักษ์, สะพานฯ, ดาว, ซูการ์, สเตปป์, แก้มแดง)","เต่าทะเล","เต่าญี่ปุ่น","เต่าเล็กจิ๋ว (ไม่ใช่)","ตุ๊กแก","จิ้งจก","จิ้งเหลน","ตุ๊กแกบ้าน","ไคเมร่า (ตำนาน-ตัดออก)","กบ (Bullfrog, Tree Frog, Poison Dart)","คางคก","เขียด","ซาลาแมนเดอร์","นิวท์ (Newt)","แอกโซลอเติล"]),
+                  q("เป็นแมลง/อาร์ทโรพอด?",
+                    L("แมลง/แมงมุม",["มด","มดแดง","มดดำ","มดง่าม","มดคันไฟ","ปลวก","แมลงสาบ (เยอรมัน, อเมริกัน)","แมงมุม (ทารันทูลา, แมงมุมแม่หม้ายดำ, แมงมุมใยทองคำ)","แมงมุมดำน้ำ","แมงป่อง","แมงป่องช้าง","ตะขาบ","กิ้งกือ","ตั๊กแตน","ตั๊กแตนปาทังก้า","จิ้งหรีด","แมลงดานา","มวนน้ำ","มดลูกกลิ้ง (ปลอก)","เห็บ","หมัด","ผึ้ง (บ้าน, ป่า, ภมร)","ต่อ","แตน","จั๊กจั่น","แมลงวันผลไม้","แมลงปอ","ไรฝุ่น","ไรน้ำ","เหา","กั๊กก่า (Tick)","แมลงเต่าทอง (Ladybug)","ด้วงกว่าง","ด้วงงวง","แมลงเหิน"]),
+                    L("สัตว์อื่นๆ",["ลิง (วอก, ลิงแสม, ลิงกัง)","ชิมแปนซี","กอริลล่า","อุรังอุตัง","บาบูน","ลีเมอร์","มาร์โมเซ็ต","ทามาริน","เสือโคร่ง","เสือดาว","เสือจากัวร์","เสือดำ","เสือลายเมฆ","เสือไฟ","เสือปลา","สิงโต","เสือชีต้า","เสือพูมา","หมาป่า (สีเทา, สีแดง, อาร์กติก)","หมาป่าไฮยีน่า","จิ้งจอก (แดง, อาร์กติก, เฟนเนก)","ลูกเชอะ (Dingo)","กวาง (ป่า, แดง, มูส, คาริบู)","แกะ","วัวมัสก์ (Musk Ox)","หมู","หมูป่า","แพะ","แพะภูเขา","ทาห์ร","จิงโจ้","วอลลาบี","โคอาล่า","วอมแบท","แทสเมเนียนเดวิล","พอสซัม","แพนด้ายักษ์","แพนด้าแดง","กระรอก","กระรอกบิน","กระต่ายป่า","กระต่ายโต","สกั๊งค์","เม่น","เม่นแคระ","อาร์มาดิลโล","ตัวกินมด (Anteater)","พังพอน","สัตว์ตระกูลแบดเจอร์","หนูตะเภา","หนูบ้าน","หนูนา","หนูคาปิบารา","ชินชิลล่า","แซสควอทช์ (Bigfoot ตำนาน-ตัดออก)","หมีขาว (duplicate)","โคอาล่า","ค้างคาว (แยกเป็นบินได้)","ตัวนิ่ม (Pangolin)","ลิ่น","อาร์ดวาร์ก","เฮจฮอก"]))))))),
+        q("เป็นผลไม้?",
+          q("เป็นผลไม้ไทย/เมืองร้อน?",
+            L("ผลไม้ไทย",["ทุเรียน (หมอนทอง, ชะนี, ก้านยาว, หลงลับแล, มูซานคิง)","มะม่วง (น้ำดอกไม้, เขียวเสวย, อกร่อง, มหาชนก, โชคอนันต์, แก้ว)","มังคุด","เงาะ","ลำไย","ลิ้นจี่","กล้วย (หอม, น้ำว้า, ไข่, เล็บมือนาง)","สับปะรด (ภูเก็ต, ศรีราชา)","มะพร้าว (อ่อน, น้ำหอม)","ส้มโอ (ขาวแป้น, ทับทิมสยาม)","ส้ม (เขียวหวาน, สีทอง)","ชมพู่","ฝรั่ง","น้อยหน่า","น้อยโหน่ง","มะละกอ","แตงโม","แตงไทย","แก้วมังกร","ขนุน","จำปาดะ","ลูกพลับ","ละมุด","ลางสาด","ลองกอง","สละ","ระกำ","สตอเบอร์รี่ดอย","มะยม","มะขาม (หวาน, เปรี้ยว)","ลูกหว้า","มะเฟือง","มะกอก (ไทย, ฝรั่ง)","ชมพู่มะเหมี่ยว","มะปราง","มะไฟ","ลูกตาลโตนด","ลูกจาก","ลูกพุทรา","ลูกหยี","ลูกพลับไทย","แก้ว (Star Gooseberry)","ทุเรียนน้ำ (Soursop - ไม่ใช่ไทยแท้)","มะยงชิด"]),
+            L("ผลไม้ต่างประเทศ",["แอปเปิ้ล (ฟูจิ, กาล่า, กรานนี่สมิธ, รอยัล ฮันนี่)","องุ่น (เขียว, แดง, ม่วง, ไร้เมล็ด)","สตรอเบอร์รี่","บลูเบอร์รี่","ราสเบอร์รี่","แบล็คเบอร์รี่","แครนเบอร์รี่","กีวี่ (เขียว, ทอง)","เชอร์รี่ (หวาน, เปรี้ยว)","พีช","เนคทารีน","แพลม","พรุน","อะพริคอท","ทับทิม","ลูกแพร์","ลูกแพร์เอเชีย","เลม่อน","มะนาว","เกรปฟรุต","มะละกอฮาวาย","แพชชั่นฟรุต","มะเขือเทศราชินี","อะโวคาโด","มะม่วงฮาวาย","ผลไม้ยุ้ง (Jackfruit - Thai)","เสาวรส","ลูกฟิก","อินทผาลัม","ผลไม้มังกร","ผลไม้ยุง","ขนุนอินเดีย (Jakaria)","มัลเบอร์รี่","เชอร์รี่ยุโรป","เบอร์รี่อื่นๆ (Goji, Acai, Elderberry)","ทิวลิปผลไม้ (ไม่มี-ตัดออก)","เฟิร์สเบอร์รี่","ดูเรียน (ตัดออก-เป็นไทย)","มะขามเทศ","สับปะรดฮาวาย"])),
+          q("เป็นดอกไม้?",
+            L("ดอกไม้",["กุหลาบ (แดง, ขาว, ชมพู, เหลือง, ดำ)","กุหลาบมอญ","ทานตะวัน","บัว (บัวหลวง, บัวสาย, บัวกระด้ง, บัววิคตอเรีย)","กล้วยไม้ (แวนด้า, เดนโดรเบียม, รองเท้านารี, แคทลียา, ฟาแลนนอปซิส, ออนซิเดียม, หวายสายลม)","ดาวเรือง","ทิวลิป (แดง, เหลือง, ขาว, ม่วง, ดำ)","ซากุระ (โยชิโนะ, คาวาซึ, ชิดาเระ)","เดซี่","ลาเวนเดอร์","ลิลลี่ (ขาว, คาลล่า, ไทเกอร์, สตาร์เกเซอร์)","ดอกไฮเดรนเยีย","ดอกมะลิ","พุทธรักษา","เฟื่องฟ้า","ดาวกระจาย","ดาวอินคา","ชบา","ชบาไทย","ดอกเข็ม","ดอกพุด","ดอกแก้ว","ดอกจำปี","ดอกจำปา","ดอกลีลาวดี","ดอกเฟื่องฟ้า","ดอกราชพฤกษ์ (คูน)","ดอกทองกวาว","ดอกนนทรี","ดอกปาริชาต","ดอกบานไม่รู้โรย","ดอกบานเย็น","ดอกพวงแสด","ดอกพวงคราม","ดอกเข็มป่า","ดอกชมนาด","ดอกกระถิน","ดอกอัญชัน","ดอกเข็มญี่ปุ่น","ดอกคาร์เนชั่น","ดอกไอริส","ดอกฟรีเซีย","ดอกยิปโซฟิเลีย","ดอกยิปโซ","ดอกกระเจียว","ดอกปทุมมา","ดอกไวโอเล็ต","ดอกเบญจมาศ","ดอกเยอบีร่า","ดอกบัวสวรรค์ (Amaryllis)","ดอกป๊อปปี้","ดอกดาเลีย","ดอกแพนซี่","ดอกมาริโกลด์","ดอกแอสเตอร์","ดอกไฮเดรนเยีย (สีฟ้า, ชมพู, ขาว)","ดอกซินเนีย","ดอกสโนว์ดรอป","ดอกเจอเรเนียม","ดอกลิลลี่ออฟเดอะวัลเลย์","ดอกนาร์ซีสซัส","ดอกแดฟโฟดิล","ดอกฮอลลีฮอค","ดอกสวีทพี","ดอกสวีทวิลเลียม","ดอกสน็อปดราก้อน","ดอกแลนแทนา","ดอกปิทูเนีย","ดอกลูปิน","ดอกพิโอนี","ดอกโบตั๋น","ดอกอะซาเลีย","ดอกเกรวิลเลีย","ดอกแคร็สซูล่า","ดอกบลูเบล","ดอกคอสโมส","ดอกโครคัส","ดอกเอเดลไวส์","ดอกแมกโนเลีย","ดอกพลัมบลอสซัม","ดอกไวลด์ฟลาวเวอร์","ดอกดาวประกาย","ดอกชงโค","ดอกกัลปพฤกษ์","ดอกตาลเดี่ยว","ดอกทิวลิปไทย","ดอกชัยพฤกษ์","ดอกขจร","ดอกกระดังงา","ดอกโคลงเคลง","ดอกบานบุรี","ดอกคุณนายตื่นสาย","ดอกบุหงารำไป"]),
+            q("เป็นผัก?",
+              L("ผัก",["ผักกาดขาว","ผักกาดหอม","ผักกาดเขียวปลี","ผักกาดแก้ว","ผักกวางตุ้ง","ผักโขม","ผักชี","ผักชีลาว","ผักชีฝรั่ง","ผักบุ้งจีน","ผักบุ้งไทย","ผักคะน้า","ผักบร็อคโคลี","ผักกะหล่ำดอก","ผักกะหล่ำปลี","ผักกะหล่ำปลีม่วง","ผักกะหล่ำดาว (Brussels Sprouts)","ผักเคล","ผักสะระแหน่","ผักสลัด (Romaine, Iceberg, Butterhead, Lollo Rossa)","ใบบัวบก","ใบโหระพา","ใบกะเพรา","ใบแมงลัก","ใบมะกรูด","ใบยี่หร่า","ใบเตย","ตะไคร้","ข่า","ขิง","ขมิ้น","กระชาย","กระเทียม","หอมใหญ่","หอมแดง","ต้นหอม","กุยช่าย","ผักชีลาว","แครอท","มันฝรั่ง","มันเทศ","มันม่วง","มันสำปะหลัง","หัวไชเท้า","หัวผักกาดแดง (บีท)","หัวบุก","หัวเผือก","แรดิช","เห็ด (ฟาง, หูหนู, เข็มทอง, เป๋าฮื้อ, หอม, โคน, ชิตาเกะ, พอร์โตเบลโล่, ออยสเตอร์, ทรัฟเฟิล)","บรอกโคลี","กะหล่ำ","ข้าวโพด","ข้าวโพดอ่อน","ข้าวโพดหวาน","ข้าวโพดม่วง","ถั่วฝักยาว","ถั่วแขก","ถั่วลันเตา","ถั่วแระ","ถั่วเขียว","ถั่วเหลือง (ตัวสด)","ถั่วงอก","ถั่วพู","มะเขือเทศ","มะเขือเทศราชินี","มะเขือเทศเชอร์รี่","มะเขือยาว","มะเขือเปราะ","มะเขือพวง","มะเขือเทศสีม่วง","พริก (พริกขี้หนู, พริกชี้ฟ้า, พริกหยวก, พริกยักษ์, พริกไทย)","พริกหวาน (เขียว, แดง, เหลือง, ส้ม)","พริกฮาลาปิโน","พริกสกอต","ฟักทอง","ฟักเขียว","ฟักแม้ว","ฟัก","บวบ","บวบหอม","บวบเหลี่ยม","แตงกวา","แตงร้าน","แตงไทย (เพื่อผัก)","ซูกินี่","หน่อไม้","หน่อไม้ฝรั่ง","รากบัว","สายบัว","ดอกแค","ดอกสลิด","ดอกขจร","ใบชะพลู","ใบมะยม","ชะอม","ผักกูด","ผักเหลียง","สะเดา","ผักหวาน","ผักแพว","มะรุม","กระถิน","ส้มป่อย","บอนหวาน","สาหร่ายทะเล (วากาเมะ, โนริ, คอมบุ, เฮจิกิ)","สาหร่ายสไปรูลิน่า","รากบัว","ขึ้นฉ่าย","คื่นฉ่าย (จีน)","อาร์ติโชก","แรดิกคิโอ","สะตอ","ลูกเนียง"]),
+              L("ต้นไม้/อื่น",["ต้นไผ่","ต้นไผ่หวาน","ต้นไผ่ทอง","ต้นสัก","ต้นมะพร้าว","ต้นตาล","ต้นหมาก","ต้นยางนา","ต้นตะเคียน","ต้นประดู่","ต้นมะค่าโมง","ต้นมะฮอกกานี","ต้นโพธิ์","ต้นไทร","ต้นโอ๊ก","ต้นเมเปิล (Maple)","ต้นสน (Pine)","ต้นสนไซปรัส","ต้นซีดาร์","ต้นเฟอร์","ต้นแปะก๊วย (Ginkgo)","ต้นเรดวู้ด","ต้นเซควอย่า","ต้นเบิร์ช","ต้นวิลโลว์ (Willow)","ต้นบาวบับ (Baobab)","ต้นจามจุรี","ต้นกระถิน","ต้นกระถินณรงค์","ต้นกระท้อน","ต้นสะเดา","ต้นลีลาวดี","ต้นลำไย (ต้น)","ต้นมะม่วง (ต้น)","ต้นกล้วย","ต้นปาล์ม (ปาล์มน้ำมัน, ปาล์มขวด, ปาล์มอินทผาลัม)","ต้นคริสต์มาส","ต้นขนุน","ต้นหูกระจง","ต้นขี้เหล็ก","ต้นราชพฤกษ์","ต้นกระพี้จั่น","ต้นสาธร","ต้นหว้า","ต้นพิกุล","ต้นจันทน์หอม","ต้นสักทอง","ต้นหม่อน","ต้นยูคาลิปตัส","ต้นอะเคเซีย","กระบองเพชร (Cactus)","กระบองเพชรซาวาโร","แคคตัสยิมโน","แคคตัสโลบิเวีย","อะกาเว (Agave)","กระบองเพชรแก้วมังกร","ว่านหางจระเข้","ว่านสี่ทิศ","ว่านงาช้าง","ไผ่ลัคกี้","ลิ้นมังกร","พลูด่าง","มอนสเตอร่า","ฟิโลเดนดรอน","ไม้ด่าง","ไม้ประดับใบ (คาลาเธีย, อโกลนีมา)","ไม้น้ำ (อนูเบียส, ไฮโกรไฟลา)","เฟิร์น (ใบมะขาม, ก้านดำ, บอสตัน, นาคราช)","มอส","ไลเคน","สาหร่ายทะเล","สาหร่ายไก","บอนไซ (ไทร, สน, เมเปิล, จูนิเปอร์)","ไม้ดอกหอม (ราตรี, พุดซ้อน, แก้วเจ้าจอม)","หญ้า (หญ้านวลน้อย, หญ้ามาเลเซีย, หญ้าหวาน)","ไมยราบ","กะเพราเงิน","พืชดักแมลง (หม้อข้าวหม้อแกงลิง, กาบหอยแครง, หยาดน้ำค้าง)","เครื่องเทศสด (กระวาน, ดีปลี)","สมุนไพรไทย (ฟ้าทะลายโจร, กระชายขาว, ใบบัวบก)"]))))),
+      "เลือก Yes ถ้าเป็น คน/สัตว์/พืช/ตัวการ์ตูน"),
+    // ====== NO: NOT LIVING / OBJECT / ABSTRACT ======
+    q("จับต้องได้ (มีรูปร่างทางกายภาพ) มั้ย?",
+      // YES: Physical object
+      q("กินได้มั้ย?",
+        // Food
+        q("เป็นอาหารคาว (ไม่ใช่ขนม/เครื่องดื่ม)?",
+          q("เป็นอาหารไทย?",
+            L("อาหารไทย",["ต้มยำกุ้ง","ต้มยำน้ำข้น","ต้มยำน้ำใส","ต้มยำปลา","ต้มยำไก่","ต้มข่าไก่","ต้มข่าปลา","ต้มแซ่บ","ต้มเล้งแซ่บ","ต้มโคล้ง","ต้มจืดวุ้นเส้น","ต้มจืดเต้าหู้","ต้มจืดมะระ","ต้มจิ๋ว","ผัดไทย","ผัดไทยกุ้งสด","ผัดไทยใส่ไข่","ผัดซีอิ๊ว","ผัดซีอิ๊วหมู","ผัดขี้เมา","ผัดราดหน้า","ราดหน้า","ราดหน้าหมู","ผัดกะเพรา","ผัดกะเพราหมูสับ","ผัดกะเพราไก่","ผัดกะเพราเนื้อ","ผัดกะเพราทะเล","ผัดพริกแกง","ผัดฉ่า","ผัดเผ็ด","คั่วกลิ้ง","ผัดพริกเผา","ผัดผัก","ผัดผักรวม","ผัดผักบุ้งไฟแดง","ผัดผักกวางตุ้ง","ผัดคะน้าหมูกรอบ","ผัดกะหล่ำปลี","ส้มตำ","ส้มตำไทย","ส้มตำปู","ส้มตำปูปลาร้า","ส้มตำไข่เค็ม","ส้มตำถาด","ส้มตำโคราช","ตำซั่ว","ตำมั่ว","ตำไข่เยี่ยวม้า","ลาบ","ลาบหมู","ลาบไก่","ลาบเป็ด","ลาบปลา","ลาบเหนือ (ลาบคั่ว)","น้ำตก","น้ำตกหมู","น้ำตกเนื้อ","คอหมูย่าง","หมูยอ","ไส้อั่ว","แหนม","น้ำพริก","น้ำพริกกะปิ","น้ำพริกปลาทู","น้ำพริกอ่อง","น้ำพริกหนุ่ม","น้ำพริกมะเขือเทศ","น้ำพริกปลาร้า","ข้าวผัด","ข้าวผัดหมู","ข้าวผัดไก่","ข้าวผัดกุ้ง","ข้าวผัดสับปะรด","ข้าวผัดปู","ข้าวผัดอเมริกัน","ข้าวผัดแหนม","ข้าวผัดพริกแกง","ข้าวคลุกกะปิ","ข้าวมันไก่","ข้าวขาหมู","ข้าวหน้าเป็ด","ข้าวหมูแดง","ข้าวหมูกรอบ","ข้าวหมกไก่","ข้าวซอย","ข้าวซอยไก่","ข้าวซอยเนื้อ","ข้าวยำ","ข้าวยำปักษ์ใต้","ข้าวหมูทอด","ข้าวหน้าไก่","ข้าวหน้าเนื้อไทย","ข้าวไข่เจียว","ข้าวไข่ดาว","ข้าวเหนียวไก่ย่าง","ข้าวเหนียวหมูปิ้ง","ข้าวเหนียวหมูทอด","ข้าวเหนียวหมูย่าง","ข้าวเหนียวไก่ทอด","ข้าวเหนียวส้มตำ","ข้าวกล่อง","ก๋วยเตี๋ยว","ก๋วยเตี๋ยวน้ำใส","ก๋วยเตี๋ยวน้ำตก","ก๋วยเตี๋ยวต้มยำ","ก๋วยเตี๋ยวเนื้อเปื่อย","ก๋วยเตี๋ยวเย็นตาโฟ","ก๋วยเตี๋ยวเรือ","ก๋วยเตี๋ยวหมูตุ๋น","ก๋วยเตี๋ยวไก่","ก๋วยเตี๋ยวเป็ด","ก๋วยเตี๋ยวลูกชิ้น","ก๋วยเตี๋ยวลุยสวน","ก๋วยเตี๋ยวคั่วไก่","ก๋วยจั๊บ","ก๋วยจั๊บญวน","หมี่กรอบ","หมี่หุ้น","เส้นใหญ่","เส้นเล็ก","บะหมี่เกี๊ยว","บะหมี่หมูแดง","บะหมี่เป็ด","แกงเขียวหวาน","แกงเขียวหวานไก่","แกงเขียวหวานเนื้อ","แกงเหลือง","แกงส้ม","แกงส้มชะอมไข่","แกงส้มกุ้ง","แกงเผ็ด","แกงเผ็ดเป็ดย่าง","แกงมัสมั่น","แกงมัสมั่นเนื้อ","แกงมัสมั่นไก่","แกงพะแนง","แกงพะแนงหมู","แกงกะหรี่","แกงกะหรี่ไก่","แกงป่า","แกงเทโพ","แกงเลียง","แกงบอน","แกงอ่อม","แกงไตปลา","แกงคั่ว","แกงคั่วสับปะรด","แกงเผ็ดปลาดุกย่าง","แกงเผ็ดไก่","แกงเผ็ดเป็ด","ยำ","ยำวุ้นเส้น","ยำทะเล","ยำรวมมิตร","ยำหมูยอ","ยำเนื้อย่าง","ยำแหนมสด","ยำถั่วพู","ยำตะไคร้","ยำส้มโอ","ยำสลัด","สเต็กไทย","ไข่เจียว","ไข่เจียวปู","ไข่ดาว","ไข่ลูกเขย","ไข่พะโล้","พะโล้","ไก่ทอด","ไก่ย่าง","ไก่ย่างวิเชียรบุรี","ไก่ย่างเขาสวนกวาง","ไก่สะเต๊ะ","หมูสะเต๊ะ","หมูกรอบ","หมูปิ้ง","หมูทอดกระเทียม","หมูทอด","ปลาทอด","ปลาเผา","ปลานึ่งมะนาว","ปลาราดพริก","ปลาสามรส","ปลาดุกฟู","ปลากะพงทอดน้ำปลา","กุ้งเผา","กุ้งอบวุ้นเส้น","หอยทอด","หอยแมลงภู่อบสมุนไพร","ปูผัดผงกะหรี่","ปูนิ่มผัดผงกะหรี่","ไข่เยี่ยวม้า","สาคูไส้หมู","ขนมจีน","ขนมจีนน้ำยา","ขนมจีนน้ำพริก","ขนมจีนซาวน้ำ","สุกี้","สุกี้แห้ง","จิ้มจุ่ม","หมูกระทะ","ปลาร้า","ยำปลาร้า","ห่อหมก","ห่อหมกปลา","ข้าวต้มมัด","ข้าวต้มปลา","ข้าวต้มกุ้ง","โจ๊ก","โจ๊กหมู","โจ๊กปลา","ขนมบ้าบิ่น","ขนมเบื้อง"]),
+            q("เป็นอาหารเอเชีย?",
+              q("เป็นอาหารญี่ปุ่น?",
+                L("อาหารญี่ปุ่น",["ซูชิ","ซูชิชั้นเทพ","ซาชิมิ","นิกิริ","โรล (แคลิฟอร์เนียโรล, สไปซี่ทูน่าโรล)","อุราคามิ","ไก่ยากิโทริ","ชิราชิ","ราเมง","ราเมงโชยุ","ราเมงชิโอ","ราเมงมิโซะ","ราเมงต้นเค็ง","ตงคตสึราเมง","อุด้ง","คาเกะอุด้ง","เคียวสุเนะอุด้ง","ซารุอุด้ง","โซบะ","ซารุโซบะ","คาเกะโซบะ","เทมปุระ","เทมปุระกุ้ง","เทมปุระผัก","คัตสึ","ทงคัตสึ","หมูทอดคัตสึ","ชิคเคนคัตสึ","คัตสึด้ง","โอยาโกะด้ง","เกียวด้ง","กินด้ง","เท็นด้ง","อุนะจูง","ข้าวหน้าปลาไหล","ข้าวแกงกะหรี่ญี่ปุ่น","ข้าวแกงกะหรี่คัตสึ","ยากินิกุ","ชาบูชาบู","สุกี้ยากิ","โอโคโนมิยากิ","ทาโกะยากิ","ยากิโซบะ","ยากิทาอิ","โอเด้ง","นัตโต","ชิราทามะ","โมจิเค็ก","ดังโกะ","ดอรายากิเค็ม","มิโซะซุป","มิโซะซุปหอย","ข้าวกล่องเบนโตะ","โอนิกิริ","คาราอาเกะ","ปลาย่างซาบะ","ปลาย่างหอบ","แกงกะหรี่ข้าว","ไก่เทริยากิ","ปลาแซลมอนเทริยากิ","ซาลาดกรอบ","อะโกยะ","จิ๊บคู่ (Chazuke)","นามิ","บุตุน (Broth rice)","ไคเซกิ","โทโระ","ข้าวหน้าปลาดิบ (ดงบูริ)"]),
+                q("เป็นอาหารเกาหลี?",
+                  L("อาหารเกาหลี",["กิมจิ","กิมจิไฉ่โป๊ว","บิบิมบับ","บิบิมบับหิน","ต๋อกโบกี","ต๋อกโบกี (ทรงกระบอก)","จาจังมยอน","จับเช","ชัมปง","ซัมเกทัง","เนื้อย่างเกาหลี (บูลโกกี)","คาลบี","ซัมกยอปซัล","จิน้ยอก (หมูย่าง)","ซุนแด","ซุนแดกุก","ทุกบกี","แพ็กซูก","คิมบัพ","ซัมบับ","ต๋อกกุก","บูเต๊บ จี๊เค่ (สตูกิมจิ)","ขนมจีบเกาหลี (มันดู)","ฮ็อตด็อกชีส","ไก่ทอดเกาหลี (ยังยอม, กัญจัง)","ชิกึนชี","จาจังรัก (แกงดำ)","ราเมนเกาหลี","บูแดจิเก","เนื้อตุ๋นเกาหลี","ซี๋ฟู้ดเทพอัน","นามุล (ผักดอง)","คนนามุล (ถั่วงอกปรุงรส)","โจชิ้น (ข้าวต้ม)"]),
+                  q("เป็นอาหารจีน?",
+                    L("อาหารจีน",["ติ่มซำ","ฮะเก๋า","ขนมจีบ","ซาลาเปา","ซาลาเปาหมูแดง","ซาลาเปาไส้ครีม","เกี๊ยว","เกี๊ยวกุ้ง","เกี๊ยวหมู","เกี๊ยวน้ำ","ข้าวผัดหยางโจว","ข้าวผัดกระเทียม","ข้าวต้มกระดูกหมู","ข้าวหน้าเนื้อจีน","ก๋วยเตี๋ยวจีน","ก๋วยเตี๋ยวหมูแดง","ก๋วยเตี๋ยวเนื้อ","บะหมี่เกี๊ยวฮ่องกง","บะหมี่หยก","บะหมี่ฮกเกี้ยน","เป็ดปักกิ่ง","ไก่ตุ๋นตังกุย","หมูแดง","หมูกรอบจีน","หมูตุ๋น","ตุ๋นยาจีน","น่องไก่ตุ๋น","ปลานึ่งซีอิ๊ว","ปลาเจี๋ยน","ต้มจับฉ่าย","จับฉ่ายหม้อร้อน","หม้อไฟจีน (Hot Pot)","หม่าล่าทั้ง","หม่าล่าแห้ง","หม่าโปเต้าหู้","ไก่ก๊งเปา","เนื้อผัดบรอกโคลี","เนื้อผัดน้ำมันหอย","กุ้งมังกรซอสเจ","ผัดเปรี้ยวหวาน","ผัดเปรี้ยวหวานหมู","ผัดเปรี้ยวหวานไก่","หมี่ซั่ว","ข้าวหมูกรอบซอสดำ","ข้าวต้มกุ๊ย","โจ๊กจีน","โจ๊กไข่เยี่ยวม้า","เกาเหลา","ขนมไหว้เจ้า","หมูหันกวางตุ้ง","เป็ดย่างกวางตุ้ง","ไข่เยี่ยวม้า","ไก่แช่เหล้า","ซุปหูฉลาม","ซุปรังนก","ซุปเกาเหลา","กระเพาะปลา","ลูกชิ้นปลา","บะหมี่เจียง","เต้าหู้ทรงเครื่อง","ปอเปี๊ยะสด","ปอเปี๊ยะทอด"]),
+                    L("อาหารเอเชียอื่น",["เฝอ (เวียดนาม)","ปอเปี๊ยะเวียดนาม","บั๊นแม่","บั๊นเช่ว","บั๊นม่อน","ขนมเบื้องญวน","บุ๋น (เวียดนาม)","ส้มตำลาว","ข้าวปุ้น","อาหม็อก (กัมพูชา)","แกงกระหรี่อินเดีย","มาซาล่า","บัตเตอร์ชิคเก้น","ไก่ทันดอรี","บริยานี","นาน","โรตี","ดาลเปรี่ย","สะมาโซ","ดาลโทาน","บริยานี","ข้าวมันไก่สิงคโปร์","ลักซา","ฮินานเชซ์","ซาเตย์ (อินโดนีเซีย)","กาโด-กาโด","นาซีโกเรง","นาซีเลอมัก","เรนดัง","มาซ่าร่าปา","โลตี้คะนัน","เมียงไทย","ข้าวหมกเนื้อ","ไก่ตามมัสม่วน","เคบับ (ตุรกี)","โดเนอร์เคบับ","ฟาลาเฟล","ฮัมมัส","ชวาร์มา","คุสคุส","ทาจิน","โฟชายเจ๊าะ","ปาด (ฟิลิปปินส์)","ลัมปิย่า (ฟิลิปปินส์)","อะโดโบ้","ซิสิก","ฮาโลฮาโล","มาซาล่าข้าว","ชาปาตี","คาริไก่","ทิกกามาซาล่า","โครเนลซี (Khao Soi Laos)"])))),
+              L("อาหารตะวันตก",["พิซซ่า (มาร์เกอริต้า, เปปเปอโรนี่, ฮาวายเอี้ยน, ซีฟู้ด, บาร์บีคิว, ควอตโตรฟอร์มาจจี้)","พิซซ่าชิคาโก้สไตล์","พิซซ่านิวยอร์กสไตล์","พิซซ่านาโปลี","คาลโซเน","โฟกาเซีย","เบอร์เกอร์","ชีสเบอร์เกอร์","ดับเบิ้ลเบอร์เกอร์","เบอร์เกอร์เนื้อวากิว","สไลเดอร์ (Slider)","ฮอตดอก","ฮอตดอกชิคาโก้","คอร์นดอก","สปาเกตตี้","สปาเกตตี้โบโลเนส","สปาเกตตี้คาโบนาร่า","สปาเกตตี้มีทบอล","สปาเกตตี้อะกลิโอโอลิโอ","สปาเกตตี้ขี้เมา","สปาเกตตี้ผัดฉ่า","เพนเน่ (Penne)","ฟาร์ฟัลเล่ (โบว์ไท)","ฟูซิลลี่","ลิงกวินี","ราวีโอลี่","นย็อกคี่","ลาซานญ่า","ลาซานญ่าเนื้อ","ลาซานญ่าผัก","คาร์โบนาร่า","คาร์โบนาร่าเบคอน","ริซอตโต","ริซอตโตเห็ด","ริซอตโตกุ้ง","รีโซเล (Arancini)","สเต็ก","สเต็กริบอาย","สเต็กสเตเลียน","สเต็กเทนเดอร์ลอยน์","สเต็กทีโบน","สเต็กพอเตอร์เฮาส์","สเต็กเฟลมิ่ง","สเต็กซอสพริกไทยดำ","สเต็กเนื้อวากิว","พอร์คช็อป","แฮม","เบคอน","ซาลามี่","พรอชุตโต","ชอริโซ","ซอสเซจ","บราทเวิร์สท","ทาโก้ (Taco)","เบอร์ริโต้","ควีซาดียา","ฟาฮิต้า","นาโช่","เอนชิลาดา","ชิมิชังกา","แซนด์วิช","แซนด์วิชปลาทูน่า","แซนด์วิชไก่งวง","คลับแซนด์วิช","พานีนี","รูเบน","ซับมารีนแซนด์วิช","บาแก็ตต์","ครัวซองต์","เบเกิล","ทาร์ติน","สลัด","ซีซาร์สลัด","คอบบ์สลัด","กรีกสลัด","สลัดไก่งวง","สลัดผลไม้","ปาร์ม่าแฮมสลัด","ซุปฟักทอง","ซุปข้าวโพด","ซุปไก่ข้น","ซุปครีม","ซุปเห็ด","คลาม โชว์เดอร์ (Clam Chowder)","เฟรนช์ออนเนียนซุป","มินสตรอเน","กัซปาโช","โรสต์บีฟ","โรสต์ชิคเก้น","โรสต์เทอร์กี้ (ไก่งวง)","ไก่อบ","ไก่อบสมุนไพร","คอก โออู วาน (Coq au Vin)","เนื้อตุ๋นไวน์แดง","โอโซบุคโก","บีฟ เวลลิงตัน","ฟิชแอนด์ชิปส์","ฟิชและมันฝรั่งทอด","ปลาย่าง","ปลาดอรี่ทอด","แซลมอนย่าง","ล็อบสเตอร์เทอร์มิดอร์","เชพสิดรัมสติก","โรสตีด มัชรูม","แมคแอนด์ชีส","แมชโปเตโต้","เฟรนช์ฟรายส์","โปเตโต้วอเฟิล","แฮชบราวน์","โคลสลอว์","ไข่เบเนดิกต์","ออมเล็ต","ฟริตตาต้า","ชักชูกา","ไมค์ แอนด์ ชีส","ซูเฟล่คาวน"]))),
+          q("เป็นของหวาน/ขนม?",
+            q("เป็นขนมไทย?",
+              L("ขนมไทย",["บัวลอย","บัวลอยไข่หวาน","บัวลอยเผือก","บัวลอยสามสี","ขนมครก","ขนมครกน้ำกะทิ","ทองหยิบ","ทองหยอด","ฝอยทอง","ทองม้วน","ทองเอก","เม็ดขนุน","จ่ามงกุฎ","ขนมหม้อแกง","ขนมหม้อแกงถั่ว","ขนมหม้อแกงเผือก","ข้าวเหนียวมะม่วง","ข้าวเหนียวทุเรียน","ข้าวเหนียวหน้ากุ้ง","ข้าวเหนียวหน้าปลาแห้ง","ข้าวเหนียวตัด","ข้าวเหนียวปิ้ง","ข้าวเหนียวสังขยา","กล้วยบวชชี","กล้วยเชื่อม","กล้วยแขก","กล้วยทอด","กล้วยปิ้ง","กล้วยตาก","กล้วยฉาบ","ลอดช่อง","ลอดช่องสิงคโปร์","ลอดช่องน้ำกะทิ","รวมมิตร","รวมมิตรน้ำแข็งใส","ซ่าหริ่ม","ขนมถ้วย","ขนมชั้น","ขนมเปียกปูน","วุ้นกะทิ","วุ้นกะทิใบเตย","วุ้นน้ำมะพร้าว","เต้าส่วน","สาคูไส้หมู","สาคูไส้หวาน","สาคูเปียก","ขนมเทียน","ขนมเทียนแก้ว","ขนมเข่ง","ขนมสอดไส้","ขนมใส่ไส้","ขนมบ้าบิ่น","ขนมเบื้อง","ขนมเบื้องไทย","ขนมเบื้องญวน","ขนมตาล","ขนมกล้วย","ขนมฟักทอง","ขนมมันสำปะหลัง","ขนมถั่วแปบ","ขนมต้ม","ขนมต้มขาว","ขนมต้มแดง","ขนมจาก","ขนมเปี๊ยะลำปาง","ข้าวต้มมัด","ข้าวต้มน้ำวุ้น","ข้าวเม่า","ข้าวเม่าทอด","ข้าวเม่าคลุก","ข้าวโพดต้ม","ข้าวโพดปิ้ง","กล้วยย่าง","สังขยาฟักทอง","สังขยาใบเตย","ถั่วแปบ","หม้อแกงไข่","ข้าวแช่","ข้าวหลาม","ข้าวหลามเผือก","เฉาก๊วย","เฉาก๊วยนมสด","น้ำแข็งไส","น้ำแข็งใสโบราณ","ขนมสามเกลอ","ขนมดอกลำดวน","ขนมโสมนัส","สลิ่ม","สลิ่มดอกมะลิ","กะละแม","ขนมข้าวเหนียวเปียก","ขนมข้าวโพด","ขนมเทียนหยด","ฟักทองแกงบวด","ถั่วเขียวต้มน้ำตาล","สับปะรดกวน","ทุเรียนกวน","ลูกชุบ","ขนมปุยฝ้าย","บุหลันดั้นเมฆ","ตะโก้","ตะโก้เผือก","ตะโก้สาคู","ข้าวตู","ข้าวตอก"]),
+              q("เป็นขนมเอเชีย (ญี่ปุ่น/เกาหลี/จีน)?",
+                L("ขนมเอเชีย",["โมจิ","โมจิไดฟูกุ","ดังโกะ","มิตาราชิดังโกะ","ฮานามิดังโกะ","ไทยากิ","โดรายากิ","ไดฟูกุ","อิจิโกะไดฟูกุ","สตรอเบอร์รี่ไดฟูกุ","มันจู","มัทฉะเค้ก","มัทฉะลาเต้เค้ก","คาสเทลล่า","วาราบิโมจิ","โยคัง","โอฮางิ","อนมิตสึ","ไทยากิไอศกรีม","ไทยากิคุกกี้","ซากุระโมจิ","คาชิวะโมจิ","มิซุโยคัง","เซมเบ้","สิ่งพันพัน (Uirou)","อิมาเกาวาเยกิ","อิมังอะซุกิ","ดาลโกนา","ดาลโกนากาแฟ","พัทบิงซู","บิงซู","ทก (ต็อก)","โฮต็อก","ต็อกบกกี (Sweet)","ชัลโฮต็อก","ดาคูอาจิ","ซัลดัก","ซัลดังบิง","ยักขวา","ขนมเปี๊ยะ","ขนมเปี๊ยะลำปาง","ขนมไหว้พระจันทร์","ขนมไหว้พระจันทร์ไข่แดง","ขนมไหว้พระจันทร์ทุเรียน","ตังหยวน","ตังหยวนไส้งา","เต้าฮวย","เต้าฮวยน้ำขิง","เต้าฮวยฟรุตสลัด","บั๊วลี่โกะ","ซาลาเปาไส้ครีม","จิ่วเหนียง (ทรัฟเฟิลจีน)","เต้าซ้อ","ขนมถ้วยฟูจีน","ขนมมันแกวจีน","ลูกชุบ (เกาหลี)","ยังเกอง","ชวี่โจวเกา","เอ้อหวงก๋วย (Guo)","ขนมเหลา","น้ำแข็งใสเกาหลี","น้ำแข็งไสฮ่องกง","ไอศกรีมมัทฉะ","ไอศกรีมเผือก","ซานกวงต้มน้ำ"]),
+                L("ขนมตะวันตก/สากล",["เค้ก (ช็อกโกแลต, วนิลา, สตรอเบอร์รี่, บลูเบอร์รี่, กาแฟ, แครอท)","เค้กล้มเด้ก (Tres Leches)","เค้กวันเกิด","เค้กแต่งงาน","โดนัท","โดนัทเคลือบ","โดนัทไส้ครีม","โดนัทกลม","ไอศกรีม","ไอศกรีมโคน","ไอศกรีมถ้วย","ไอศกรีมซันเดย์","ไอศกรีมโบราณ","ไอศกรีมรสชาเขียว","ไอศกรีมรสช็อกโกแลต","ไอศกรีมรสสตรอเบอร์รี่","ไอศกรีมรสมะม่วง","โฟรโยเกิร์ต","บราวนี่","บราวนี่ช็อกโกแลต","บราวนี่ลาวา","มาการอง","มีลเฟย (Mille-feuille)","เครปเค้ก","เครปกรอบ","ดูรี","ช็อกโกแลต","ช็อกโกแลตเห็ด","ช็อกโกแลตฟัดจ์","คุกกี้","คุกกี้ช็อกโกแลตชิป","คุกกี้ออตมีล","พุดดิ้ง","พุดดิ้งไข่","พุดดิ้งคาราเมล","ราเมลบรูเล่","ทิรามิสุ","ทิรามิสุมัทฉะ","ครัวซองต์","ครัวซองต์เห็ด","ครัวซองต์ไส้ต่างๆ","ครีมบรูเล่","ชีสเค้ก","ชีสเค้กญี่ปุ่น","ชีสเค้กเบซิล","ชีสเค้กลาวา","ทาร์ต","ทาร์ตผลไม้","ทาร์ตลิ้นจี่","ทาร์ตเลมอน","ทาร์ตเชอร์รี่","ทาร์ตช็อกโกแลต","มูส","มูสช็อกโกแลต","มูสสตรอเบอร์รี่","พาฟโลวา","เอแคลร์","เอแคลร์ช็อกโกแลต","เอแคลร์ครีม","มัฟฟิน","มัฟฟินบลูเบอร์รี่","คัพเค้ก","ชูครีม","โปรฟิเทอโรล","แพนเค้ก","แพนเค้กผลไม้","แพนเค้กบลูเบอร์รี่","วาฟเฟิล","วาฟเฟิลเบลเยียม","เจลาโต้","ซอร์เบท์","ทรัฟเฟิลช็อกโกแลต","ฟัดจ์","มาร์ชเมลโล่","เยลลี่","กัมมี่","แคนดี้","คิตแคท","สนิกเกอร์ส","ทวิกซ์","ออริโอ้","มะม่วงกวน","ขนมปังปอน","ขนมปังทรงกลม (Pretzel)","เบเกิล","ขนมปังสังขยา","ขนมปังกระเทียม","พาย (Apple Pie, Cherry Pie, Pumpkin Pie)","พาย Pecan","พาย Key Lime","พายสตรอเบอร์รี่","สโคน","อัลพส์ฟอนดู","สกอตต้า","ฟอนดูช็อกโกแลต","คอตตอนแคนดี้","สตรูเดล","ชูเรอส","บาคลาวา","ไซคลอส","คาโนลี่","กาเลต (Galette)"]))),
+            q("เป็นเครื่องดื่ม?",
+              q("มีแอลกอฮอล์?",
+                L("เครื่องดื่มแอลกอฮอล์",["เบียร์ (ลาเกอร์, ไอพีเอ, สเตาท์, พิลสเนอร์, ไวเซน, เอล)","เบียร์ไทย (Singha, Chang, Leo, Archa)","เบียร์ญี่ปุ่น (Asahi, Kirin, Sapporo)","เบียร์เกาหลี (Cass, Hite)","เบียร์เยอรมัน (Paulaner, Warsteiner)","เบียร์เบลเยียม (Stella Artois, Leffe, Duvel)","คราฟต์เบียร์","ไวน์แดง (Cabernet Sauvignon, Merlot, Pinot Noir, Shiraz, Malbec)","ไวน์ขาว (Chardonnay, Sauvignon Blanc, Riesling, Pinot Grigio)","ไวน์โรเซ่","ไวน์สปาร์คกลิ้ง","แชมเปญ","โปรเซคโก้","วอดก้า (Absolut, Grey Goose, Belvedere, Smirnoff)","วิสกี้ (สก็อตช์, เบอร์เบิน, เทนเนสซี, ไอริช, เจแปนีส)","วิสกี้สก็อตช์ Single Malt","Johnnie Walker","Jack Daniel's","Jim Beam","Chivas Regal","Macallan","Glenfiddich","ซอกวาจากเหล้า","โซจู","โซจูรสผลไม้","ซัมจูเหลวๆ","สาเก","สาเกสไตล์ Junmai","ชู่ฮาย","อูเมะชู (บ๊วย)","อูลอง","รัม (แบคคาร์ดี, ฮาวาน่าคลับ, กัปตันมอร์แกน)","ไวท์รัม","ดาร์กรัม","เตกีลา (Patrón, Jose Cuervo, Don Julio)","เตกีลา Reposado","เตกีลา Añejo","เมสคาล","จิน (Bombay Sapphire, Hendrick's, Tanqueray)","คอนยัค (Hennessy, Rémy Martin, Courvoisier)","บรั่นดี","อาร์มาญัค","ลิเคียวร์ (Baileys, Kahlua, Amaretto, Sambuca)","ลิมอนเชลโล่","อับซินธ์","แอนคิส (Ouzo, Pastis, Raki)","ค็อกเทล (โมฮิโต, มาร์การิต้า, แดกิรี่, เบลลินี่, ลองไอซ์ทีสปาร์คกลิ้ง)","มาร์การิต้า","มาร์ตินี่","คอสโมโพลิแทน","เซกซ์ ออน เดอะ บีช","เบลลินี่","ไวท์รัสเซี่ยน","แบล็กรัสเซี่ยน","ลองไอส์แลนด์ไอซ์ที","โมฮิโต","แดกิรี่","เปียโคลาดา","แม่โขง","หงส์ทอง","แสงโสม","เบลลามีนาส (ไทย)","สาโท (ไทย)","กระแช่ (ไทย)","น้ำตาลเมา","ลำไย Wine (ไทย)","สาเกไทย"]),
+                L("เครื่องดื่มไม่มีแอลฯ",["น้ำเปล่า","น้ำแร่","น้ำโซดา","ชา","ชาดำ","ชาเขียว","ชาเขียวมัทฉะ","ชาขาว","ชาอูหลง","ชาดาร์จีลิง","ชาเอิร์ลเกรย์","ชาอังกฤษ (English Breakfast)","ชาโมลีฮันนี่","ชาสมุนไพร","ชาดอกเก๊กฮวย","ชาดอกคำฝอย","ชาน้ำผึ้งมะนาว","ชามะลิ","ชาอัสสัม","ชาเย็น (Thai Tea)","ชานมไข่มุก (ไต้หวัน)","ชานมสดไข่มุก","ชานมดำ","ชาฮ๊อคซาน","ชามะนาว","ชาเลมอน","ชาพีช","ชาลิ้นจี่","ชาฟรุต","กาแฟ","กาแฟดำ","อเมริกาโน่","เอสเปรสโซ่","ดับเบิลเอสเปรสโซ่","ริสเตรตโต้","มัคคิอาโต","คอร์ตาโด","คาปูชิโน","ลาเต้","ลาเต้เย็น","มอคค่า","โกโก้","ช็อกโกแลตร้อน","ฮอทช็อก","ช็อกโกแลตเย็น","คาราเมลมัคคิอาโต","ฟรัปเปชิโน","แฟรปเป้","กาแฟเวียดนาม","ไอซ์คอฟฟี่","กาแฟโบราณ","โอเลี้ยง","โอเลี้ยงยกล้อ","โอวัลติน","ไมโล","ไมโลเย็น","ไมโลภูเขาไฟ","นม","นมสด","นมช็อก","นมสตรอเบอร์รี่","นมกล้วย","นมถั่วเหลือง","นมอัลมอนด์","นมโอ๊ต","นมมะพร้าว","ชาไทยเย็น","ชานมไข่มุกบราวน์ชูก้า","น้ำส้ม","น้ำส้มคั้น","น้ำมะนาว","น้ำเกรปฟรุต","น้ำแอปเปิ้ล","น้ำสับปะรด","น้ำมะพร้าว","น้ำมะพร้าวอ่อน","น้ำเก๊กฮวย","น้ำจับเลี้ยง","น้ำใบเตย","น้ำกระเจี๊ยบ","น้ำมะตูม","น้ำขิง","น้ำลำไย","น้ำตะไคร้","น้ำเฉาก๊วย","น้ำอัดลม (โค้ก, เป๊ปซี่, สไปรท์, แฟนต้า, เซเว่นอัพ)","โค้ก","เป๊ปซี่","สไปรท์","แฟนต้า (ส้ม, องุ่น)","เซเว่นอัพ","รูทเบียร์","ดร.เปเปอร์","น้ำแดงมะลิ","สมูทตี้","สมูทตี้มะม่วง","สมูทตี้สตรอเบอร์รี่","น้ำผลไม้ปั่น","น้ำบ๊วย","น้ำแตงโม","น้ำแตงโมปั่น","ชาเก๊กฮวย","น้ำข้าวโพดสด","น้ำอัญชัน","น้ำกะทิ","น้ำปั่นนมสด"])),
+              L("วัตถุดิบ/อื่น",["ไข่","ไข่ไก่","ไข่เป็ด","ไข่นกกระทา","ไข่ปลา","ไข่เยี่ยวม้า","ไข่เค็ม","ข้าว","ข้าวสวย","ข้าวเหนียว","ข้าวหอมมะลิ","ข้าวกล้อง","ข้าวไรซ์เบอร์รี่","ข้าวสาลี","ข้าวโอ๊ต","ควินัว","แป้ง","แป้งสาลี","แป้งข้าวเจ้า","แป้งมัน","แป้งข้าวเหนียว","แป้งเค้ก","แป้งอเนกประสงค์","น้ำตาล","น้ำตาลทราย","น้ำตาลปึก","น้ำตาลมะพร้าว","น้ำตาลอ้อย","น้ำตาลกรวด","น้ำผึ้ง","น้ำเชื่อม","เมเปิลไซรัป","เกลือ","เกลือทะเล","เกลือหิมาลัย","พริกไทย","พริกไทยดำ","พริกไทยขาว","ซีอิ๊ว","ซีอิ๊วดำ","ซีอิ๊วขาว","น้ำปลา","น้ำปลาร้า","ปลาร้า","กะปิ","เต้าเจี้ยว","เต้าหู้ยี้","มิโซะ","โคชูจัง","ทานิน่าส","ซอสโอเยอร์","ซอสปรุงรส","ซอสพริก","ซอสมะเขือเทศ","มัสตาร์ด","มายองเนส","เคชัพ","วาซาบิ","น้ำมัน","น้ำมันถั่วเหลือง","น้ำมันมะกอก","น้ำมันงา","น้ำมันรำข้าว","น้ำมันพืช","น้ำมันมะพร้าว","เนย","เนยจืด","เนยเค็ม","ชีส (เชดด้า, มอสซาเรลล่า, พาร์เมซาน, บริ, กูด้า, เฟต้า)","ครีม","วิปครีม","เฮฟวี่ครีม","ทรัฟเฟิลครีม","โยเกิร์ต","กรีกโยเกิร์ต","กะทิ","นมข้นหวาน","นมข้นจืด","ข้าวโพดคั่ว","ถั่วลิสง","ถั่วอัลมอนด์","วอลนัท","พีแคน","เม็ดมะม่วงหิมพานต์","แมคคาเดเมีย","เฮเซลนัท","พิสตาชิโอ","ลูกเกด","แป้งขนมปัง","ยีสต์","ผงฟู","ผงชูรส","กระเทียมดอง","หมูหยอง","ปลาแห้ง","กุ้งแห้ง","เนื้อสัตว์แปรรูป (ลูกชิ้น, ไส้กรอก, เบคอน, แฮม, เปปเปอโรนี่)"])))),
+        // Not food
+        q("ใหญ่กว่ามือถือมั้ย?",
+          // Larger than phone
+          q("ใหญ่กว่าตัวคน?",
+            L("ของขนาดใหญ่",["ตู้เย็น (1-ประตู, 2-ประตู, Side-by-side, French-Door)","ตู้แช่แข็ง","ตู้เสื้อผ้า","ตู้เสื้อผ้าบานเลื่อน","ตู้บิลท์อิน","วอล์คอินคลอเซ็ท","เตียง (Single, Queen, King)","เตียงสองชั้น","เตียงน้ำ","เปลนอน","โซฟา (L-shape, Recliner, Chesterfield)","โซฟาเบด","รถยนต์","รถกระบะ","รถ SUV","รถตู้","รถครอสโอเวอร์","รถสปอร์ต","รถสปอร์ตอิตาลี","รถกอล์ฟ","รถประมูลทะเบียน","รถแทรกเตอร์","รถบรรทุก (สิบล้อ, 18 ล้อ)","รถโดยสาร (Minibus, Coach)","รถบัส (สองชั้น, สามแถว, ไฮดรอลิกสองชั้น)","รถทัวร์","รถไฟ","รถไฟชินคันเซ็น","รถไฟ TGV","รถไฟ Maglev","รถไฟใต้ดิน","รถไฟ LRT","รถไฟลอยฟ้า","รถไฟบรรทุกสินค้า","รถรางเชียงใหม่","เครื่องบิน","เครื่องบินเจ็ท","เครื่องบินโบอิ้ง 747","เครื่องบินแอร์บัส A380","เครื่องบินใบพัด","เฮลิคอปเตอร์","เครื่องบินเจ็ทส่วนตัว","เครื่องบินขับไล่","เครื่องบินสงคราม","เรือ","เรือยอชต์","เรือครูซ","เรือดำน้ำ","เรือใบ","เรือแคนู","เรือคายัค","เรือโครเกอร์","เรือหัวโทง","เรือล่องแก่ง","เรือลากจูง","เรือประมง","เรือสำเภา","เรือรบ","เรือไททานิค","รถถัง","เครื่องจักรกลหนัก (Excavator, Bulldozer, Loader, Crane)","รถแบคโฮ","เครน","โฟล์คลิฟต์","บ้าน","บ้านเดี่ยว","บ้านแฝด","ทาวน์โฮม","คอนโด (ยูนิต)","บ้านไม้ไทย","บ้านทรงไทย","กระท่อม","บ้านเรือนแพ","บ้านลอยน้ำ","บ้านบนต้นไม้","กระโจม","เต็นท์แบบกลาง","ต้นไม้ใหญ่","ตู้คอนเทนเนอร์","โรงรถ","โรงงาน","ถังน้ำ (ยักษ์)","ถังแก๊ส","กระป๋องขยะใหญ่","กระบะรถ","รั้ว","ประตูรั้ว","เสาไฟฟ้า","สะพาน","สะพานลอย","ป้ายโฆษณา","เฟอร์นิเจอร์ลอยฟ้า","บ้านเลี้ยงสัตว์ (Aviary, Stable)","โรงเรือน","โรงนา","ไซโล","ตู้เซฟยักษ์","สระว่ายน้ำ","น้ำพุ","ม้าหมุนสวนสนุก","ชิงช้าสวรรค์","รถไฟเหาะ"]),
+            q("ใช้ไฟฟ้า/อิเล็กทรอนิกส์?",
+              q("เป็นอุปกรณ์คอม/สื่อสาร?",
+                L("IT/คอม",["มือถือ (iPhone 15, iPhone 16, Galaxy S25, Pixel 10)","iPhone รุ่นเก่า (iPhone 4, 5, 6, 7, 8, X, 11, 12, 13, 14)","Samsung Galaxy (S, Note, Fold, Flip, A series)","Google Pixel","Xiaomi","Huawei","OPPO","Vivo","Realme","OnePlus","Motorola","Nokia","BlackBerry","Sony Xperia","ASUS ROG Phone","iPad","iPad Pro","iPad Air","iPad Mini","Samsung Galaxy Tab","Kindle Fire","Microsoft Surface","โน้ตบุ๊ค","MacBook Pro","MacBook Air","Dell XPS","ASUS ZenBook","Lenovo ThinkPad","Lenovo Yoga","HP Spectre","HP Pavilion","Acer Predator","Razer Blade","Microsoft Surface Laptop","Chromebook","Desktop PC","เกมมิ่งพีซี","iMac","Mac Studio","Mac Mini","Mac Pro","Gaming PC (Custom build)","All-in-One PC","Smart Watch","Apple Watch (Series 1-10, Ultra)","Galaxy Watch","Garmin","Fitbit","Xiaomi Band","Huawei Watch","Fossil Smartwatch","Amazfit","Keyboard","Magic Keyboard","Mechanical Keyboard (Cherry MX, Gateron)","Ergonomic Keyboard","Gaming Keyboard (Razer, Corsair, Logitech)","Mouse","Wireless Mouse","Gaming Mouse","Trackpad","Magic Trackpad","Monitor (4K, OLED, Ultrawide)","Gaming Monitor","Curved Monitor","Portable Monitor","Router (Wi-Fi 6, Mesh)","Modem","Network Switch","Hub","Docking Station","External Hard Drive","SSD","USB Drive","SD Card","Webcam","Microphone (Yeti, SM7B, Rode)","Headset","Graphic Card (RTX 5090, 4090)","CPU","Motherboard","Fax Machine","Projector","Smart Projector","Smart Speaker (Echo, Google Home, HomePod)","Alexa","Google Nest Hub","Chromecast","Apple TV","Kindle","Remarkable Tablet","Stylus (Apple Pencil, S Pen)","Drawing Tablet (Wacom, Huion)","Server","E-Ink Reader"]),
+                q("อุปกรณ์บันเทิง?",
+                  L("อิเล็กทรอนิกส์บันเทิง",["ทีวี (LED, OLED, QLED, 4K, 8K)","Smart TV","Plasma TV (เก่า)","CRT TV (เก่า)","TV Box (Android TV, Apple TV)","โปรเจคเตอร์","Home Theater","Soundbar","Sound System 5.1/7.1","Subwoofer","ลำโพง","ลำโพงบลูทูธ (JBL, Bose, Sonos)","ลำโพง Amp ยกสูง","หูฟัง (Over-ear, On-ear, In-ear)","AirPods","AirPods Pro","AirPods Max","Beats","Bose QC","Sony WH-1000XM5","Sennheiser","Nintendo Switch","Nintendo Switch OLED","PlayStation 5","PlayStation 5 Pro","PlayStation 4","PlayStation 3","PlayStation 2","PlayStation 1","PSP","PS Vita","Xbox Series X/S","Xbox One","Xbox 360","Steam Deck","Nintendo 3DS","Game Boy","Game Boy Advance","SNES","NES","Nintendo 64","GameCube","Wii","Wii U","Atari","Sega Genesis","Sega Dreamcast","กล้อง DSLR (Canon, Nikon)","กล้อง Mirrorless (Sony Alpha, Fujifilm, Canon EOS R)","Canon EOS R5","Sony A7 IV","Fujifilm X-T5","Leica","Hasselblad","Nikon Z9","กล้องคอมแพ็ค","กล้องวิดีโอ","GoPro","Insta360","DJI Pocket","กล้องทันที (Polaroid, Instax)","VR Headset (Meta Quest, Apple Vision Pro, PSVR2, Valve Index)","AR Headset","เครื่องเล่นเพลง","Walkman (iPod, MP3 Player)","iPod Classic","iPod Nano","เครื่องเล่นซีดี","เครื่องเล่นแผ่นเสียง (Turntable)","เครื่องเล่นเทป (Cassette Player)","DVD Player","Blu-Ray Player","ไมค์ Karaoke","เครื่องคาราโอเกะ","เครื่องขยายเสียง (Amplifier)","DJ Controller","Synthesizer","MIDI Keyboard","Drone (DJI Mavic, Mini, Phantom)","Action Camera","Streaming Deck (Elgato Stream Deck)"]),
+                  L("เครื่องใช้ไฟฟ้า",["ไมโครเวฟ","เตาอบ (Oven)","เตาอบไฟฟ้า","เตาอบแก๊ส","เตาอบลมร้อน","หม้อหุงข้าว","หม้ออบลมร้อน","หม้อตุ๋นช้า (Slow Cooker)","Instant Pot","หม้อทอดไร้น้ำมัน","เครื่องบดเนื้อ","เครื่องปั่น (Blender)","เครื่องปั่น Vitamix","เครื่องบดกาแฟ","เครื่องชงกาแฟ","เครื่องชงกาแฟแคปซูล (Nespresso, Dolce Gusto)","เครื่องชงเอสเปรสโซ่","เครื่องทำวาฟเฟิล","เครื่องทำขนมปัง","ท็อสเตอร์","Sandwich Maker","เครื่องทำไอศกรีม","หม้อหุงข้าวญี่ปุ่น","เครื่องกรองน้ำ","เครื่องทำน้ำร้อน","เครื่องทำน้ำเย็น","พัดลม (ตั้งพื้น, ตั้งโต๊ะ, ติดเพดาน)","พัดลมไอเย็น","พัดลมไอน้ำ","พัดลม Dyson","แอร์","แอร์ติดผนัง","แอร์ตั้งพื้น","แอร์แบบหลายทิศทาง","Central Air","ฮีตเตอร์","เครื่องฟอกอากาศ","เครื่องดูดความชื้น","เครื่องทำความชื้น","เตารีด","เตารีดไอน้ำ","เตาเพลิง","เครื่องซักผ้า (ฝาหน้า, ฝาบน)","เครื่องอบผ้า","เครื่องล้างจาน","เครื่องดูดฝุ่น","หุ่นยนต์ดูดฝุ่น (Roomba, Roborock)","เครื่องสูบน้ำ","เครื่องตัดหญ้า","หุ่นยนต์ตัดหญ้า","เตาแม่เหล็ก (Induction)","เตาแก๊ส","เตาถ่าน (ไฟฟ้า)","Range Hood","Refrigerator 2-Door","ตู้แช่ไวน์","เครื่องชาร์จ","แบตสำรอง (Powerbank)","Power Station","UPS","Smart Plug","Smart Light (Philips Hue, Lifx)","กล้องวงจรปิด","Ring Doorbell","ไดร์เป่าผม","เครื่องม้วนผม","เครื่องหนีบผม","เครื่องโกนหนวด (Electric)","เครื่องตัดผม","เครื่องนวดไฟฟ้า","Massage Gun","เก้าอี้นวดไฟฟ้า"]))),
+              q("เป็นยานพาหนะ?",
+                L("ยานพาหนะ",["รถยนต์ (Sedan, SUV, Hatchback, Coupe, Convertible)","รถเก๋ง","รถกระบะ","รถตู้","รถสปอร์ต","Supercar (Ferrari, Lamborghini, McLaren, Bugatti, Koenigsegg, Pagani)","Hypercar","รถหรู (Rolls-Royce, Bentley, Maybach)","รถไฟฟ้า (Tesla, BYD, Rivian, Lucid)","Tesla Model S/3/X/Y/Cybertruck","Tesla Roadster","BYD (Atto 3, Dolphin, Seal)","มอเตอร์ไซค์","มอเตอร์ไซค์สปอร์ต (Kawasaki, Ducati, Honda, Yamaha R1)","ฮาร์เลย์ (Harley-Davidson)","มอเตอร์ไซค์ครุยเซอร์","มอเตอร์ไซค์ออฟโรด","จักรยาน","จักรยาน Fixed Gear","จักรยานเสือภูเขา","จักรยานเสือหมอบ","จักรยานไฟฟ้า","จักรยาน BMX","จักรยานแม่บ้าน","รถไฟ","รถไฟบุลเล็ต (ชินคันเซ็น)","รถไฟ TGV","รถไฟใต้ดิน (BTS, MRT)","รถรางใต้ดิน","รถไฟลอยฟ้า","Monorail","รถรางทรงลา (Cable Car)","รถเข็น","รถบัส","รถบัสสองชั้น","Double Decker","รถทัวร์","เรือ","เรือหางยาว","เรือข้ามฟาก","เรือยอชต์","เรือครูซ","เรือสำราญ","เรือดำน้ำ","เรือใบ","เรือยาง","เรือคายัค","แคนู","แพยาง","เครื่องบิน","เครื่องบินส่วนตัว","Jet","Private Jet","Helicopter","Autogyro","บัลลูนอากาศร้อน","เรือเหาะ (Blimp)","สเก็ตบอร์ด","Longboard","Skateboard Electric (Boosted Board)","สกู๊ตเตอร์","สกู๊ตเตอร์ไฟฟ้า (Xiaomi, Segway)","Segway","Hoverboard","Unicycle","ตุ๊กตุ๊ก","สามล้อ","สามล้อถีบ","รถพ่วง","รถบรรทุก","รถลาก","เกวียน","รถม้า","แคบรีโอเลต","รถโรลส์รอยซ์","รถเต่า Volkswagen","Mini Cooper","Jeep Wrangler","รถเครื่องบิน (Ford Model T)","Go-Kart","ATV","Snowmobile","เลื่อน","สโนว์บอร์ด","สกี","Jetski","Hover Craft","Gondola","Space Shuttle","Rocket","ยานอวกาศ"]),
+                q("เป็นเฟอร์นิเจอร์?",
+                  L("เฟอร์นิเจอร์",["โต๊ะ","โต๊ะทำงาน","โต๊ะคอมพ์","โต๊ะกาแฟ","โต๊ะข้างเตียง","โต๊ะอาหาร","โต๊ะกินข้าว","โต๊ะเครื่องแป้ง","โต๊ะปิงปอง","โต๊ะพูล","โต๊ะสนุกเกอร์","โต๊ะบาร์","โต๊ะบาร์เคาน์เตอร์","เก้าอี้","เก้าอี้ทำงาน (Ergonomic)","เก้าอี้สำนักงาน","เก้าอี้เกมมิ่ง","เก้าอี้นวม","เก้าอี้ไม้","เก้าอี้ Eames","เก้าอี้บีนแบ็ก (Bean Bag)","เก้าอี้โยก","เก้าอี้สตูล","เก้าอี้บาร์","โซฟา (Fabric, Leather)","โซฟาปูนั่ง","โซฟาเบด","เลาจ์เชียร์","Daybed","Chaise Lounge","ตู้","ตู้ไซด์บอร์ด","ตู้โชว์","ตู้หนังสือ","ตู้เก็บของ","ตู้ลิ้นชัก","ตู้ล็อกเกอร์","ตู้นิรภัย","ตู้เซฟ","ตู้รองเท้า","ชั้นหนังสือ","ชั้นวาง","ชั้นวาง TV","Bookcase","โต๊ะหมู่บูชา","ม้านั่ง","ม้านั่งในสวน","ม้านั่งยาว","เตียง","หัวเตียง","ฐานเตียง","เตียงพับ","เตียงสองชั้น","โซฟาเบด","โคมไฟ","โคมไฟตั้งโต๊ะ","โคมไฟตั้งพื้น","โคมไฟแขวน (Pendant)","โคมไฟระย้า (Chandelier)","โต๊ะกลางห้อง","เคาน์เตอร์ครัว","Kitchen Island","อ่างอาบน้ำ","อ่างจากุซซี่","อ่างล้างหน้า","โถสุขภัณฑ์","พรม","พรมขนยาว","ผ้าม่าน","มู่ลี่","เตาผิง","โต๊ะกาแฟ (Coffee Table)","Ottoman","TV Console","ตู้ไวน์","ไม้แขวนเสื้อ","ราวตากผ้า","ตู้ใส่เสื้อผ้า"]),
+                  q("เป็นเครื่องดนตรี?",
+                    L("เครื่องดนตรี",["กีตาร์ (อะคูสติก, คลาสสิก)","กีตาร์ไฟฟ้า (Stratocaster, Les Paul, SG, Telecaster)","กีตาร์เบส","ยูเลเลล่","อูคูเลเล่","เบส","เบสไฟฟ้า","เบสอะคูสติก","คอนทราเบส (Double Bass)","เปียโน","Grand Piano","Upright Piano","เปียโนไฟฟ้า","คีย์บอร์ด","Synthesizer","ออร์แกน","ออร์แกนคริสตจักร","ฮาร์ปซิคอร์ด","ไวโอลิน","วิโอล่า","เชลโล่","ดับเบิลเบส","ฮาร์ป","กลองชุด","กลองแต๊ก (Snare)","กลองใหญ่ (Bass Drum)","ฉาบ (Cymbal)","Hi-hat","Tom","Conga","Bongo","Djembe","Cajon","กลองไทย","กลองยาว","กลองสะบัดชัย","กลองแขก","โทน","รำมะนา","ระนาดเอก","ระนาดทุ้ม","ระนาดเอกเหล็ก","ระนาดทุ้มเหล็ก","ขิม","ซออู้","ซอด้วง","ซอสามสาย","จะเข้","พิณ","พิณเปี๊ยะ","ขลุ่ย","ขลุ่ยเพียงออ","ขลุ่ยหลีบ","ฟลุท","พิคโคโล","Recorder","โอโบ (Oboe)","คลาริเน็ต","บาสซูน (Bassoon)","แซกโซโฟน (Alto, Tenor, Soprano, Baritone)","ทรัมเป็ต","คอร์เน็ต","ฟลูเกลฮอร์น","ทรอมโบน","เฟรนช์ฮอร์น","ทูบา","ยูโฟเนียม","ฆ้อง","ฆ้องวงใหญ่","ฆ้องวงเล็ก","ฉิ่ง","ฉาบ","กรับ","โปงลาง","แคน","โหวด","ซออิเล็กทริก","เธเรมิน (Theremin)","แอคคอเดียน","ฮาร์โมนิก้า","Ocarina","Didgeridoo","Kazoo","Sitar (อินเดีย)","Tabla","Shamisen (ญี่ปุ่น)","Koto","Shakuhachi","Erhu (จีน)","Pipa","Guzheng","Bagpipes","Ukulele","Banjo","Mandolin","Lute"]),
+                    q("เป็นของเล่น/กีฬา?",
+                      L("ของเล่น/อุปกรณ์กีฬา",["ตุ๊กตา","ตุ๊กตาหมี (Teddy Bear)","ตุ๊กตาบาร์บี้","ตุ๊กตา Barbie","ตุ๊กตา Ken","ตุ๊กตา Blythe","ตุ๊กตา Pullip","ตุ๊กตา Labubu","ตุ๊กตา Sonny Angel","Popmart Figures","ตุ๊กตาล้มลุก","ตุ๊กตาลินลิน","ตุ๊กตาดินสอ (Bratz)","ตุ๊กตาโมโมจิ","ตุ๊กตาผ้า","โมเดล (ของเล่นตั้งโชว์)","Action Figure","Gundam Plastic Model","Plastic Model","เลโก้","Lego Technic","Lego Creator","Lego Star Wars","Lego City","Lego Friends","Lego Ninjago","Duplo","Lincoln Logs","K'NEX","Magnetic Tiles","Rubik's Cube","Rubik's Cube 4x4","Rubik's Cube 2x2","Megaminx","Snake Puzzle","ภาพต่อจิ๊กซอว์","Jigsaw Puzzle","3D Puzzle","Mazes","Marbles","ลูกหิน","ลูกเหล็ก","Slinky","Yo-Yo","ยูโย่","Top (ลูกข่าง)","Spinner (Fidget Spinner)","Fidget Cube","Tamagotchi","Hot Wheels","Matchbox Cars","Tonka Trucks","รถของเล่น","รถบังคับวิทยุ (RC Car)","RC Helicopter","RC Plane","Drone ของเล่น","ลูกบอล","ฟุตบอล","บาสเก็ตบอล","วอลเลย์บอล","เบสบอล (ลูก)","ซอฟต์บอล","เทนนิส (ลูก)","แบดมินตัน (ลูก)","ลูกขนไก่","ปิงปอง (ลูก)","ลูกกอล์ฟ","ลูกคริกเก็ต","รักบี้ (ลูก)","อเมริกันฟุตบอล (ลูก)","โบว์ลิ่ง (ลูก)","Pickleball (ลูก)","ลูก Pilates","ลูกโยคะ (Yoga Ball)","Medicine Ball","Foam Roller","แร็คเก็ต (เทนนิส)","แร็คเก็ตแบดมินตัน","ไม้ปิงปอง","ไม้กอล์ฟ","Driver (กอล์ฟ)","Iron (กอล์ฟ)","Putter","ไม้เบสบอล","ไม้คริกเก็ต","ไม้ฮ็อกกี้","ฮ็อกกี้ (ไม้, ลูก)","Lacrosse Stick","หมากรุก","หมากรุกไทย","หมากฮอส","หมากล้อม (โกะ, Go)","โชกิ","หมากรุกสากล","Backgammon","Checkers","Scrabble","Risk","Monopoly","Catan","Carcassonne","Pandemic","Uno","ไพ่","ไพ่ป๊อกเด้ง","ไพ่โป๊กเกอร์","ไพ่บาคาร่า","ไพ่บริดจ์","ไพ่เสือมังกร","ไพ่ Yu-Gi-Oh!","Magic: The Gathering","Pokémon TCG","ไพ่ทาโรต์","ว่าว","ว่าวจุฬา","ว่าวปักเป้า","Frisbee","Boomerang","Hula Hoop","กระโดดเชือก","สเก็ต","Roller Skate","Roller Blade","Skateboard","สกี","Snowboard","สกีน้ำ","Wakeboard","Surfboard","Boogie Board","Paddle Board (SUP)","Kayak","เต็นท์","เต็นท์กันฝน","ถุงนอน","Sleeping Pad","Hammock","Camping Stove","Camping Lantern","Compass","Binocular (กล้องส่องทางไกล)","Telescope","Microscope","ชุดเคมี (Chemistry Set)","กล้องจุลทรรศน์เด็ก","Science Kit","Etch-A-Sketch","ชาวบ้าน (ของเล่นไม้)","โมบาย (Mobile)","Marionette","Puppet","Doll House","Toy Kitchen","Shopping Cart ของเล่น","หุ่นยนต์ของเล่น","AIBO","Furby","Bratz","My Little Pony","Hot Wheels Track","Nerf Gun","Water Gun","Slip 'N Slide","Pogo Stick","Unicycle ของเล่น","Jump Rope"]),
+                      q("เป็นอาวุธ?",
+                        L("อาวุธ",["ปืน","ปืนพก (Pistol)","ปืนกลมือ (Submachine Gun)","ปืนกล (Machine Gun)","ปืนไรเฟิล","ปืนสไนเปอร์","ปืนลูกซอง (Shotgun)","ปืน AK-47","ปืน M16","ปืน M4","Glock","Desert Eagle","Colt Python","Beretta","Smith & Wesson","USP","Uzi","Minigun","Gatling Gun","ปืนลูกโม่","ปืนฉีดพ่นสี","ปืนโบว์อาว (Harpoon Gun)","ปืนเลเซอร์","ปืนไฟฟ้า (Taser)","ดาบ","ดาบญี่ปุ่น (Katana)","คาตานะ","วากิซาชิ","ทันโตะ","นาคินาตะ","นินจาโต","ดาบซามูไร","ดาบแบบยุโรป (Broadsword, Rapier, Saber, Claymore, Longsword)","ดาบเอ็กซ์คาลิเบอร์","ดาบสองมือ","ดาบไทย (กระบี่)","กระบี่","ดาบกวน อิม","มีด","มีดทหาร","มีดเดินป่า (Bowie Knife)","มีดพับ","มีดสวิส (Swiss Army Knife)","Karambit","Kukri","มีดครัว","มีดกรีซ","Dagger","กริช","ดิ้นเดิน","ดาบปลายปืน","หอก","หอกซัด","สามง่าม (Trident)","ธนู","ธนูยาว (Longbow)","ธนูคอมพาวนด์ (Compound Bow)","ธนูโค้งหน้า (Recurve)","หน้าไม้ (Crossbow)","ลูกศร","ลูกดอก","Dart","Shuriken (ดาวกระจาย)","ขวาน","ขวานทหาร","ขวานไวกิ้ง","Tomahawk","ขวานผ่าครึ่ง","ขวาน Battle Axe","ค้อน","ค้อนสงคราม (War Hammer)","Mjölnir (ค้อนธอร์)","ทวน (Lance)","ง้าว","พลอง","กระบอง","กระบองไฟฟ้า","Nunchuck","Sai (อาวุธนินจา)","บูมเมอแรง","Cestus","แส้","หินเหวี่ยง","หนังสติ๊ก","Slingshot","ระเบิด","ระเบิดมือ","ระเบิดเวลา","ระเบิดควัน","ไดนาไมต์","ทีเอ็นที","ระเบิดนิวเคลียร์","ระเบิดปรมาณู","Molotov Cocktail","ตอร์ปิโด","ขีปนาวุธ","Missile","Nuke","จรวด RPG","ปืนครก","ปืนใหญ่","Cannon","Tank Cannon","Flamethrower","Grenade","Anti-Tank Mine","Land Mine","Gas Mask","Riot Shield","โล่","โล่ไวกิ้ง","โล่โรมัน","โล่เหล็ก","ชุดเกราะ (Armor)","เกราะโซ่","เกราะเพลต","หมวกเกราะ","ดาบแสง (Lightsaber - Star Wars)","ธนูเอลฟ์ (LOTR)","ค้อน Mjölnir"]),
+                        L("ของใหญ่อื่นๆ",["ร่ม","ร่มสนาม","ร่มชายหาด","ร่มแทรกเตอร์","ไม้กวาด","ไม้กวาดดอกหญ้า","ไม้กวาดทางมะพร้าว","ไม้ถูพื้น","ไม้แม็พ (Mop)","Swiffer","ถังขยะ","ถังน้ำ","ถังน้ำมัน","ตู้จดหมาย (กล่อง)","กระถาง","กระถางเซรามิก","กระถางดินเผา","แจกัน","แจกันคริสตัล","กระจก","กระจกส่องตัว","กระจกแต่งตัว","กระจกห้องน้ำ","กระจกโค้ง","ตู้ปลา (Aquarium)","ตู้ปลาใหญ่","ภาพแขวน","รูปถ่ายใส่กรอบ","ภาพวาด","ภาพพิมพ์","โปสเตอร์","ธง","ธงชาติ","ธงทางการค้า","ป้ายไวนิล","ป้ายโฆษณา","ป้าย LED","นาฬิกาแขวน","นาฬิกาตั้งโต๊ะ (ใหญ่)","นาฬิกาแบบคุณปู่ (Grandfather Clock)","นาฬิกาทราย (ใหญ่)","ตุ๊กตาเป่าลม","หุ่นโชว์","หุ่นไล่กา","นักหุ่น","โคมไฟญี่ปุ่น (โทโระ)","โคมจีน","Lantern","กระดาน (ไวท์บอร์ด)","กระดานดำ","Cork Board","Pinboard","Projector Screen","ผ้าม่าน","มู่ลี่","ประตูบาน","ประตูเลื่อน","หน้าต่าง","หน้าต่างบาน","กำแพง","รั้วเหล็ก","รั้วไม้","เตาผิง","เตาย่าง","เตา BBQ","ปิ้งย่างญี่ปุ่น (Shichirin)","เตาถ่าน","เตาแก๊ส (ใหญ่)","พัดลมเพดาน","ฝักบัว","ฝักบัวเรนฟอล","ชักโครก (Toilet Bowl)","อ่างอาบน้ำ","อ่างจากุซซี่","อ่างล้างจาน","เคาน์เตอร์","Shelf","ชั้นวางของ","ตู้จดหมาย (ใหญ่)","ตู้ยา (ใหญ่)","เก้าอี้นวด","เก้าอี้คุณยาย (Rocking Chair)","เก้าอี้พับ","โต๊ะพับ","ฐานเสาไฟถนน","ตู้โทรศัพท์ (Old Phone Booth)","ตู้ ATM","ตู้เติมเงิน","ตู้กดน้ำ","ตู้ขายของอัตโนมัติ","โต๊ะพินบอล","เครื่อง Arcade","Claw Machine"])))))))),
+          // Smaller than phone
+          q("ใส่/สวมได้?",
+            q("เป็นเสื้อผ้า?",
+              L("เสื้อผ้า",["เสื้อยืด","เสื้อยืดคอกลม","เสื้อยืดคอวี","เสื้อยืดคอปก (Polo)","เสื้อเชิ้ต","เสื้อเชิ้ตแขนสั้น","เสื้อเชิ้ตแขนยาว","เสื้อเชิ้ตลายสก๊อต","เสื้อเชิ้ตฮาวาย","เสื้อเบลาส์","Blouse","เสื้อคลุม","เสื้อแจ็คเก็ต","แจ็คเก็ตยีนส์","เสื้อกันหนาว","เสื้อโค้ต","โค้ตยาว","Trench Coat","Parka","Pea Coat","ปัฟเฟอร์แจ็คเก็ต (ขนเป็ด)","เสื้อฮู้ด (Hoodie)","เสื้อสเวตเตอร์","สเวตเตอร์คอเต่า","เสื้อไหมพรม","Cardigan","เสื้อกล้าม","เสื้อยืดแขนกุด","Tank Top","Crop Top","เสื้อรัดรูป","เสื้อผ้าฝ้าย","เสื้อลินิน","เสื้อชาวประมง (Fisherman)","เสื้อเจอร์ซีย์","เสื้อกีฬา","Jersey","เสื้อผ้าทีม","เสื้อซาฟารี","เสื้อกันฝน","เสื้อกันลม","เสื้อสูท","สูท (2 Piece, 3 Piece)","ทักซิโด้","Blazer","เสื้อจัมเปอร์","เสื้อเกาะอก","เสื้อพอนโซ (Poncho)","เสื้อกิโมโน (ยกทรง)","เสื้อลายไทย","ชุดไทย","ผ้าถุง","ผ้าซิ่น","กิโมโน (ญี่ปุ่น)","ยูคาตะ","ฮันบก (เกาหลี)","ฉงซัม (Qipao)","ส่าหรี (Sari)","อะบายา","ทูนิก","กางเกง","กางเกงยีนส์ (Jeans)","Skinny Jeans","Boot-cut Jeans","Straight-Leg Jeans","Boyfriend Jeans","กางเกงขาสั้น","กางเกงขายาว","กางเกงขาบาน","กางเกงขาเดฟ","กางเกงสแลค","กางเกงชิโน","กางเกงคาร์โก้","กางเกงลายพราง","กางเกง Jogger","กางเกงในเล","กางเกงว่ายน้ำ","กางเกงเล","กางเกงวอร์ม","Sweatpants","กางเกงเลกกิ้ง","กางเกงฟิตเนส","กางเกงในชั้นใน","Boxer","Briefs","Thong","กางเกงในแบบถุง","กางเกงในเด็ก","เดรส","Mini Dress","Midi Dress","Maxi Dress","Cocktail Dress","Bodycon Dress","A-line Dress","Wrap Dress","Slip Dress","Evening Gown","ชุดราตรี","Wedding Dress","ชุดแต่งงาน","ชุดว่าที่เจ้าสาว","กระโปรง","Mini Skirt","Midi Skirt","Maxi Skirt","Pleated Skirt","A-line Skirt","Pencil Skirt","Skater Skirt","ชุดนักเรียน","ชุดนักเรียนไทย","ชุดนักศึกษา","ชุดกาวน์นักศึกษา","ชุดสูทนักศึกษา","ชุดว่ายน้ำ","บิกินี","วันพีซชุดว่าย","ชุดวันพีซ","ชุดกีฬา","Sportswear","Tracksuit","ชุดโยคะ","ชุดแดนซ์","Leotard","ชุดบัลเล่ต์","ชุดนอน","เสื้อนอน","ชุดนอนเซ็กซี่","เสื้อนอนซาติน","เสื้อคลุมอาบน้ำ","Robe","Bathrobe","Kimono Robe","เสื้อคลุมท้อง","ชุดคลุมท้อง","ชุดเจ้าสาว","ชุดประจำชาติ","ชุดแฟนซี","คอสเพลย์","ชุดฮาโลวีน","ชุดซานตาคลอส","ชุดสืบเพศ"]),
+              q("เป็นรองเท้า?",
+                L("รองเท้า",["รองเท้าผ้าใบ","Sneakers","Nike Air Force","Air Jordan","Nike Dunk","Converse","Converse Chuck Taylor","Vans","Vans Old Skool","New Balance (574, 990)","Adidas Stan Smith","Adidas Superstar","Adidas Samba","Adidas Yeezy","Puma Suede","Reebok Classic","Asics","On Running","Hoka","Saucony","รองเท้าวิ่ง","รองเท้าวิ่งเทรล","รองเท้าฟุตซอล","รองเท้าฟุตบอล","รองเท้าสตั๊ด","รองเท้าบาสเก็ตบอล","รองเท้าเทนนิส","รองเท้าแบดมินตัน","รองเท้ากอล์ฟ","รองเท้าปีนเขา","รองเท้าสกี","รองเท้าสเก็ต","Roller Skate","Ice Skate","รองเท้าเซฟตี้","รองเท้าทำงาน","บู๊ต","Timberland","Dr. Martens","Combat Boots","Cowboy Boots","Chelsea Boots","Hiking Boots","บู๊ตกันฝน","บู๊ตยาง","บู๊ตหิมะ","UGG","รองเท้าหนัง","รองเท้าหุ้มส้น","รองเท้าคัชชู","Loafers","Penny Loafers","Oxford","Derby","Brogue","Monk Strap","Derby","Moccasin","Boat Shoes","รองเท้าเด็ก","ส้นสูง","Stiletto","Pump","Wedge","Platform","Kitten Heel","Block Heel","รองเท้าแตะ","รองเท้าฟองน้ำ","รองเท้ายางหูคีบ (Havaianas)","Crocs","Crocs แฟชั่น","Flip Flops","Slide Sandals","Birkenstock","Sandals","Gladiator Sandals","Espadrille","ส้นเข็ม","รองเท้าแก้ว","Ballet Flats","Mary Janes","รองเท้าในบ้าน (Slippers)","รองเท้าแตะในบ้าน","รองเท้าผ้าลินิน","รองเท้าฟินน์","รองเท้าภูเขา","Wellington Boots","รองเท้านักเรียน","รองเท้าวอคกิ้ง"]),
+                q("เป็นเครื่องประดับ?",
+                  L("เครื่องประดับ",["แว่นตา","แว่นสายตา","คอนแทคเลนส์","แว่นกันแดด","Ray-Ban","Oakley","Gucci Sunglasses","Prada Sunglasses","แว่น Aviator","แว่น Wayfarer","แว่นทรงกลม","แว่นกรอบไทเทเนียม","นาฬิกาข้อมือ","Rolex","Omega","Patek Philippe","Audemars Piguet","Richard Mille","Hublot","Breitling","Casio","G-Shock","Seiko","Citizen","Tag Heuer","Swatch","Cartier","Bulgari","Tissot","สร้อยคอ","สร้อยคอทอง","สร้อยคอเงิน","สร้อยคอเพชร","สร้อยคอ Tiffany","สร้อยคอมุก","จี้","จี้พระ","จี้รูปหัวใจ","เหรียญจี้","Choker (โช๊คเกอร์)","Pendant","แหวน","แหวนแต่งงาน","แหวนเพชร","แหวนหมั้น","แหวนพลอย","แหวนทอง","แหวนเงิน","แหวนเหล็ก","แหวน Claddagh","Signet Ring","แหวนนิ้วเท้า","ต่างหู","ต่างหูเพชร","ต่างหูห่วง (Hoop)","ต่างหูระย้า","ต่างหูเจาะเดี่ยว","ต่างหูแบบกด","กำไล","กำไลหยก","กำไลเงิน","กำไลทอง","Bangle","Bracelet","Charm Bracelet","Tennis Bracelet","สร้อยข้อมือ","กำไลข้อเท้า","สร้อยคอเส้นยาว","แหวน Pandora","เข็มกลัด","Brooch","หมวก (หลากหลาย)","หมวกแก๊ป (Cap)","Snapback","Baseball Cap","Fedora","Trilby","Bowler","Top Hat","Bucket Hat","Beret","Beanie","หมวกขนสัตว์","Panama Hat","หมวกฟาง","หมวกสาน","หมวกคาวบอย","หมวกกันน็อค","เข็มขัด","เข็มขัดหนัง","เข็มขัดผ้า","เข็มขัด Hermès","เข็มขัด LV","เข็มขัดผู้ชาย","เข็มขัดผู้หญิง","Pocket Watch","นาฬิกาพกพา","Tie Clip","Cufflinks","คัฟลิงก์","Bow Tie (หูกระต่าย)","เนคไท","Pocket Square","สายรัดข้อมือ (WristBand)","สายรัด Apple Watch","Smart Ring (Oura)","สร้อยข้อมือเงิน","เครื่องประดับแฟชั่น (Fashion Jewelry)","พระเครื่อง"]),
+                  L("อื่นๆ สวมใส่",["กระเป๋า","กระเป๋าสะพายหลัง (Backpack)","กระเป๋าเป้","JanSport","The North Face","Herschel","กระเป๋าเดินทาง","กระเป๋าเดินทางล้อลาก (Suitcase)","Rimowa","Samsonite","Away","Tumi","กระเป๋าถือ","Handbag","Clutch","Tote Bag","Shopper","Crossbody Bag","Shoulder Bag","Bucket Bag","Hobo Bag","Louis Vuitton","Chanel","Hermès Birkin","Hermès Kelly","Gucci","Dior","Prada","YSL","Bottega Veneta","Balenciaga","Celine","Fendi","Coach","Michael Kors","Kate Spade","Longchamp","กระเป๋าตังค์","Wallet","Bi-fold","Tri-fold","Long Wallet","Coin Purse","Card Holder","Money Clip","กระเป๋าเงิน","กระเป๋าสตางค์","กระเป๋าใส่เหรียญ","กระเป๋าใส่กล้อง","กระเป๋าใส่กีตาร์","กระเป๋าแล็ปท็อป","Fanny Pack (กระเป๋าคาดเอว)","Belt Bag","กระเป๋าคาดอก","Sling Bag","Drawstring Bag","กระเป๋าผ้า","ถุงผ้า","ถุงผ้าใบ","Canvas Bag","Eco Bag","ถุงมือ","ถุงมือผ้า","ถุงมือหนัง","ถุงมือผ่าตัด","ถุงมือยาง","ถุงมือถัก","ถุงมือกอล์ฟ","ถุงมือมวย","ถุงมือจักรยาน","ถุงมือยาว","ถุงเท้า","ถุงเท้ายาว","ถุงเท้ากลาง","ถุงเท้าข้อสั้น","ถุงเท้าเด็ก","ถุงเท้าทหาร","ถุงน่อง","ถุงน่องรัดกล้ามเนื้อ","Stockings","Tights","Pantyhose","ผ้าพันคอ","ผ้าพันคอผ้าไหม","ผ้าพันคอขนสัตว์","Scarf","Pashmina","Shawl","Bandana","หน้ากาก (ปิดจมูก)","หน้ากากอนามัย","N95","หน้ากากคอสเพลย์","หน้ากาก Masquerade","ผ้าปิดตา","Eye Mask (ใส่นอน)","Sleep Mask","Eyepatch","นาฬิกาพก","สาย Lanyard"])))),
+            q("เป็นเครื่องเขียน/ออฟฟิศ?",
+              L("เครื่องเขียน",["ปากกา","ปากกาลูกลื่น","ปากกาหมึกซึม (Fountain Pen)","ปากกาเจล","ปากกาเมจิก","ปากกาไฮไลท์","ปากกาสี","ปากกาไวท์บอร์ด","ปากกาแคลลิกราฟี","ปากกาชนิดเขียนแก้ว","Montblanc","Parker","Pilot","Uni-ball","Zebra","Lamy","Sharpie","ดินสอ","ดินสอไม้","ดินสอกด","ดินสอสี","ดินสอสี Crayola","ดินสอ Staedtler","ดินสอ Faber-Castell","ดินสอ 2B, HB, 4H","ยางลบ","ยางลบหัวดินสอ","ยางลบปั้น (Kneaded)","กระดาษ","กระดาษ A4","กระดาษ A3","กระดาษ Legal","กระดาษห่อของขวัญ","กระดาษคราฟต์","กระดาษกรุ๊ฟ","กระดาษสี","กระดาษแข็ง","กระดาษโฟม","สมุด","สมุดโน้ต","สมุดเปล่า","Notebook","Moleskine","สมุดบัญชี","สมุดภาพวาด","สมุดแพลนเนอร์","Bullet Journal","Sketchbook","Field Notes","สมุดจด","Diary","Planner","Hobonichi","สมุดคำนวณ","ไม้บรรทัด","ไม้บรรทัดเหล็ก","ไม้บรรทัดพลาสติก","ไม้บรรทัดโค้ง","วงเวียน","ไม้ฉาก","Set Square","โปรแทรคเตอร์","กรรไกร","กรรไกรเด็ก","กรรไกรตัดกระดาษ","กรรไกรตัดผ้า","กรรไกรตัดเล็บ","คัตเตอร์","มีดคัตเตอร์","ที่เจาะกระดาษ (Hole Punch)","เทปกาว","Scotch Tape","Masking Tape","Washi Tape","เทปใส","เทปผ้า","เทปกระดาษ","กาว","กาว UHU","กาว Pritt","กาวแท่ง","กาวลาเท็กซ์","กาวร้อน","ปืนกาวร้อน","เครื่องคิดเลข","Casio Calculator","TI Calculator","เครื่องคิดเลขวิทยาศาสตร์","เครื่องคิดเลขกราฟ","ลวดเย็บ","แม็กซ์ (ลวด)","ที่เย็บกระดาษ","Stapler","Staple Remover","คลิป","คลิปหนีบกระดาษ","คลิปดำ","Binder Clip","ที่เจาะรู","แฟ้ม","แฟ้มคลิป","แฟ้มหนีบ","แฟ้มเอกสาร","กล่องเก็บเอกสาร","File Folder","โฟลเดอร์","แฟ้มคลาสเซอร์","ซองเอกสาร","ซองจดหมาย","แสตมป์","ตรายาง","น้ำหมึกตรายาง","น้ำหมึกปากกา","Ink Cartridge","ตลับหมึก","ริบบิ้นพิมพ์ดีด","ตลับเทปดับเบิ้ลเทป","กระดาษโน้ต Post-it","Sticky Notes","Index Divider","Label","กระดาษกาวสี","เข็มหมุด","Thumbtack","Pushpin","Pin Board"]),
+              q("เป็นของใช้ในครัว?",
+                L("ของใช้ในครัว",["มีด","มีดเชฟ","มีดปอก","มีดขนมปัง","มีดแล่เนื้อ","มีดซันโตคุ","มีดนากิริ","มีดเดบะ","มีดยาไนบะ","ช้อน","ช้อนซุป","ช้อนชา","ช้อนโต๊ะ","ช้อนตวง","ช้อนคอกเทล","ช้อนไอศกรีม","ส้อม","ส้อมกลาง","ส้อมเค้ก","ส้อมสปาเกตตี","ส้อมกินข้าว","ส้อมคาร์ฟ","ตะเกียบ","ตะเกียบไม้","ตะเกียบเหล็ก","ตะเกียบกินปลา","ถ้วย","ถ้วยซุป","ถ้วยกาแฟ","ถ้วยชา","ถ้วยกระดาษ","ถ้วยพลาสติก","ถ้วยเซรามิก","ถ้วยแก้ว","ถ้วยน้ำจิ้ม","จาน","จานกระเบื้อง","จานเซรามิก","จานแก้ว","จานกระดาษ","จานพลาสติก","จานรอง","จานชาม","ชามก๋วยเตี๋ยว","ถาด","ถาดเสิร์ฟ","หม้อ","หม้ออลูมิเนียม","หม้อสแตนเลส","หม้อเคลือบ","หม้อเหล็กหล่อ","Dutch Oven","หม้อต้มซุป","หม้อนึ่ง","Steamer","หม้อต้มไข่","หม้อสตาร์บิ๊ก","หม้อตุ๋น","กระทะ","กระทะเหล็กหล่อ","กระทะไม่ติด (Non-stick)","กระทะทอด","กระทะจีน (Wok)","กระทะปิ้งขนมฮอตเค้ก","กระทะคาสต์ไอรอน","Grill Pan","กระทะไฟฟ้า","ตะหลิว","ตะหลิวไม้","ตะหลิวซิลิโคน","ตะหลิวเหล็ก","พาย (Spatula)","Fish Spatula","ทัพพี","ที่ตักซุป","Ladle","Skimmer","กระชอน","ตะแกรง","ถ้วยตวง","กะละมัง (เล็ก)","อ่าง","Bowl","Mixing Bowl","แก้วน้ำ","แก้วมั๊ก (Mug)","แก้ว Tumbler","แก้วไวน์","แก้วช็อต","แก้วพิลส์เนอร์","แก้วแชมเปญ","แก้วเบียร์","แก้วเบียร์สเตน","แก้วโหล (Mason Jar)","ขวดน้ำ","ขวดน้ำพลาสติก","ขวดน้ำสแตนเลส","Tumbler","Thermos","Stanley Cup","Yeti Cup","Hydroflask","ที่เปิดขวด","ที่เปิดกระป๋อง","Can Opener","Bottle Opener","Corkscrew","ที่เปิดไวน์","ที่เปิดเบียร์","ที่ขูดชีส","Grater","เครื่องขูด","เครื่องหั่นผัก","Mandoline","เขียง","เขียงไม้","เขียงพลาสติก","เขียงไม้ไผ่","ที่ปอก (Peeler)","ที่ปอกเปลือก","ที่บดกระเทียม","Garlic Press","เครื่องบดพริกไทย","Salt & Pepper Shaker","ที่ขัดมะเขือเทศ","Meat Tenderizer","Rolling Pin (ไม้นวด)","พิมพ์คุกกี้","พิมพ์เค้ก","ถ้วยอบคัพเค้ก","กล่องใส่อาหาร","Tupperware","Bento Box","กระติกน้ำร้อน","Electric Kettle","กาต้มน้ำ","กาน้ำชา (Teapot)","กาชงชา","ที่กรองชา","Tea Infuser","Tea Strainer","French Press","Moka Pot","V60 (Pour Over)","Chemex","Aeropress","เครื่องตีไข่ (Whisk)","ช้อนขยำไข่","กระดาษเช็ดมือ","กระดาษรอง","Cupcake Liner","ฟอยล์ห่ออาหาร","Aluminium Foil","ฟิล์มห่ออาหาร","Plastic Wrap","กล่องเกลือ","น้ำแข็งถ้วย","ถ้วยตวงน้ำ","เครื่องขูดน้ำแข็ง","Ice Bucket","Tongs","ตะเกียบย่าง","ไม้เสียบลูกชิ้น","ช้อนคน (Wooden Spoon)","ช้อนเหล็ก","เครื่องเปิดกระป๋อง","ที่ขูดมะพร้าว"]),
+                q("เป็นของใช้ในห้องน้ำ?",
+                  L("ของใช้ห้องน้ำ",["แชมพู","แชมพูเด็ก","แชมพูชายหญิง","แชมพูขจัดรังแค","แชมพูน้ำมันมะพร้าว","แชมพู Head & Shoulders","แชมพู Pantene","แชมพู Dove","แชมพู Sunsilk","แชมพูออร์แกนิก","สบู่","สบู่เหลว","สบู่ก้อน","สบู่มะขาม","สบู่ขมิ้น","สบู่ Dove","สบู่ Ivory","สบู่ Lifebuoy","สบู่ Lux","สบู่ Protex","สบู่ Fiji","Hand Soap","Body Wash","เจลอาบน้ำ","เจลอาบน้ำ Nivea","ยาสระผม","ครีมนวด","ครีมนวดผม","ทรีทเม้นต์","น้ำยาย้อมผม","แชมพูสี","สเปรย์ปรับสภาพผม","มูส","สเปรย์จัดแต่งทรงผม","แปรงสีฟัน","แปรงสีฟันไฟฟ้า","Oral-B","Philips Sonicare","ยาสีฟัน","Colgate","Sensodyne","Oral-B ยาสีฟัน","Darlie","Systema","ไหมขัดฟัน","น้ำยาบ้วนปาก","Listerine","ผ้าขนหนู","ผ้าเช็ดตัว","ผ้าเช็ดหน้า","ผ้าเช็ดผม","ผ้าพันตัว (Bathrobe)","ที่โกนหนวด","มีดโกนหนวด","Gillette","เครื่องโกนหนวดไฟฟ้า","Philips Shaver","Braun Shaver","ที่แว็กซ์ขน","ที่ถอนขน","กรรไกรตัดจมูก","Trimmer","เครื่องตัดผม","ผ้าโหล","ใบตัด","โฟมล้างหน้า","Facial Wash","Cleansing Oil","Makeup Remover","ทิชชู่เปียก","ทิชชู่แห้ง","ทิชชู่ม้วน","Toilet Paper","กระดาษชำระ","สำลี","คัตเทิลสวอป (Cotton Swab)","Q-tip","หลอดดูด","แปรงถูหลัง (Back Brush)","ฟองน้ำ (Shower Sponge)","Loofah","ใยบวบ","ใบมีดโกน","Razor Blade","ครีมกันแดด","โลชั่น (Body Lotion)","Nivea","Jergens","Aveeno","ครีมทามือ","Hand Cream","ครีมทาเท้า","Foot Cream","Deodorant","Nivea Deodorant","Rexona","Dove Deodorant","ระงับกลิ่นกาย","Dryer","ไดร์เป่าผม","เครื่องหนีบผม","Hair Straightener","เครื่องม้วนผม","Curling Iron","หวี","หวีเหล็ก","หวีสางผม","หวี Bristle","แปรงหวี","แปรงหวีทรงกลม","Hair Band","ที่คาดผม","Hair Pin","กิ๊บติดผม","ยางมัดผม","ที่เช็ดหู","ที่ไล่ขี้หู","กรรไกรตัดเล็บ","ที่ตะไบเล็บ","Nail Clipper","Nail File","ที่ดันเล็บ","Cuticle Pusher","อุปกรณ์ทำเล็บ","ยาทาเล็บ","ยาล้างเล็บ","Nail Polish","Acetone","ยาสีผิว","Skin Whitening","ครีมรักษาสิว","ยาหม่อง","พิมเสนน้ำ","Vicks","ยาหม่องตรางู"]),
+                  q("เป็นเครื่องสำอาง?",
+                    L("เครื่องสำอาง",["ลิปสติก","Ruby Woo","MAC Lipstick","Dior Lipstick","Chanel Lipstick","YSL Lipstick","Charlotte Tilbury Lipstick","Maybelline Superstay","Liquid Lipstick","Lipstick Matte","Lipstick Gloss","ลิปกลอส","Lip Gloss","ลิปมัน","Lip Balm","Chapstick","Carmex","Lip Tint","Lip Mask","ดินสอเขียนปาก (Lip Liner)","รองพื้น","Foundation","Foundation Liquid","Foundation Powder","Cushion Foundation","BB Cream","CC Cream","Concealer (คอนซีลเลอร์)","Setting Powder","Compact Powder","แป้งตลับ","แป้งฝุ่น","แป้งพัฟ","Highlighter","Contour","Bronzer","Blush","บลัชออน","Blush Cream","มาสคาร่า","Mascara","Maybelline Mascara","L'Oréal Mascara","Lash Curler","อายไลเนอร์","Eyeliner","Eyeliner Liquid","Eyeliner Pencil","Eyeliner Gel","อายแชโดว์","Eye Shadow","Eye Shadow Palette","Urban Decay Naked","MAC Eye Shadow","Glitter","Eye Primer","ดินสอเขียนคิ้ว","Eyebrow Pencil","Brow Gel","คิ้วปลอม","ขนตาปลอม","Fake Eyelashes","Lash Glue","เส้นผมปลอม","วิก (Wig)","น้ำหอม","น้ำหอมผู้ชาย","น้ำหอมผู้หญิง","Chanel No.5","Dior Sauvage","Tom Ford","Jo Malone","Creed","Le Labo","Byredo","Maison Margiela","Yves Saint Laurent","Calvin Klein Perfume","Versace Perfume","Eau de Parfum","Eau de Toilette","Body Mist","Body Splash","Body Spray","สกินแคร์","Skincare","Serum","Essence","Toner","Face Mask","Sheet Mask","Clay Mask","Sleeping Mask","Moisturizer","Cream (หน้า)","Day Cream","Night Cream","Eye Cream","Eye Patches","Retinol","Vitamin C Serum","Niacinamide","Hyaluronic Acid","AHA/BHA","The Ordinary","SK-II","La Mer","Estée Lauder","Clinique","La Roche-Posay","Cerave","CeraVe Moisturizer","Laneige","Innisfree","Dr. Jart+","Drunk Elephant","Sulwhasoo","ครีมกันแดด","Sunscreen","SPF 50","Sunblock","Anessa","Biore UV","Neutrogena Sunscreen","Sun Stick","Face Mist","Setting Spray","Primer","Makeup Remover","Cleansing Oil","Cleansing Balm","Micellar Water","Bioderma","Facial Toner","Facial Foam","Facial Wash","Scrub","Peeling Gel","Exfoliator","Lotion","Body Cream","Body Butter","Hair Serum","Hair Oil","Hair Mask","Nail Art","ยาทาเล็บ","Nail Polish","Nail Lacquer","OPI","Essie","CND Shellac","Gelish","Nail Sticker","Stencil","แปรงแต่งหน้า","Makeup Brush","Beauty Blender","สำลีแผ่น","Cotton Pad","ซองเก็บเครื่องสำอาง","Makeup Bag","กล่องแต่งหน้า (Vanity)"]),
+                    L("ของเล็กอื่นๆ",["กุญแจ","กุญแจบ้าน","กุญแจรถ","กุญแจห้อง","กุญแจรถไฟฟ้า (Key Fob)","กุญแจ USB","กุญแจเซฟ","กุญแจดิจิตอล","Smart Lock","พวงกุญแจ (Keychain)","ที่ห้อยกุญแจ","แบตเตอรี่","แบต AA","แบต AAA","แบต 9V","แบต D","แบต C","แบตลิเธียม","แบต CR2032","Panasonic Battery","Duracell","Energizer","Eveready","รีโมท","รีโมท TV","รีโมท AC","รีโมทเครื่องเสียง","เหรียญ","เหรียญบาท","เหรียญบาทไทย (1, 2, 5, 10)","เหรียญสลึง","เหรียญสตางค์","เหรียญดอลลาร์","เหรียญยูโร","เหรียญเยน","Quarter","Dime","Nickel","Penny","ธนบัตร","ธนบัตรไทย (20, 50, 100, 500, 1000)","ดอลลาร์","ยูโร","ปอนด์","เยน","หยวน","บิทคอยน์ (กายภาพ)","ไฟแช็ก","Zippo","Bic Lighter","ไม้ขีดไฟ","ดินสอจุดไฟ","เข็มกลัด","เข็มกลัดติดเสื้อ","เข็มกลัดโลโก้","เทียน","เทียนหอม","เทียนไข","เทียนไฟฟ้า","เทียนเบี้ยน","เทียนถ้วย","Tealight","Candle","Yankee Candle","Diptyque Candle","ตะเกียงเจ้าพายุ","ตะเกียงน้ำมัน","Lantern","ไม้จิ้มฟัน","ไม้เสียบลูกชิ้น","ไม้เสียบอาหาร","ลูกอม","ลูกอมเย็น","ลูกอมรสผลไม้","ลูกอม Halls","ลูกอม Fisherman's Friend","หมากฝรั่ง","หมากฝรั่ง Orbit","หมากฝรั่ง Lotte","ขนมเคี้ยว","หนังยาง","ยางมัดผม","Rubber Band","หมุด","หมุดกด (Thumbtack)","Pushpin","เข็มหมุด","เข็มเย็บผ้า","ด้าย","กระดุม","ตะขอเสื้อผ้า","เข็มกลัดซ่อน (Safety Pin)","กรรไกร","Nail Clipper","Nail File","กรรไกรตัดเล็บ","Tweezer","แหนบคีบขนคิ้ว","กระจกพกพา (Pocket Mirror)","หวีกระเป๋า","ถุงใส่ของเล็กๆ","ซอง","นามบัตร","บัตรประชาชน","บัตรนักเรียน","บัตรเครดิต","บัตร ATM","บัตรคะแนน","บัตรโดยสาร","ตั๋วหนัง","ตั๋วรถ","คูปอง","สติกเกอร์","Washi Tape","แม่เหล็กติดตู้เย็น","ของที่ระลึก (Souvenir)","กระเป๋าใส่เหรียญ","Coin Purse","ปลั๊กหูฟัง","หูฟังเล็ก","EarPods","AirTag","Tile Tracker","แว่นกันแดดเล่นๆ (พกพา)","แว่น 3D Cinema","Pin ติดเสื้อ","ยา","เม็ดยา","Capsule","Pill Box","วิตามิน (เม็ด)","ยาแก้ไอ","ยาแก้ปวด","พาราเซตามอล","ยาหอม","ยาดม","ยาหม่องตรางู","Bandage","Plaster","Band-Aid","First Aid Kit (ของเล็กๆ)","ตุ๊กตาพวงกุญแจ","กระดิ่ง (เล็ก)","นกหวีด"]))))))),
+        "เช่น อาหาร ของใช้ ของเล่น เครื่องจักร"),
+      // NO: Abstract
+      q("เป็นสถานที่?",
+        q("อยู่ในประเทศไทย?",
+          q("อยู่ในกรุงเทพ?",
+            L("สถานที่ในกรุงเทพ",["สยามพารากอน","สยามเซ็นเตอร์","สยามดิสคัฟเวอรี่","สยามสแควร์","ไอคอนสยาม","เซ็นทรัลเวิลด์","เซ็นทรัลพระราม 9","เซ็นทรัลลาดพร้าว","เซ็นทรัลบางนา","เซ็นทรัลชิดลม","เซ็นทรัลปิ่นเกล้า","เซ็นทรัลเวสต์เกต","เซ็นทรัลอีสต์วิลล์","เซ็นทรัล เอ็มบาสซี","เซ็นทรัลเวิลด์","เซ็นทรัล ลาดพร้าว","เอ็มควอเทียร์ (EmQuartier)","เอ็มโพเรียม","เอ็มสเฟียร์","เทอร์มินอล 21","เทอร์มินอล 21 พระราม 3","เกสรวิลเลจ","เกทเวย์เอกมัย","เมกะบางนา","ซีคอนสแควร์","เดอะมอลล์","Fashion Island","The Mall Bangkapi","The Mall Bangkae","The Mall Ngamwongwan","The Mall Tha Phra","สามย่านมิตรทาวน์","จามจุรีสแควร์","ตึกมหานคร (King Power Mahanakhon)","ตึกใบหยก","ตึกช้าง","Icon Siam","ChangChui","Jodd Fairs","Jodd Fairs Rama 9","Jodd Fairs DanNeramit","ตลาดรถไฟศรีนครินทร์","ตลาดรถไฟรัชดา","ตลาดนัดจตุจักร","ตลาดนัดรถไฟ","ตลาดนัดรถเมล์สาย 8","สวนจตุจักร","สวนลุมพินี","สวนสาธารณะเบญจสิริ","Benjakitti Park","Bang Krachao (บางกระเจ้า)","วัดพระแก้ว (วัดพระศรีรัตนศาสดาราม)","วัดอรุณ","วัดโพธิ์ (วัดพระเชตุพน)","วัดสระเกศ (ภูเขาทอง)","วัดเบญจมบพิตร","วัดไตรมิตร","วัดสุทัศน์","วัดราชบพิธ","วัดบวรนิเวศ","พระบรมมหาราชวัง","พระราชวังดุสิต","พระที่นั่งอนันตสมาคม","สนามหลวง","ถนนราชดำเนิน","ถนนข้าวสาร","ซอย รามบุตรี","ท่าเตียน","ถนนสีลม","พัฒน์พงศ์","นานา","อโศก","ทองหล่อ","เอกมัย","พร้อมพงษ์","อารีย์","สะพานควาย","จตุจักร","ลาดพร้าว","รัชดา","ห้วยขวาง","พญาไท","รัชโยธิน","หมอชิต","บางซื่อ","สาทร","สีลม","บางรัก","เยาวราช","ไชน่าทาวน์","ตลาดน้อย","ภูเขาทอง","เสาชิงช้า","พานฟ้า","เสาชิงช้า","MBK Center","Platinum Fashion Mall","Pratunam","สถานีสยาม","BTS","MRT","ARL (Airport Rail Link)","สุวรรณภูมิ","ดอนเมือง","สนามบินสุวรรณภูมิ","สนามบินดอนเมือง","ตลาดนัด อ.ต.ก.","ตลาดอ.ต.ก.","สะพานพุทธ","สะพานพระราม 8","ASIATIQUE","คลองผดุงกรุงเกษม","เขตรัชดาภิเษก","ทำเนียบรัฐบาล","รัฐสภา (สัปปายะสภาสถาน)"]),
+            q("ภาคเหนือ?",
+              L("สถานที่ภาคเหนือ",["เชียงใหม่","เชียงราย","ลำปาง","ลำพูน","แพร่","น่าน","พะเยา","แม่ฮ่องสอน","อุตรดิตถ์","สุโขทัย","ตาก","พิษณุโลก","เพชรบูรณ์","พิจิตร","กำแพงเพชร","นครสวรรค์","อุทัยธานี","ปาย","แม่แจ่ม","แม่สาย","แม่สอด","ฝาง","ดอยอินทนนท์","ดอยสุเทพ","ดอยปุย","ดอยภูคา","ดอยตุง","ดอยอ่างขาง","ดอยหลวงเชียงดาว","ดอยหัวหมด","ดอยหมอก","ดอยม่อนแจ่ม","ดอยผาช้างน้อย","ภูชี้ฟ้า","ภูทับเบิก","ภูหินร่องกล้า","ภูกระดึง","ภูเรือ","ภูหลวง","ผาช่อ","พระธาตุดอยสุเทพ","พระธาตุลำปางหลวง","พระธาตุหริภุญชัย","พระธาตุแช่แห้ง","วัดร่องขุ่น","วัดพระธาตุผาซ่อนแก้ว","วัดเจดีย์หลวง","วัดพระสิงห์","วัดสวนดอก","บ้านดำ","ทุ่งดอกบัวตอง","ปางอุ๋ง","ม่อนจอง","นิมมานเหมินท์","ถนนคนเดินท่าแพ","ถนนคนเดินวัวลาย","ถนนคนเดินเชียงราย","กาดหลวง","กาดหมั้ว","ตลาดวโรรส","ตลาดต้นพยอม","ตลาดวโรรส","ตลาดบ้านฮ่อ","ข่วงสิงห์เชียงดาว","สวนสัตว์เชียงใหม่","ไนท์ซาฟารี","เชียงใหม่ซู","เขาช้างสมโภชน์","แพะเมืองผี","ถ้ำเชียงดาว","ถ้ำหลวงขุนน้ำนางนอน","กำแพงเมืองเชียงใหม่","เมืองโบราณสุโขทัย","อุทยานประวัติศาสตร์สุโขทัย","อุทยานประวัติศาสตร์ศรีสัชนาลัย","อุทยานแห่งชาติดอยอินทนนท์","อุทยานแห่งชาติดอยสุเทพ-ปุย","อุทยานแห่งชาติแม่ยม","อุทยานแห่งชาติเขื่อนศรีนครินทร์","พระราชวังบวรนาถ","พระราชวังภูพิงค์","พระตำหนักดอยตุง","ถนนนิมมานเหมินท์","ข้าวซอยอิสลาม","เจดีย์หลวง","นำเที่ยวปาย","ปายแคนยอน","น้ำตกห้วยแม่ขมิ้น","น้ำตกแม่ยะ","น้ำตกปาย","น้ำตกแม่สา","น้ำตกห้วยแก้ว","น้ำตกแม่ปาน","น้ำตกวชิรธาร","สถานีเกษตรหลวงอ่างขาง","ไร่ชาฉุยฟง","ไร่องุ่น Granmonte","ไร่องุ่นบุญญาน่า"]),
+              q("ภาคใต้?",
+                L("สถานที่ภาคใต้",["ภูเก็ต","ป่าตอง","กระบี่","พังงา","สุราษฎร์ธานี","ชุมพร","ระนอง","นครศรีธรรมราช","ตรัง","พัทลุง","สตูล","สงขลา","ปัตตานี","ยะลา","นราธิวาส","เกาะพีพี","เกาะไผ่","เกาะมะพร้าว","เกาะราชา","เกาะราชาใหญ่","เกาะราชาน้อย","เกาะสมุย","เกาะพะงัน","เกาะเต่า","เกาะนางยวน","เกาะทะลุ","เกาะสิมิลัน","เกาะสุรินทร์","เกาะตาชัย","เกาะคราม","เกาะเสม็ด","เกาะช้าง","เกาะกูด","เกาะหมาก","เกาะลันตา","เกาะจำ","เกาะไม้ไผ่","เกาะไหง","เกาะมุก","เกาะกระดาน","เกาะรอก","เกาะหินงาม","เกาะอาดัง","เกาะราวี","เกาะหลีเป๊ะ","เกาะยาว","เกาะสีชัง","อ่าวนาง","อ่าวไร่เล","อ่าวต้นไทร","อ่าวพระนาง","หมู่เกาะพีพี","มาหยา (อ่าวมาหยา)","อ่าวปิเละ","อ่าววงเดือน","ภูเก็ตโอลด์ทาวน์","ภูเก็ตซิตี้","ป่าตองบีช","หาดกะตะ","หาดกะรน","หาดสุรินทร์","หาดไม้ขาว","หาดในยาง","แหลมพรหมเทพ","Big Buddha Phuket","วัดฉลอง","วัดพระธาตุดอยสุเทพ","วัดพระมหาธาตุวรมหาวิหาร (นครศรี)","วัดเขาตะเภาทอง","วัดพุทธมงคลนิมิต","ถ้ำมรกต (ตรัง)","ถ้ำพระยานคร","ถ้ำเขาปินะ","ถ้ำทะลุ","ถ้ำเสือ","น้ำตกธารโบกขรณี","น้ำตกห้วยโต้","น้ำตกร้อน (คลองท่อม)","สระมรกต","สระแก้ว","หาดใหญ่","ย่านเมืองเก่าสงขลา","ชายหาดสมิหลา","เขานางเงือก","หาดบ่อพุท","เบตง","สวนสัตว์นกเบตง","ตู้ไปรษณีย์ใหญ่ที่สุด","อุโมงค์ไผ่เบตง","สกายวอล์กเบตง","นครศรีฯ","เขาหลวงนครศรีฯ","เขาพนมเบญจา","เขาช้างภูเก็ต","เขาตะปู","เขาพิงกัน","อ่าวพังงา","เจมส์บอนด์ไอส์แลนด์","ถ้ำน้ำทะเล"]),
+                L("อีสาน/กลางอื่นๆ",["อยุธยา","พระนครศรีอยุธยา","วัดมหาธาตุ (อยุธยา)","วัดพระศรีสรรเพชญ์","วัดใหญ่ชัยมงคล","วัดไชยวัฒนาราม","วัดพนัญเชิง","พระราชวังบางปะอิน","ศูนย์ประวัติศาสตร์อยุธยา","พัทยา","หาดจอมเทียน","เกาะล้าน","Sanctuary of Truth (ปราสาทสัจธรรม)","The Sanctuary","Pattaya Walking Street","นงนุช","สวนเสือศรีราชา","ชะอำ","หัวหิน","เขาใหญ่","อุทยานแห่งชาติเขาใหญ่","วังน้ำเขียว","ปากช่อง","ตลาดน้ำอัมพวา","ตลาดน้ำดำเนินสะดวก","ตลาดน้ำสี่ภาค","ตลาดร้อยปีสามชุก","ตลาดโบราณนครเนื่องเขต","อุทยานประวัติศาสตร์พระนครศรีอยุธยา","อุทยานแห่งชาติเขาแหลมหญ้า-หมู่เกาะเสม็ด","เกาะเสม็ด","เกาะช้าง","เกาะกูด","จันทบุรี","ระยอง","ตราด","ชลบุรี","ปราจีนบุรี","ฉะเชิงเทรา","สระแก้ว","สุพรรณบุรี","ราชบุรี","เพชรบุรี","ประจวบคีรีขันธ์","กาญจนบุรี","น้ำตกเอราวัณ","น้ำตกห้วยแม่ขมิ้น","สะพานข้ามแม่น้ำแคว","ช่องเขาขาด","ทางรถไฟสายมรณะ","อนุสรณ์สงครามโลกครั้งที่ 2","ถ้ำกระแซ","สังขละบุรี","นครราชสีมา (โคราช)","ด่านขุนทด","ขอนแก่น","อุดรธานี","หนองคาย","เลย","เชียงคาน","ภูเรือ","ภูกระดึง","ภูหลวง","ภูสอยดาว","ภูทับเบิก","หมอกฟ้าอุทัยธานี","อุบลราชธานี","ผาแต้ม","แก่งตะนะ","สามพันโบก","มุกดาหาร","นครพนม","พระธาตุพนม","สกลนคร","บึงกาฬ","ภูทอก","หินสามวาฬ","ถ้ำนาคา","บุรีรัมย์","สนามช้างอารีนา","ปราสาทหินพนมรุ้ง","ปราสาทเมืองต่ำ","สุรินทร์","พื้นที่หมู่บ้านช้าง","ศรีสะเกษ","เขาพระวิหาร","อุดรธานี","บ้านเชียง","เวียงกุมกาม","ภูพาน","ปราสาทเขาพระวิหาร","อุทยานแห่งชาติผาแต้ม","อุทยานแห่งชาติเขาใหญ่","อุทยานแห่งชาติตาดโตน","อุทยานแห่งชาติน้ำหนาว","สงขลา (จังหวัด)","สตูล","ตรัง","นครศรีฯ","ชลบุรี","ระยอง (หาดแม่รำพึง, หาดสวนสน)","เกาะล้าน","บางเสร่","สัตหีบ","ฐานทัพเรือสัตหีบ","เขาชีจรรย์","มินิสยาม","Underwater World Pattaya"])))),
+          q("เป็นแลนด์มาร์กระดับโลก?",
+            L("แลนด์มาร์กโลก",["หอไอเฟล (Eiffel Tower)","พิพิธภัณฑ์ลูฟว์ (Louvre)","นอเทรอดาม (Notre-Dame)","Sacré-Cœur","Arc de Triomphe","Versailles","Moulin Rouge","เทพีเสรีภาพ (Statue of Liberty)","ตึกเอ็มไพร์สเตต","Times Square","Brooklyn Bridge","Central Park","Rockefeller Center","One World Trade Center","Chrysler Building","Flatiron Building","Ground Zero","Guggenheim Museum","MoMA","พีระมิดกิซา (Pyramids of Giza)","สฟิงซ์ (Great Sphinx)","วิหาร Abu Simbel","วัด Karnak","หุบเขากษัตริย์","กำแพงเมืองจีน (Great Wall of China)","พระราชวังต้องห้าม (Forbidden City)","สุสานจิ๋นซี (Terracotta Army)","Bund (เซี่ยงไฮ้)","Oriental Pearl Tower","Shanghai Tower","Shanghai Bund","ทัชมาฮาล","Red Fort","India Gate","Gateway of India","Mysore Palace","Lotus Temple","Amber Fort","โคลอสเซียม (Colosseum)","Pantheon","Vatican","St. Peter's Basilica","Sistine Chapel","Trevi Fountain","Spanish Steps","Piazza Navona","หอเอนปิซา (Leaning Tower of Pisa)","Cathedral of Milan","Venice (St. Mark's Square)","ตึกเบิร์จคาลีฟา (Burj Khalifa)","Burj Al Arab","Palm Jumeirah","Dubai Mall","Dubai Fountain","Museum of the Future","Ain Dubai","โอเปร่าเฮาส์ซิดนีย์","Sydney Harbour Bridge","Bondi Beach","Uluru (Ayers Rock)","Great Barrier Reef","Great Ocean Road","สะพานโกลเด้นเกต (Golden Gate Bridge)","Alcatraz","Hollywood Sign","Hollywood Walk of Fame","Universal Studios","Disneyland","Walt Disney World","Las Vegas Strip","Grand Canyon","Yosemite","Yellowstone","Mount Rushmore","Niagara Falls","CN Tower","Banff National Park","Lake Louise","Machu Picchu","มาชูปิกชู","ริโอเดอจาเนโร (Christ the Redeemer)","Copacabana","Iguazu Falls","Amazon","บิ๊กเบน (Big Ben, Elizabeth Tower)","Tower of London","Tower Bridge","Buckingham Palace","Westminster Abbey","London Eye","British Museum","Stonehenge","Windsor Castle","Edinburgh Castle","Loch Ness","Cliffs of Moher","Brandenburg Gate (เยอรมนี)","Berlin Wall","Cologne Cathedral","Neuschwanstein Castle","Checkpoint Charlie","เครมลิน (Kremlin)","Red Square","St. Basil's Cathedral","Hermitage Museum","ฤดูทำงานของ Winter Palace","Santorini","Mykonos","Parthenon (Acropolis)","Athens","Meteora","Hagia Sophia (Istanbul)","Blue Mosque","Topkapi Palace","Cappadocia","Petra (Jordan)","Dead Sea","Wailing Wall","Church of the Holy Sepulchre","พระราชวัง Potala (ทิเบต)","Mount Everest","Mount Fuji","Tokyo Tower","Tokyo Skytree","Tokyo Disneyland","Shibuya Crossing","Senso-ji","Imperial Palace","Meiji Shrine","Harajuku","Akihabara","Fushimi Inari","Kinkaku-ji","Osaka Castle","Dotonbori","Universal Studios Japan","Hiroshima Peace Memorial","อนุสาวรีย์วันฮิโรชิมา","Itsukushima Shrine","Borobudur (อินโดนีเซีย)","Angkor Wat (กัมพูชา)","Bagan (Myanmar)","Halong Bay (เวียดนาม)","Hoi An","Ha Giang","Singapore Marina Bay Sands","Gardens by the Bay","Merlion","Kuala Lumpur Petronas Towers","Batu Caves","Genting Highlands","Langkawi","Bali Tanah Lot","Ubud","Mount Bromo","Borobudur","Great Wall (Mutianyu)","Mount Kilimanjaro","Victoria Falls","Table Mountain","Serengeti","Sahara Desert","Easter Island","Galapagos Islands","Table Mountain (แอฟริกาใต้)"]),
+            q("เป็นประเทศ?",
+              L("ประเทศ",["ไทย","เวียดนาม","ลาว","กัมพูชา","เมียนมา (พม่า)","มาเลเซีย","สิงคโปร์","อินโดนีเซีย","ฟิลิปปินส์","ติมอร์-เลสเต","บรูไน","จีน","ฮ่องกง","มาเก๊า","ไต้หวัน","ญี่ปุ่น","เกาหลีใต้","เกาหลีเหนือ","มองโกเลีย","อินเดีย","ปากีสถาน","บังกลาเทศ","ศรีลังกา","เนปาล","ภูฏาน","มัลดีฟส์","อัฟกานิสถาน","อิหร่าน","อิรัก","ตุรกี","ซาอุดีอาระเบีย","สหรัฐอาหรับเอมิเรตส์","กาตาร์","บาห์เรน","โอมาน","คูเวต","เยเมน","อิสราเอล","ปาเลสไตน์","จอร์แดน","เลบานอน","ซีเรีย","อาร์เมเนีย","จอร์เจีย","อาเซอร์ไบจาน","ตุรกเมนิสถาน","อุซเบกิสถาน","คาซัคสถาน","คีร์กีซสถาน","ทาจิกิสถาน","รัสเซีย","ยูเครน","เบลารุส","มอลโดวา","ลัตเวีย","ลิทัวเนีย","เอสโตเนีย","โปแลนด์","เยอรมนี","ออสเตรีย","สวิตเซอร์แลนด์","ลิกเตนสไตน์","โมนาโก","ฝรั่งเศส","อังกฤษ","สหราชอาณาจักร","ไอร์แลนด์","สเปน","โปรตุเกส","อิตาลี","มอลตา","วาติกัน","ซานมารีโน","อันดอร์รา","เนเธอร์แลนด์","เบลเยียม","ลักเซมเบิร์ก","เดนมาร์ก","สวีเดน","นอร์เวย์","ฟินแลนด์","ไอซ์แลนด์","กรีซ","ไซปรัส","สโลวาเกีย","สาธารณรัฐเช็ก","ฮังการี","โรมาเนีย","บัลแกเรีย","สโลวีเนีย","โครเอเชีย","บอสเนียและเฮอร์เซโกวีนา","เซอร์เบีย","มอนเตเนโกร","มาซิโดเนียเหนือ","แอลเบเนีย","โคโซโว","อเมริกา (USA)","สหรัฐอเมริกา","แคนาดา","เม็กซิโก","กัวเตมาลา","เบลีซ","ฮอนดูรัส","เอลซัลวาดอร์","นิการากัว","คอสตาริกา","ปานามา","คิวบา","จาเมกา","โดมินิกัน","เฮติ","ตรินิแดด","บาฮามาส","บราซิล","อาร์เจนตินา","ชิลี","อุรุกวัย","ปารากวัย","โบลิเวีย","เปรู","เอกวาดอร์","โคลอมเบีย","เวเนซุเอลา","ซูรินาเม","กายอานา","เฟรนช์เกียนา","อียิปต์","ลิเบีย","ตูนิเซีย","แอลจีเรีย","โมร็อกโก","ซูดาน","ซูดานใต้","เอธิโอเปีย","เอริเทรีย","โซมาเลีย","เคนยา","ยูกันดา","แทนซาเนีย","รวันดา","บุรุนดี","คองโก","แองโกลา","แซมเบีย","ซิมบับเว","มาลาวี","โมซัมบิก","แอฟริกาใต้","นามิเบีย","บอตสวานา","เลโซโท","เอสวาตินี","มาดากัสการ์","มอริเชียส","เซเชลส์","ไนจีเรีย","กานา","ไอวอรีโคสต์","เซเนกัล","แกมเบีย","มาลี","บูร์กินาฟาโซ","ไนเจอร์","ชาด","ไลบีเรีย","เซียร์ราลีโอน","กินี","แคเมอรูน","สาธารณรัฐแอฟริกากลาง","ออสเตรเลีย","นิวซีแลนด์","ฟิจิ","ปาปัวนิวกินี","ซามัว","ตองกา","วานูอาตู","ปาเลา","ไมโครนีเซีย","หมู่เกาะมาร์แชลล์","คิริบาติ","ตูวาลู","นาอูรู"]),
+              q("เป็นเมืองใหญ่?",
+                L("เมืองระดับโลก",["โตเกียว","โอซาก้า","เกียวโต","นาโกย่า","ซัปโปโร","ฟุกุโอกะ","โยโกฮาม่า","นาระ","นีโกะ","ฮิโรชิม่า","นางาซากิ","นิวยอร์ก","ลอสแอนเจลิส","ชิคาโก","ฮูสตัน","ฟีนิกซ์","ฟิลาเดลเฟีย","ซานอันโตนิโอ","ซานดิเอโก","ดัลลัส","ซานฟรานซิสโก","ซีแอตเทิล","พอร์ตแลนด์","วอชิงตันดีซี","บอสตัน","ไมอามี่","ออร์แลนโด","ลาสเวกัส","แอตแลนตา","ฮอนโนลูลู","แอนคอเรจ","ปารีส","นิซ","มาร์เซย์","ลียง","บอร์โดซ์","ลอนดอน","แมนเชสเตอร์","ลิเวอร์พูล","เอดินบะระ","บริสตอล","กลาสโกว์","เคมบริดจ์","ออกซ์ฟอร์ด","ยอร์ก","ดูไบ","อาบูดาบี","สิงคโปร์","โซล","ปูซาน","แดกู","เชจู","อินชอน","ปักกิ่ง","เซี่ยงไฮ้","กวางโจว","เซินเจิ้น","หางโจว","เฉิงตู","ซีอาน","นานจิง","อู่ฮั่น","ฉงชิ่ง","ฮ่องกง","มาเก๊า","ไทเป","เกาสง","ไถจง","ไถหนาน","ไทไป","ดานัง","โฮจิมินห์","ฮานอย","ฮอยอัน","เวียงจันทน์","พนมเปญ","เสียมราฐ","ย่างกุ้ง","พุกาม","กัวลาลัมเปอร์","ปีนัง","ยะโฮร์บาห์รู","จาการ์ตา","บันดุง","สุราบายา","ยอกยาการ์ตา","เดนปาซาร์","มะนิลา","เซบู","โบลาเกย์","บาหลี","ลอสแอนเจลิส","ซิดนีย์","เมลเบิร์น","บริสเบน","เพิร์ธ","แอดิเลด","โกลด์โคสต์","แคนเบอร์รา","โอ๊คแลนด์","ไครสต์เชิร์ช","เวลลิงตัน","เควีนส์ทาวน์","บาร์เซโลนา","มาดริด","เซบียา","เกรนาดา","วาเลนเซีย","บาเลนเซีย","มาลากา","บิลเบา","โทเลโด","ลิสบอน","ปอร์โต","อัลการ์ฟ","โรม","มิลาน","เวนิส","ฟลอเรนซ์","นาโปลี","ตูริน","เบอร์ลิน","มิวนิค","ฮัมบูร์ก","แฟรงก์เฟิร์ต","โคโลญ","สตุทท์การ์ท","ดึสเซลดอร์ฟ","เวียนนา","ซาลซ์บูร์ก","อินส์บรุค","ซูริก","เจนีวา","ลูเซิร์น","เบิร์น","อัมสเตอร์ดัม","รอตเตอร์ดัม","บรัสเซลส์","บรูจส์","โคเปนเฮเกน","ออสโล","สตอกโฮล์ม","เฮลซิงกิ","เรคยาวิก","มอสโก","เซนต์ปีเตอร์สเบิร์ก","วลาดีวอสตอค","คีฟ","วอร์ซอ","คราคูฟ","ปราก","บูดาเปสต์","เวียนนา","ดับบลิน","คอร์ก","เอเธนส์","ซานโตรินี","มิโคโนส","อิสตันบูล","อังการา","อันตัลยา","แคปพาโดเซีย","เทลอาวีฟ","เยรูซาเล็ม","ดูไบ","อาบูดาบี","โดฮา","ริยาด","เมกกะ","เจดดาห์","มุมไบ","เดลี","เจนไน","โกลกาตา","บังกาลอร์","ไฮเดอราบาด","ไจปูร์","อัคระ","โคชิ","กัวลาลัมเปอร์","เคปทาวน์","โจฮันเนสเบิร์ก","ไคโร","ลูอากซอร์","อเล็กซานเดรีย","มาร์ราเกช","คาซาบลังกา","ไนโรบี","ดาร์เอสซาลาม","ลากอส","แอคครา","เมืองเม็กซิโก","แคนคูน","บัวโนสไอเรส","ริโอเดอจาเนโร","เซาเปาลู","ซัลวาดอร์","ซันติอาโก","ลิมา","คุซโก","กีโต","โบโกตา","มอนทรีออล","แวนคูเวอร์","โตรอนโต","ออตตาวา","คาลการี"]),
+                L("ธรรมชาติ/อื่นๆ",["ทะเล","มหาสมุทร (Pacific, Atlantic, Indian, Arctic, Southern)","อ่าวไทย","ทะเลอันดามัน","ทะเลจีนใต้","ทะเลเมดิเตอร์เรเนียน","ทะเลแดง","ทะเลดำ","ทะเลแคสเปียน","ทะเลสาบ Titicaca","Lake Baikal","Dead Sea","ทะเลสาบสงขลา","ภูเขา","Mount Everest","K2","Kangchenjunga","Lhotse","Makalu","Cho Oyu","Mount Fuji","Mount Kilimanjaro","Mount Kenya","Mount Olympus","Matterhorn","Mont Blanc","Mount McKinley","Denali","Mount Rainier","Mount Saint Helens","Mount Hood","Mount Etna","Vesuvius","Mount Bromo","Mount Semeru","ภูเขาไฟโฟกิยามา","ภูกระดึง","ดอยอินทนนท์","ป่า","ป่าอเมซอน (Amazon Rainforest)","ป่าทึบคองโก","ป่าแอฟริกา","ป่าไซบีเรีย","ป่าบอร์เนียว","ป่าเขาใหญ่","ทะเลทราย","Sahara Desert","Gobi Desert","Kalahari","Atacama","Mojave","Arabian Desert","Negev","Dash-e Kavir","แม่น้ำ","แม่น้ำไนล์ (Nile)","แม่น้ำอเมซอน (Amazon)","แม่น้ำแยงซี (Yangtze)","แม่น้ำมิสซิสซิปปี (Mississippi)","แม่น้ำโขง (Mekong)","แม่น้ำเจ้าพระยา","แม่น้ำเหลือง (Yellow)","แม่น้ำคงคา (Ganges)","แม่น้ำดานูบ (Danube)","แม่น้ำโวลก้า (Volga)","แม่น้ำสินธุ","แม่น้ำไทกริส","แม่น้ำยูเฟรติส","น้ำตก Niagara","น้ำตก Iguazu","น้ำตก Victoria","น้ำตก Angel","น้ำตกเอราวัณ","น้ำตกทีลอซู","Amazon River Basin","Grand Canyon","Bryce Canyon","Zion Canyon","Antelope Canyon","Yosemite Valley","Yellowstone","ขั้วโลกเหนือ (North Pole)","ขั้วโลกใต้ (South Pole)","แอนตาร์กติกา","กรีนแลนด์","ภูเขาน้ำแข็ง (Iceberg)","ธารน้ำแข็ง (Glacier)","ภูเขาไฟ","Ring of Fire","Great Barrier Reef","ปะการังทะเลแดง","Marianas Trench","ถ้ำ (Caves)","ถ้ำน้ำลอด","ถ้ำ Son Doong","ลำธาร","ลำคลอง","บ่อน้ำพุร้อน (Hot Spring)","เกียร์เซอร์ (Geyser)","Old Faithful","หมู่เกาะกาลาปากอส","หมู่เกาะมัลดีฟส์","หมู่เกาะฮาวาย","หมู่เกาะเซเชลส์","Barrier Reef","Ayers Rock (Uluru)","Twelve Apostles","Monument Valley","Red Rock Canyon"]))))),
+        q("เป็นแบรนด์/บริษัท?",
+          q("เป็นแบรนด์เทคโนโลยี?",
+            L("แบรนด์เทค/ไอที",["Apple","Google","Alphabet","Microsoft","Samsung","Meta","Facebook","Instagram","WhatsApp","Threads","Tesla","SpaceX","Amazon","AWS","Alibaba","Tencent","ByteDance","Netflix","Disney+","YouTube","TikTok","Snapchat","Pinterest","Reddit","LinkedIn","Line","Instagram","Twitter/X","WeChat","KakaoTalk","Telegram","Signal","Discord","Slack","Zoom","Microsoft Teams","Spotify","Apple Music","Pandora","SoundCloud","ChatGPT","OpenAI","Anthropic","Claude","Gemini","DeepSeek","Perplexity","Midjourney","Stability AI","Hugging Face","NVIDIA","AMD","Intel","Qualcomm","Broadcom","TSMC","ASML","Cisco","Oracle","IBM","SAP","Salesforce","Adobe","Autodesk","Atlassian","Shopify","eBay","PayPal","Stripe","Block (Square)","Visa","Mastercard","American Express","Dropbox","Box","Figma","Canva","Notion","Evernote","Trello","Asana","Monday","GitHub","GitLab","Bitbucket","DigitalOcean","Cloudflare","Vercel","Netlify","AWS","Azure","GCP","Oracle Cloud","IBM Cloud","Lenovo","HP","Dell","ASUS","Acer","Razer","Logitech","Sony Electronics","LG Electronics","Xiaomi","Huawei","Oppo","Vivo","OnePlus","Realme","Panasonic","Canon","Nikon","GoPro","DJI","Airbnb","Uber","Lyft","Grab","Gojek","FoodPanda","Lazada","Shopee","Tiki","JD.com","Pinduoduo","Rakuten","Booking.com","Agoda","Expedia","Tripadvisor","Didi Chuxing","Yandex","Baidu","DuckDuckGo","Bing","Mozilla","Firefox","Opera","Brave","Vivaldi","Cisco","VMware","Intuit","Square","Workday","Zoho"]),
+            q("แบรนด์อาหาร/เครื่องดื่ม?",
+              L("แบรนด์อาหาร",["McDonald's","Burger King","KFC","Popeyes","Chick-fil-A","Wendy's","Five Guys","Shake Shack","In-N-Out","Chipotle","Taco Bell","Subway","Quiznos","Jimmy John's","Panera Bread","Olive Garden","Outback Steakhouse","Applebee's","TGI Fridays","Denny's","IHOP","Red Lobster","Cracker Barrel","Buffalo Wild Wings","Hooters","Pizza Hut","Domino's","Papa John's","Little Caesars","The Pizza Company","Pizza Company","Sizzler","Swensen's","Santa Fe","MK สุกี้","MK Live","Shabushi","Sukishi","Oishi","ZEN","Akiyoshi","Fuji Japanese","Ootoya","Yayoi","Pepper Lunch","Sushi Hiro","Katsuya","Ootoya","After You","Mikka","Mister Donut","Dunkin'","Krispy Kreme","Dairy Queen","Baskin-Robbins","Häagen-Dazs","Ben & Jerry's","Cold Stone","Swensen's","Bar B Q Plaza","Penguin Eat Shabu","Sushi Seki","Starbucks","Costa Coffee","Tim Hortons","Dunkin'","Peet's Coffee","Blue Bottle","% Arabica","Café Amazon","True Coffee","Inthanin","Wawee Coffee","Doi Chaang Coffee","Café Kitsuné","Mezzaluna","Black Canyon","UCC","Segafredo","Lavazza","illy","Nespresso","Coca-Cola","Pepsi","Sprite","Fanta","7Up","Mountain Dew","Dr. Pepper","Root Beer","A&W","Canada Dry","Red Bull","Monster","Rockstar","Gatorade","Powerade","VitaminWater","Oishi Green Tea","Ichitan","Unif","Minute Maid","Tropicana","Tipco","Malee","Birdy","Nescafé","Milo","Ovaltine","Khaotan","แลคตาซอย","ไวตามิลค์","โฟร์โมสต์","ดัชมิลล์","Meiji","Anchor","Emborg","Arla","Nestle","Unilever","Ajinomoto","Campbell's","Kraft Heinz","Mars","Hershey's","Cadbury","Ferrero","Lindt","Nestle","Lay's","Doritos","Cheetos","Pringles","Oreo","KitKat","Snickers","M&M's","Skittles","Starburst","Haribo","Wrigley's","7-Eleven","Lotus's (Lotus)","BigC","Tops","Makro","Villa Market","CP Fresh Mart","Gourmet Market","Central Food Hall","Home Fresh Mart","FamilyMart","Lawson","MaxValu","Aeon","Tesco","Carrefour","Walmart","Costco"]),
+              q("แบรนด์แฟชั่น/กีฬา?",
+                L("แฟชั่น/กีฬา",["Nike","Adidas","Puma","Under Armour","Reebok","New Balance","Asics","Converse","Vans","Fila","Mizuno","Wilson","Yonex","Head","Prince","Slazenger","Spalding","Wilson","Rawlings","Louisville Slugger","Callaway","TaylorMade","Titleist","Ping","Mizuno Golf","Speedo","Arena","TYR","Patagonia","The North Face","Columbia","Arcteryx","Salomon","Merrell","Keen","Timberland","Dr. Martens","UGG","Crocs","Birkenstock","Havaianas","Supreme","Off-White","A Bathing Ape","Palace","Stussy","Kith","Fear of God","Essentials","Carhartt","Dickies","Levi's","Wrangler","Lee","Calvin Klein","Tommy Hilfiger","Ralph Lauren","Polo Ralph Lauren","Lacoste","Brooks Brothers","Gap","Old Navy","Banana Republic","Uniqlo","Muji","GU","Zara","H&M","Cos","Arket","Stradivarius","Massimo Dutti","Bershka","Pull & Bear","Mango","Forever 21","American Eagle","Abercrombie & Fitch","Hollister","Urban Outfitters","Anthropologie","Free People","Madewell","J.Crew","Brandy Melville","Gucci","Louis Vuitton","Chanel","Hermès","Dior","Prada","Fendi","Versace","Armani","Giorgio Armani","Emporio Armani","Valentino","Balenciaga","Celine","Givenchy","Saint Laurent","YSL","Bottega Veneta","Loewe","Loro Piana","Brunello Cucinelli","Tom Ford","Burberry","Moncler","Canada Goose","Stone Island","Thom Browne","Alexander McQueen","Alexander Wang","Issey Miyake","Yohji Yamamoto","Comme des Garçons","Rick Owens","Maison Margiela","Off-White","Jacquemus","Vetements","Chrome Hearts","Mikimoto","Swarovski","Pandora","Tiffany & Co.","Cartier","Bulgari","Van Cleef & Arpels","Harry Winston","Graff","Piaget","Chopard","Rolex","Omega","Patek Philippe","Audemars Piguet","Richard Mille","Hublot","Breitling","Vacheron Constantin","Jaeger-LeCoultre","IWC","Panerai","Tag Heuer","Tudor","Seiko","Citizen","Casio","Swatch"]),
+                q("แบรนด์รถ?",
+                  L("รถยนต์",["Toyota","Lexus","Honda","Acura","Nissan","Infiniti","Mazda","Subaru","Mitsubishi","Suzuki","Isuzu","Daihatsu","Hino","Hyundai","Kia","Genesis","SsangYong","Tata","Mahindra","Proton","Perodua","MG","Great Wall Motors","BYD","Nio","XPeng","Li Auto","Zeekr","Geely","Chery","GAC","Haval","Wuling","Ford","Chevrolet","GMC","Buick","Cadillac","Chrysler","Dodge","Jeep","RAM","Lincoln","Tesla","Rivian","Lucid Motors","Fisker","Polestar","Volkswagen","Audi","BMW","Mini","Mercedes-Benz","AMG","Maybach","Porsche","Smart","Opel","Skoda","Seat","Cupra","Volvo","Lotus","Rolls-Royce","Bentley","Aston Martin","McLaren","Jaguar","Land Rover","Range Rover","Defender","Discovery","Mini Cooper","Fiat","Abarth","Alfa Romeo","Lancia","Ferrari","Lamborghini","Maserati","Pagani","Bugatti","Koenigsegg","Rimac","Pininfarina","Dacia","Renault","Peugeot","Citroën","DS Automobiles","Volvo","Polestar","Saab","Tata Motors","Harley-Davidson","Indian Motorcycle","Ducati","BMW Motorrad","Triumph","Aprilia","Moto Guzzi","KTM","MV Agusta","Suzuki Moto","Yamaha","Kawasaki","Honda Motorcycles","Royal Enfield","Vespa","Piaggio","Stryker"]),
+                  L("แบรนด์อื่นๆ",["Disney","Walt Disney","Pixar","Marvel","DC","Warner Bros.","Universal Studios","Paramount","Sony Pictures","Columbia Pictures","20th Century Studios","MGM","Lucasfilm","Studio Ghibli","DreamWorks","Illumination","Nickelodeon","Cartoon Network","HBO","Showtime","Hulu","Peacock","Paramount+","Apple TV+","Lego","Mattel","Hasbro","Fisher-Price","Playmobil","Nerf","Barbie","Hot Wheels","Tonka","American Girl","Build-A-Bear","Sony","Panasonic","LG","Samsung","Philips","Sharp","Toshiba","Hitachi","Mitsubishi Electric","Electrolux","Whirlpool","GE Appliances","Bosch","Siemens","Dyson","Shark","Roomba","iRobot","Nespresso","De'Longhi","KitchenAid","IKEA","Muji","Home Pro","Index Living Mall","Tesco Lotus","Big C","Central","Robinson","The Mall","Emporium","Siam Paragon","ICONSIAM","MBK","Terminal 21","Emporium","Mitsukoshi","Isetan","Takashimaya","Shilla Duty Free","King Power","Lotte Duty Free","DFS","3M","P&G","Procter & Gamble","Johnson & Johnson","Unilever","Colgate-Palmolive","Kimberly-Clark","Kao","L'Oréal","Estée Lauder","Shiseido","MAC","Revlon","Maybelline","Nivea","Dove","Pantene","Head & Shoulders","Gillette","Venus","Shell","Esso","Caltex","BP","Chevron","Total","ปตท. (PTT)","Bangchak","ExxonMobil","Eni","Saudi Aramco","Aramco","Chevron","ซีพี (CP Group)","ไทยเบฟ (ThaiBev)","Sathorn Group","เซ็นทรัล (Central Group)","ดุสิตธานี","Amata","ปูนซีเมนต์ไทย (SCG)","ปูนอินทรีย์","GC (PTT Global Chemical)","BTS Group","Airports of Thailand","การบินไทย (Thai Airways)","Thai AirAsia","Bangkok Airways","Nok Air","Thai Smile","Thai Lion Air","Thai VietJet","Singapore Airlines","Cathay Pacific","Japan Airlines","ANA","Korean Air","Asiana","Emirates","Qatar Airways","Etihad","Lufthansa","British Airways","Air France","KLM","Delta","United","American Airlines","Southwest","JetBlue","Alaska Airlines","Spirit","Frontier","Ryanair","EasyJet","Wizz Air","Air Asia","Scoot","AirAsia X","Firefly","MasterCard","Visa","American Express","UnionPay","JCB","DBS","HSBC","Citibank","Standard Chartered","ANZ","OCBC","UOB","SCB (Siam Commercial Bank)","KBank","BBL","Krungsri","TMBThanachart","Krungthai","TISCO","Kiatnakin","ING","BNP Paribas","Société Générale","Deutsche Bank","Goldman Sachs","JPMorgan","Morgan Stanley","Merrill Lynch","Wells Fargo","Bank of America"]))))),
+          q("เป็นหนัง/ซีรีส์?",
+            q("เป็นหนัง?",
+              L("หนัง",["Avengers: Endgame","Avengers: Infinity War","Avengers: Age of Ultron","The Avengers","Iron Man","Iron Man 2","Iron Man 3","Thor","Thor: Ragnarok","Thor: Love and Thunder","Black Panther","Black Panther: Wakanda Forever","Doctor Strange","Doctor Strange in the Multiverse of Madness","Guardians of the Galaxy","Captain America: The First Avenger","Captain America: Civil War","Captain Marvel","Spider-Man: Homecoming","Spider-Man: Far From Home","Spider-Man: No Way Home","Spider-Man: Into the Spider-Verse","Spider-Man: Across the Spider-Verse","Deadpool","Deadpool 2","Deadpool & Wolverine","Joker","The Dark Knight","The Dark Knight Rises","Batman Begins","The Batman","Man of Steel","Wonder Woman","Aquaman","Shazam!","The Flash","Justice League","Zack Snyder's Justice League","Dune","Dune: Part Two","Oppenheimer","Barbie","Titanic","Avatar","Avatar: The Way of Water","Frozen","Frozen II","Encanto","Moana","Tangled","Brave","Finding Nemo","Finding Dory","Toy Story","Toy Story 2","Toy Story 3","Toy Story 4","The Lion King","The Lion King (Live Action)","Mulan","Aladdin","Beauty and the Beast","The Little Mermaid","Coco","Soul","Luca","Turning Red","Inside Out","Inside Out 2","Up","WALL-E","Ratatouille","Cars","Cars 2","Incredibles","Incredibles 2","Monsters Inc.","Monsters University","A Bug's Life","Elemental","Puss in Boots","Shrek","Shrek 2","Shrek 3","Kung Fu Panda","How to Train Your Dragon","Madagascar","Minions","Despicable Me","Sing","The Boss Baby","Trolls","Harry Potter and the Sorcerer's Stone","Harry Potter and the Chamber of Secrets","Harry Potter and the Prisoner of Azkaban","Harry Potter and the Goblet of Fire","Harry Potter and the Order of the Phoenix","Harry Potter and the Half-Blood Prince","Harry Potter and the Deathly Hallows Part 1","Harry Potter and the Deathly Hallows Part 2","Fantastic Beasts and Where to Find Them","Star Wars Episode I","Star Wars Episode II","Star Wars Episode III","Star Wars Episode IV: A New Hope","Star Wars Episode V: The Empire Strikes Back","Star Wars Episode VI: Return of the Jedi","Star Wars Episode VII: The Force Awakens","Star Wars Episode VIII: The Last Jedi","Star Wars Episode IX: The Rise of Skywalker","Rogue One","Solo","Jurassic Park","Jurassic World","Jurassic World: Dominion","The Lord of the Rings: The Fellowship of the Ring","The Lord of the Rings: The Two Towers","The Lord of the Rings: The Return of the King","The Hobbit: An Unexpected Journey","The Hobbit: The Desolation of Smaug","The Hobbit: The Battle of the Five Armies","Top Gun","Top Gun: Maverick","Mission: Impossible (series)","Fast & Furious (series)","Fast X","Furious 7","Parasite","Memories of Murder","Oldboy","Train to Busan","The Handmaiden","Burning","Decision to Leave","Minari","Spider-Man","The Matrix","The Matrix Reloaded","The Matrix Revolutions","The Matrix Resurrections","Inception","Interstellar","Tenet","Memento","The Prestige","Dunkirk","The Godfather","The Godfather Part II","Goodfellas","Pulp Fiction","Reservoir Dogs","Kill Bill","Once Upon a Time in Hollywood","Inglourious Basterds","Django Unchained","The Hateful Eight","Forrest Gump","The Shawshank Redemption","Saving Private Ryan","Schindler's List","Jaws","E.T.","Indiana Jones","Jurassic Park","The Terminator","Terminator 2","Aliens","Avatar","Titanic","Back to the Future","Ghostbusters","Die Hard","Rocky","Rambo","Scarface","Casablanca","Gone with the Wind","The Sound of Music","Mary Poppins","Wizard of Oz","Citizen Kane","Casablanca","Vertigo","Psycho","Rear Window","Rebel Without a Cause","On the Waterfront"]),
+              q("เป็นซีรีส์ต่างประเทศ?",
+                L("ซีรีส์ฝรั่ง/เกาหลี",["Squid Game","Squid Game Season 2","Stranger Things","Game of Thrones","House of the Dragon","Breaking Bad","Better Call Saul","Friends","The Office (US)","The Office (UK)","Seinfeld","How I Met Your Mother","Big Bang Theory","Young Sheldon","Modern Family","Brooklyn Nine-Nine","Parks and Recreation","Community","Arrested Development","Schitt's Creek","Ted Lasso","Only Murders in the Building","Succession","The Crown","Downton Abbey","Bridgerton","Peaky Blinders","Sherlock","Doctor Who","Black Mirror","Money Heist (La Casa de Papel)","Elite","Lupin","Dark","Wednesday","Mercoledì","The Witcher","The Boys","Invincible","Euphoria","The White Lotus","Yellowjackets","Severance","The Last of Us","House M.D.","Grey's Anatomy","ER","The Good Doctor","New Amsterdam","Suits","The Mentalist","Criminal Minds","NCIS","FBI","Law & Order","CSI","Homeland","24","Prison Break","Lost","Heroes","X-Files","Supernatural","Smallville","Gossip Girl","One Tree Hill","Pretty Little Liars","Gilmore Girls","Desperate Housewives","Sex and the City","Emily in Paris","Bridgerton","Queen Charlotte","Ozark","Narcos","Narcos: Mexico","Better Call Saul","Fargo","True Detective","Mindhunter","The Handmaid's Tale","Westworld","The Mandalorian","Ahsoka","The Book of Boba Fett","Obi-Wan Kenobi","Andor","Loki","WandaVision","The Falcon and the Winter Soldier","Hawkeye","Moon Knight","Ms. Marvel","Secret Invasion","Daredevil","Jessica Jones","Luke Cage","Iron Fist","The Punisher","Defenders","Vincenzo","Crash Landing on You","Goblin","Descendants of the Sun","Hotel del Luna","It's Okay to Not Be Okay","My Love from the Star","Boys Over Flowers","The Heirs","Strong Woman Do Bong-soon","Pinocchio","W (Two Worlds)","Business Proposal","Twenty-Five Twenty-One","Reply 1988","Reply 1997","Reply 1994","Extraordinary Attorney Woo","Queen of Tears","The Glory","Kingdom","All of Us Are Dead","Hellbound","My Name","My Mister","Signal","Moving","Sweet Home","Doctor Slump","Marry My Husband","My Demon","King the Land","Flower of Evil","Stranger","Law School","Start-Up","Itaewon Class","Hospital Playlist","Reborn Rich","Little Women","Mr. Sunshine","Scarlet Heart: Ryeo","The Red Sleeve","Love in the Moonlight","Hometown Cha-Cha-Cha","It's Okay to Not Be Okay","Bloodhounds","D.P.","Big Mouth","Mouse","Voice","Vampire Diaries","Supernatural","Once Upon a Time","Arrow","The Flash","Legends of Tomorrow","Supergirl","Gotham","Batwoman","Titans","Doom Patrol","Peacemaker","The Sandman","Shadow and Bone","Heartstopper","Sex Education","Never Have I Ever","To All the Boys I've Loved Before","Outer Banks","Cobra Kai","Bridgerton"]),
+                L("หนัง/ซีรีส์ไทย",["บุพเพสันนิวาส","บุพเพสันนิวาส 2","พรหมลิขิต","ฉลาดเกมส์โกง","ร่างทรง","The Medium","พี่มาก พระโขนง","แม่นาคพระโขนง","แฟนเดย์","แฟนฉัน","ห่านหนึ่งร้อยตัว","เด็กหอ","Shutter","รถไฟฟ้ามาหานะเธอ","กวน มึน โฮ","ลัดดาแลนด์","ตี๋ใหญ่","โคตรรักเอ็งเลย","ทองเอก หมอยาท่าโฉลง","เมีย 2018","บ่วงสไบ","ลิขิตแห่งจันทร์","กลิ่นกาสะลอง","ท้วงฟ้า","ชายไม่จริง","Bad Genius","ฉลาดเกมส์โกงเดอะซีรีส์","Hormones","Hormones Season 2","Hormones Season 3","4KINGS","4KINGS 2","ไทบ้าน The Series","ไทบ้าน The Series 2","ไทบ้าน The Series 3","ไทบ้านยังโก้","หลานม่า","Lahn Mah","ธี่หยด","ธี่หยด 2","คืนวันเสาร์","ฟ้าใสใจฉาย","เพื่อนสนิท","Me...Myself","สิ่งเล็กเล็กที่เรียกว่ารัก (A Little Thing Called Love)","น้องพี่ ที่รัก","เธอ เขา เรา ...รัก","รักจัง","Love of Siam","รักแห่งสยาม","องค์บาก","ต้มยำกุ้ง","บรรยากาศ","สตรีคนที่ 5","ก๊วนคานทอง","พีเ่บิร์ด The Series","มาตาลดา","เจ้าสาวจำยอม","เคหาสน์ดาว","วังเล่ห์","ลิขิตรัก","กรงกรรม","เลือดข้นคนจาง","กระเช้าสีดา","เทพนิยายนายเสนาะ","รักในรอยแค้น","อนงค์","พฤหัสรักเสาร์","สิ่งเล็ก ๆ ที่เรียกว่ารัก","เด็กใหม่","Girl from Nowhere","The Gifted","The Gifted: Graduation","เด็กหอ","Hormones","SOTUS","SOTUS S","TharnType","2gether","Still 2gether","Bad Buddy","I Told Sunset About You","I Promised You the Moon","Cutie Pie","Enchanté","KinnPorsche","Manner of Death","A Tale of Thousand Stars","Until We Meet Again","บุหงาส่าหรี","เภตราลัย","ฉันไม่ใช่นางเอก","บุพเพเล่ห์รัก","ดาวเรือง","เมีย","รากบาป","คมพยาบาท","เรือนเบญจพิษ","แม่อายสะอื้น","สะใภ้จ้าว","นางชฎา","พิศวาสฆาตเกมส์","กาหลมหรทึก","สาปซ่อนรัก","เร่ขายภาพ","เขยบ้านนอก","ลูกสาวกำนัน","ฟ้ามีตา","สุดแค้นแสนรัก","เขยบ้านไร่","เลือดมังกร","ใบไม้ที่ปลิดปลิว","เกมราคะ","เกมรักเอาคืน","เลเดียวในใจ","ฟ้าฝากรัก"]))),
+            q("เป็นเพลง?",
+              L("เพลง",["คำสาบาน (Cocktail)","คุกกี้เสี่ยงทาย (BNK48)","เธอ (Polycat)","Shape of You (Ed Sheeran)","Perfect (Ed Sheeran)","Thinking Out Loud (Ed Sheeran)","Photograph (Ed Sheeran)","Bad Habits (Ed Sheeran)","Despacito (Luis Fonsi)","Gangnam Style (PSY)","Dynamite (BTS)","Butter (BTS)","Permission to Dance (BTS)","Boy With Luv (BTS)","Fake Love (BTS)","DNA (BTS)","Mic Drop (BTS)","Life Goes On (BTS)","How You Like That (BLACKPINK)","DDU-DU DDU-DU (BLACKPINK)","Kill This Love (BLACKPINK)","Pink Venom (BLACKPINK)","Shut Down (BLACKPINK)","Lovesick Girls (BLACKPINK)","Boombayah (BLACKPINK)","Whistle (BLACKPINK)","As If It's Your Last (BLACKPINK)","TT (TWICE)","Fancy (TWICE)","Feel Special (TWICE)","What is Love? (TWICE)","Likey (TWICE)","Heart Shaker (TWICE)","Cheer Up (TWICE)","Knock Knock (TWICE)","OOH-AHH하게 (TWICE)","Baby Shark","Let It Go (Frozen)","Into the Unknown (Frozen 2)","Show Yourself (Frozen 2)","Do You Want to Build a Snowman?","A Whole New World (Aladdin)","Circle of Life (Lion King)","Hakuna Matata (Lion King)","Can You Feel the Love Tonight (Lion King)","Be Our Guest (Beauty & the Beast)","Under the Sea (Little Mermaid)","Part of Your World (Little Mermaid)","Kiss the Girl (Little Mermaid)","How Far I'll Go (Moana)","You're Welcome (Moana)","We Don't Talk About Bruno (Encanto)","Surface Pressure (Encanto)","Remember Me (Coco)","Blinding Lights (The Weeknd)","Save Your Tears (The Weeknd)","Starboy (The Weeknd)","Can't Feel My Face (The Weeknd)","Uptown Funk (Bruno Mars)","24K Magic (Bruno Mars)","Just the Way You Are (Bruno Mars)","Grenade (Bruno Mars)","Happy (Pharrell)","See You Again (Wiz Khalifa)","Counting Stars (OneRepublic)","Rolling in the Deep (Adele)","Hello (Adele)","Someone Like You (Adele)","Easy On Me (Adele)","Skyfall (Adele)","Set Fire to the Rain (Adele)","Shake It Off (Taylor Swift)","Blank Space (Taylor Swift)","Bad Blood (Taylor Swift)","Look What You Made Me Do (Taylor Swift)","Anti-Hero (Taylor Swift)","Cruel Summer (Taylor Swift)","Shake It Off (Taylor Swift)","Lavender Haze (Taylor Swift)","Love Story (Taylor Swift)","You Belong With Me (Taylor Swift)","All Too Well (Taylor Swift)","Style (Taylor Swift)","Wildest Dreams (Taylor Swift)","Espresso (Sabrina Carpenter)","Please Please Please (Sabrina Carpenter)","Taste (Sabrina Carpenter)","Bad Guy (Billie Eilish)","Ocean Eyes (Billie Eilish)","When the Party's Over (Billie Eilish)","Lovely (Billie Eilish)","Happier Than Ever (Billie Eilish)","Birds of a Feather (Billie Eilish)","Shallow (Lady Gaga)","Bad Romance (Lady Gaga)","Poker Face (Lady Gaga)","Just Dance (Lady Gaga)","Levitating (Dua Lipa)","Don't Start Now (Dua Lipa)","Houdini (Dua Lipa)","New Rules (Dua Lipa)","Physical (Dua Lipa)","Training Season (Dua Lipa)","Flowers (Miley Cyrus)","Wrecking Ball (Miley Cyrus)","Party in the U.S.A. (Miley Cyrus)","Watermelon Sugar (Harry Styles)","As It Was (Harry Styles)","Sign of the Times (Harry Styles)","Adore You (Harry Styles)","Despacito","Bailando (Enrique Iglesias)","Hips Don't Lie (Shakira)","Waka Waka (Shakira)","La Bamba","Macarena","La Vida Es Un Carnaval","Bohemian Rhapsody (Queen)","We Will Rock You (Queen)","We Are the Champions (Queen)","Don't Stop Me Now (Queen)","Radio Ga Ga (Queen)","Under Pressure (Queen)","Somebody to Love (Queen)","Billie Jean (Michael Jackson)","Thriller (Michael Jackson)","Beat It (Michael Jackson)","Smooth Criminal (MJ)","Bad (MJ)","Man in the Mirror (MJ)","Imagine (John Lennon)","Hey Jude (Beatles)","Let It Be (Beatles)","Yesterday (Beatles)","Come Together (Beatles)","Here Comes the Sun (Beatles)","Stairway to Heaven (Led Zeppelin)","Hotel California (Eagles)","Sweet Child O' Mine (Guns N' Roses)","November Rain (Guns N' Roses)","Livin' on a Prayer (Bon Jovi)","I Want It That Way (Backstreet Boys)","Everybody (Backstreet Boys)","Baby One More Time (Britney Spears)","Toxic (Britney Spears)","Oops!... I Did It Again (Britney Spears)","Genie in a Bottle (Christina Aguilera)","My Heart Will Go On (Celine Dion)","I Will Always Love You (Whitney Houston)","I Have Nothing (Whitney Houston)","Titanium (David Guetta & Sia)","Wake Me Up (Avicii)","Levels (Avicii)","Hey Brother (Avicii)","Lean On (Major Lazer)","Closer (The Chainsmokers)","Don't Let Me Down (Chainsmokers)","Something Just Like This (Chainsmokers & Coldplay)","Yellow (Coldplay)","Viva La Vida (Coldplay)","The Scientist (Coldplay)","Fix You (Coldplay)","Paradise (Coldplay)","A Sky Full of Stars (Coldplay)","คำตอบ (Da Endorphine)","รักเธอที่สุด","เพียงกระซิบ","ยินดีที่ไม่รู้จัก (STAMP)","ใจสั่งมา (Da Endorphine)","ใจร้าย (Clash)","ยังเห็นเธอเป็นเพื่อน","ยินดีที่ทำให้เธอเสียใจ","ใจของเธอ","อยากร้องดังดัง","แค่หลับตา","สายเกินแก้","ยินดีที่ไม่รู้จัก","ใจสั่งมา","เสียดาย","รักแท้ยังไงก็หวงเธอ","กอดเสาเถียง","สุดฤทธิ์","จดหมายจากใจ","ลุงขี้เมา","น้ำตาลาด","ทนพิษบาดแผลไม่ไหว","หนึ่งคำ","ลูกอีสาน","ไมค์หมดหนี้","โกรธทำไม","ให้มันแล้วไปกับใจ","เพื่อนเล่น ไม่เล่นเพื่อน","ถ่าน (PROXIE)","Moonlight Chicken (OST)","อยากเห็นหน้าเธอยิ้มอีกครั้ง","สักวันหนึ่ง","รักหมดใจให้เธอ","ไม่ใช่แฟนทำแทนไม่ได้","Bad Romance (Potato)","ทีละก้าว","หมื่นล้านปีต่อวินาที"]),
+              q("เป็นกีฬา?",
+                L("กีฬา",["ฟุตบอล (Soccer)","ฟุตซอล","ฟุตบอลชายหาด","อเมริกันฟุตบอล","รักบี้","ออสเตรเลียนฟุตบอล","แกลิกฟุตบอล","แฮนด์บอล","บาสเกตบอล","วอลเลย์บอล","วอลเลย์บอลชายหาด","เบสบอล","ซอฟต์บอล","คริกเก็ต","ฮ็อกกี้","ฮ็อกกี้น้ำแข็ง","ฮ็อกกี้สนาม","แลคครอส","โปโล","โปโลน้ำ","เทนนิส","ปิงปอง (Table Tennis)","แบดมินตัน","สควอช","แรคเก็ตบอล","Pickleball","แพดเดิลเทนนิส","เทนนิสสนามหญ้า (Lawn Tennis)","กอล์ฟ","Mini Golf","ว่ายน้ำ","ว่ายน้ำฟรีสไตล์","ว่ายน้ำกบ","ว่ายน้ำผีเสื้อ","ว่ายน้ำกรรเชียง","โปโลน้ำ","ดำน้ำ","ดำน้ำตื้น","Scuba Diving","Free Diving","Synchronized Swimming","Water Ballet","พายเรือ (Rowing)","พายแคนู","พายคายัค","Dragon Boat","Windsurf","Kitesurf","Surf","Wakeboard","Waterski","Jetski","Stand Up Paddle","Parasailing","วิ่ง","วิ่ง 100 เมตร","วิ่ง 200 เมตร","วิ่ง 400 เมตร","วิ่งกลาง (800-1500m)","วิ่งไกล","Marathon","Ultramarathon","Triathlon","Ironman","วิ่งข้ามรั้ว","วิ่งวิบาก","Race Walk","วิ่งผลัด","วิ่งเทรล","มาราธอนภูเขา","กระโดดสูง","กระโดดไกล","กระโดดค้ำถ่อ","กระโดดสามขั้น","ทุ่มน้ำหนัก","ขว้างจักร","ขว้างหอก","ขว้างค้อน","เจ็ดประเภทรวม","Heptathlon","Decathlon","Pentathlon","ขี่จักรยาน","จักรยานถนน (Road Cycling)","Tour de France","Giro d'Italia","Vuelta","จักรยานเสือภูเขา (MTB)","BMX","Track Cycling","Velodrome","จักรยานแข่งเวที","สเก็ต","สเก็ตน้ำแข็ง","Figure Skating","Speed Skating","Short Track","Roller Skate","Roller Derby","Inline Skate","สโนว์บอร์ด","สกี","สกีลงเขา","สกีแบบครอสคันทรี","Ski Jumping","Freestyle Skiing","Alpine Skiing","Biathlon","Luge","Bobsleigh","Skeleton","Curling","ขี่ม้า","ขี่ม้ากระโดด","Dressage","Eventing","Rodeo","Bull Riding","Horse Racing","มวย (Boxing)","มวยไทย (Muay Thai)","มวยสากล","มวย K-1","มวยปล้ำ (Wrestling)","มวยปล้ำอาชีพ (WWE)","มวยปล้ำกรีก-โรมัน","มวยปล้ำฟรีสไตล์","MMA (UFC)","Jiu-Jitsu","Brazilian Jiu-Jitsu","ยูโด","ไอคิโด","คาราเต้","คุ้งฟู","เทควันโด","ฮับกิโด","เคนโด้","คริปโต","Kickboxing","Savate","Capoeira","ปันไจสิลัต","ยิงปืน","ยิงปืนไรเฟิล","ยิงปืนพก","ยิงเป้าบิน","ยิงธนู","ยิงธนูสมรรถนะ","คอมปาวนด์","รีเคิร์ฟ","ฟันดาบ","ฟันดาบ 3 ชนิด (Epee, Foil, Sabre)","เรือใบ (Sailing)","ยิมนาสติก","ยิมนาสติกศิลป์","ยิมนาสติกลีลา","Trampolining","บอดี้บิลดิง","เพาเวอร์ลิฟติ้ง","ยกน้ำหนัก (Weightlifting)","Crossfit","ฟิตเนส","โยคะ (Yoga)","พิลาทิส (Pilates)","บัลเล่ต์","เต้นรำ (Dance)","Ballroom","Latin","Salsa","Hip-Hop","Breakdance","Tap Dance","Jazz Dance","Contemporary Dance","Line Dance","หมากรุกสากล (Chess)","หมากฮอส (Checkers)","หมากล้อม (Go)","บริดจ์","Bowling","Billiards","Pool","Snooker","Darts","Archery","Paintball","Airsoft","Lazer Tag","Esports","LoL (League of Legends)","DotA 2","CS:GO","Valorant","Overwatch","Fortnite","Apex Legends","PUBG","RoV","Mobile Legends","FIFA","NBA 2K","Madden","Street Fighter","Tekken","Super Smash Bros."]),
+                q("เป็นอาชีพ?",
+                  L("อาชีพ",["หมอ","แพทย์ทั่วไป","อายุรแพทย์","กุมารแพทย์","สูตินรีแพทย์","ศัลยแพทย์","จิตแพทย์","แพทย์ผิวหนัง","หมอกระดูก","จักษุแพทย์","หมอฟัน","ทันตแพทย์","เภสัชกร","นักกายภาพบำบัด","นักกิจกรรมบำบัด","นักโภชนาการ","พยาบาล","พยาบาลวิชาชีพ","พยาบาลเทคนิค","ผดุงครรภ์","EMT (แพทย์ฉุกเฉิน)","ครู","ครูโรงเรียน","ครูอนุบาล","ครูประถม","ครูมัธยม","อาจารย์มหาวิทยาลัย","อาจารย์ติว","ครูพิเศษ","อาจารย์พิเศษ","โค้ช (Coach)","ผู้ฝึกสอน","ตำรวจ","ตำรวจจราจร","ตำรวจสอบสวน","ตำรวจท่องเที่ยว","ทหาร","ทหารบก","ทหารเรือ","ทหารอากาศ","ทหารพราน","ตำรวจตระเวนชายแดน","หน่วย Seal","หน่วย Swat","นักบิน","นักบินพาณิชย์","นักบินขับไล่","นักบินอวกาศ (Astronaut)","พนักงานต้อนรับบนเครื่องบิน (Flight Attendant)","กัปตัน","สจ๊วต","สจ๊วตเดสซ์","แคปเทน","วิศวกร","วิศวกรโยธา","วิศวกรเครื่องกล","วิศวกรไฟฟ้า","วิศวกรคอมพิวเตอร์","วิศวกรเคมี","วิศวกรชีวการแพทย์","วิศวกรอวกาศ","วิศวกรปิโตรเลียม","วิศวกรเหมืองแร่","วิศวกรสิ่งแวดล้อม","วิศวกรซอฟต์แวร์","โปรแกรมเมอร์","Software Developer","Web Developer","Full-stack Developer","Data Scientist","Data Analyst","Data Engineer","Machine Learning Engineer","AI Engineer","นักวิทยาศาสตร์ข้อมูล","DevOps Engineer","SRE","Solution Architect","System Analyst","IT Support","Network Engineer","Security Engineer","Penetration Tester","Cyber Security","Cloud Engineer","QA Engineer","Product Manager","UX Designer","UI Designer","Graphic Designer","Motion Designer","Industrial Designer","แฟชั่นดีไซเนอร์","Interior Designer","Landscape Designer","Architect","สถาปนิก","เชฟ","เชฟใหญ่ (Head Chef)","Sous Chef","Pastry Chef","บาริสต้า","บาร์เทนเดอร์","Sommelier","พนักงานเสิร์ฟ","กุ๊ก","พ่อครัว","คนครัว","คนขับรถ","คนขับแท็กซี่","คนขับ Uber","คนขับ Grab","คนขับรถบัส","คนขับรถบรรทุก","คนขับรถเมล์","ไปรษณีย์","คนส่งของ","พนักงานส่งของ","ช่างภาพ","ช่างภาพข่าว","ช่างภาพงานแต่ง","Videographer","ตากล้อง","ผู้กำกับภาพยนตร์","ผู้กำกับเวที","ผู้จัดการเวที","โปรดิวเซอร์","นักแสดง","นักร้อง","นักดนตรี","นักประพันธ์ดนตรี","คอมโพสเซอร์","วาทยากร (Conductor)","DJ","Producer","Sound Engineer","Mixing Engineer","นักเขียน","นักประพันธ์","กวี","นักแปล","ล่าม","นักข่าว","บรรณาธิการ","Editor","Writer","Copywriter","Content Writer","Blogger","Influencer","YouTuber","Podcaster","Streamer","นักวิจารณ์","นักจิตวิทยา","นักสังคมวิทยา","นักประวัติศาสตร์","นักโบราณคดี","นักภาษาศาสตร์","นักปรัชญา","นักวิทยาศาสตร์","นักฟิสิกส์","นักเคมี","นักชีววิทยา","นักสัตววิทยา","นักพฤกษศาสตร์","นักสิ่งแวดล้อม","นักดาราศาสตร์","นักธรณีวิทยา","นักสมุทรศาสตร์","นักอุตุนิยมวิทยา","นักโบราณคดี","Archaeologist","ทนายความ","ผู้พิพากษา","อัยการ","ที่ปรึกษาทางกฎหมาย","Paralegal","Notary","นักการธนาคาร","นักเศรษฐศาสตร์","นักลงทุน","Trader","Broker","นักวิเคราะห์การเงิน","นักบัญชี","ผู้สอบบัญชี (Auditor)","ที่ปรึกษาทางการเงิน","Financial Advisor","นักคณิตศาสตร์ประกันภัย (Actuary)","ตัวแทนประกัน","นักสถิติ","นักคณิตศาสตร์","ภารโรง","พนักงานทำความสะอาด","แม่บ้าน","Housekeeper","Butler","Bodyguard","การ์ด","Security Guard","ผู้ช่วยส่วนตัว (Personal Assistant)","เลขานุการ","พนักงานต้อนรับ (Receptionist)","พนักงานขาย","Sales Representative","Account Manager","Marketing Manager","Brand Manager","Product Marketing","Digital Marketer","SEO Specialist","Social Media Manager","PR","Public Relations","Event Planner","Wedding Planner","Tour Guide","มัคคุเทศก์","นักเดินทาง","Travel Blogger","Travel Agent","ผู้จัดการโรงแรม","HR","Human Resources","Recruiter","Head Hunter","Talent Acquisition","Consultant","Management Consultant","Strategy Consultant","CEO","COO","CFO","CTO","CMO","CHRO","CPO","ประธานบริษัท","ผู้จัดการ","หัวหน้า","Supervisor","Team Lead","เจ้าของกิจการ","ผู้ประกอบการ (Entrepreneur)","Startup Founder","Freelancer","ช่าง","ช่างไฟฟ้า","ช่างประปา","ช่างไม้","ช่างปูน","ช่างเหล็ก","ช่างแอร์","ช่างซ่อมรถ","ช่างเครื่องยนต์","ช่างเชื่อม","ช่างทอง","ช่างแก้วนาฬิกา","ช่างตัดเสื้อ","ช่างแต่งผม","ช่างทำเล็บ","ช่างสัก","ช่างกุญแจ","ช่างเฟอร์นิเจอร์","ช่างภาพ","เกษตรกร","ชาวนา","ชาวสวน","ชาวไร่","ชาวประมง","คนเลี้ยงสัตว์","คนเลี้ยงวัว","คนเลี้ยงไก่","คนเลี้ยงปลา","ผึ้ง","เจ้าหน้าที่ป่าไม้","Ranger","Park Ranger","นักดับเพลิง","Firefighter","นักกีฬา","นักฟุตบอล","นักบาส","นักเทนนิส","นักกอล์ฟ","นักมวย","นักแข่งรถ","นักปีนเขา","นักโต้คลื่น","โค้ชกีฬา","Personal Trainer","นักกำหนดโภชนาการ","นักเต้น","นักแสดงละครสัตว์","นักแสดงตลก","นักพูด","นักการเมือง","ผู้แทน (สส.)","สว.","รัฐมนตรี","ผู้ว่าราชการจังหวัด","นายกรัฐมนตรี","ผู้ว่าฯ","นายอำเภอ","ข้าราชการ","เจ้าหน้าที่รัฐ","นักการทูต","Diplomat","Ambassador"]),
+                  q("เป็นอารมณ์/ความรู้สึก?",
+                    L("อารมณ์/ความรู้สึก",["ความสุข","ความสุขใจ","ความพอใจ","ความปิติ","ความยินดี","ความดีใจ","ความเบิกบาน","ความเริงร่า","ความสนุก","ความครึกครื้น","ความสดชื่น","ความผ่อนคลาย","ความสงบ","ความสันติ","ความร่มเย็น","ความอบอุ่น","ความโล่งใจ","ความสบายใจ","ความพึงพอใจ","ความสุดยอด (Ecstasy)","ความฟินสุดๆ","ความเศร้า","ความเศร้าโศก","ความเสียใจ","ความเสียดาย","ความสลดใจ","ความหดหู่","ความทุกข์","ความทรมาน","ความปวดใจ","ความร้าวราน","ความสิ้นหวัง","ความสูญเสีย","ความโศกนาฏกรรม","ความโดดเดี่ยว","ความเหงา","ความว่างเปล่า","ความเศร้าซึม (Depression)","ความกระวนกระวาย","ความวิตกกังวล (Anxiety)","ความกังวล","ความหวาดกลัว (Fear)","ความกลัว","ความตกใจ","ความตระหนก (Panic)","ความตื่นตกใจ","ความครั่นคร้าม","ความหวาดระแวง","ความแหยะ","ความน่าขยะแขยง","ความสะพรึงกลัว (Horror)","ความขนลุก","ความลังเล","ความสงสัย","ความรัก","ความรักใคร่","ความเมตตา","ความสงสาร","ความเห็นอกเห็นใจ","ความเอ็นดู","ความหวงแหน","ความผูกพัน","ความอาลัยรัก","ความหวานซึ้ง","ความรักใคร่ (Affection)","ความเสน่หา","ความหลงใหล (Infatuation)","ความคลั่งไคล้ (Obsession)","ความโรแมนติก","ความรู้สึกผิด","ความละอายใจ (Shame)","ความอับอาย","ความเขิน","ความกระดาก","ความเคอะเขิน","ความรู้สึกผิด (Guilt)","ความสำนึกผิด","ความสังเวช","ความโกรธ","ความฉุนเฉียว","ความเดือดดาล","ความแค้น","ความอาฆาต","ความพยาบาท","ความริษยา","ความอิจฉา","ความหึงหวง","ความอิจฉาริษยา","ความแค้น","ความหงุดหงิด","ความรำคาญ","ความเบื่อ","ความเบื่อหน่าย","ความเอือมระอา","ความหน่ายแน่น","ความภูมิใจ","ความทะนงตน","ความหยิ่ง","ความโอหัง","ความอวดดี","ความอวดรู้","ความหลงตัวเอง (Narcissism)","ความเชื่อมั่น","ความมั่นใจ","ความกล้าหาญ","ความอาจหาญ","ความองอาจ","ความใจกล้า","ความตื่นเต้น","ความระทึกใจ","ความลุ้นระทึก","ความตั้งตารอ","ความคาดหวัง","ความหวัง","ความพ่ายแพ้","ความผิดหวัง","ความหมดหวัง","ความหมดกำลังใจ","ความยอมแพ้","ความเหนื่อย","ความเหนื่อยใจ","ความอ่อนล้า","ความเบื่อหน่าย","ความเฉยชา","ความไม่แยแส","ความสับสน","ความงง","ความประหลาดใจ","ความตกตะลึง","ความเซอร์ไพรส์","ความทึ่ง","ความประทับใจ","ความชื่นชม","ความน่าสนใจ","ความอยากรู้อยากเห็น (Curiosity)","ความสงสัย","ความสนใจ","ความชอบ","ความชื่นชอบ","ความรัก","ความชัง","ความเกลียด","ความรังเกียจ","ความดูถูก","ความเหยียดหยาม","ความเหยียด","ความรู้สึกดี","ความรู้สึกแย่","อึดอัด","ระอา","เสียใจ","ใจแกร่ง","ใจกล้า","ใจอ่อน","ใจดี","ใจร้าย","ใจเย็น","ใจร้อน","เหงา","คิดถึง","คิดถึงบ้าน (Homesick)","คิดถึงเพื่อน","รักตัวเอง","เกลียดตัวเอง","เชื่อใจ","ระแวง","สับสน","มึน","ตื่นรู้","ตรัสรู้","ตระหนัก"]),
+                    q("เป็นเทศกาล/วันสำคัญ?",
+                      q("เทศกาลไทย?",
+                        L("เทศกาลไทย",["สงกรานต์","ลอยกระทง","ปีใหม่ไทย (เถลิงศก)","ตรุษจีน","สารทจีน","ไหว้พระจันทร์","ตรุษสาร์ทจีน","เทศกาลกินเจ","ออกพรรษา","เข้าพรรษา","วิสาขบูชา","มาฆบูชา","อาสาฬหบูชา","วันอัฐมีบูชา","วันพระ","วันพระใหญ่","วันเฉลิมพระชนมพรรษา (ราชินี)","วันเฉลิมพระชนมพรรษา (ร.10)","วันจักรี","วันฉัตรมงคล","วันพ่อแห่งชาติ","วันแม่แห่งชาติ","วันเด็กแห่งชาติ","วันครู","วันสงกรานต์","วันแรงงาน","วันรัฐธรรมนูญ","วันปิยมหาราช","วันภาษาไทย","วันกองทัพไทย","วันตำรวจ","วันสิ่งแวดล้อม","วันเกษตรแห่งชาติ","วันพฤหัสบดี","วันวิสาขบูชา","วันเข้าพรรษา","วันออกพรรษา","วันสารท","วันทำบุญเดือนสิบ","เทศกาลแห่เทียนพรรษา (อุบล)","เทศกาลผีตาโขน (เลย)","งานยี่เป็ง (เชียงใหม่)","งานบุญบั้งไฟ","งานบุญบั้งไฟพญานาค","งานแข่งเรือยาว","งานจุดพลุสงกรานต์","งานประเพณีบุญข้าวจี่","งานประเพณีสงกรานต์พระประแดง","งานประเพณีไหลเรือไฟ","งานวัดฉลองวัด","งานบุญประเพณีแห่ผ้าขึ้นธาตุ","เทศกาลอาหาร","งานกาชาด","งานวันเกิด","งานแต่งงาน","งานบวช","งานศพ","งานทำบุญขึ้นบ้านใหม่","งานทำบุญครบรอบ","งานเลี้ยง","งานวันเกิด","วันวาเลนไทน์ไทย","วันแม่ไทย","วันพ่อไทย","วันลอยกระทง","วันยุ้งใหม่","ประเพณีสลากภัต","ประเพณีหนานย่านย่า","ประเพณีชักพระ (ภาคใต้)","ประเพณีบูชาผีขุนน้ำ","ประเพณีไหลเรือไฟ","ประเพณีกวนข้าวทิพย์","ประเพณีโยนบัว","ประเพณีแข่งเรือลองกอง","งานวัดสรงน้ำพระ","งานวิสาขบูชาโลก","เทศกาลกินปลา"]),
+                        L("เทศกาลสากล",["คริสต์มาส","Christmas Eve","New Year's Eve","New Year's Day","ปีใหม่สากล","ตรุษจีน (Chinese New Year)","วันขอบคุณพระเจ้า (Thanksgiving)","วันพ่อสากล (Father's Day)","วันแม่สากล (Mother's Day)","Valentine's Day","วันวาเลนไทน์","Halloween","วันฮาโลวีน","วัน Day of the Dead","Oktoberfest","เทศกาลเบียร์","Mardi Gras","Carnival (Brazil)","Rio Carnival","Notting Hill Carnival","Running of the Bulls","St. Patrick's Day","Easter","Easter Monday","Good Friday","Ash Wednesday","Ramadan","Eid al-Fitr","Eid al-Adha","อีด","Hajj","Diwali","Holi","Navratri","Dussehra","Ganesh Chaturthi","Onam","Pongal","Raksha Bandhan","Songkran","Loy Krathong","Hanukkah","Yom Kippur","Rosh Hashanah","Passover","Purim","Sukkot","Bon Festival (O-Bon)","Tanabata (Japan)","Hinamatsuri","Children's Day (Japan)","Cherry Blossom (Hanami)","Chuseok (Korea)","Dano","Lunar New Year","Mid-Autumn Festival","Dragon Boat Festival","Lantern Festival","Boxing Day","Labour Day","International Women's Day","Mother's Day","Father's Day","Earth Day","Pride Month","World Environment Day","World AIDS Day","International Workers' Day","May Day","Memorial Day","Veterans Day","Independence Day (4th of July)","Bastille Day (France)","Canada Day","Australia Day","ANZAC Day","Tax Day","Groundhog Day","April Fools' Day","Cinco de Mayo","World Cup","Olympic Games","Paralympic Games","Super Bowl","Cannes Film Festival","Coachella","Tomorrowland","Glastonbury","Burning Man","SXSW","E3","Comic-Con","Oscars (Academy Awards)","Grammy Awards","Emmy Awards","Tony Awards","Cannes","Toronto Film Festival","Eurovision","World Expo"])),
+                      q("เป็นปรากฏการณ์ธรรมชาติ?",
+                        L("ปรากฏการณ์ธรรมชาติ",["ฝน","ฝนตกหนัก","พายุฝน","ฝนดาวตก","ฝนกรด","หิมะ","หิมะตก","พายุหิมะ","Blizzard","ลูกเห็บ","น้ำแข็ง","น้ำค้างแข็ง (Frost)","น้ำค้าง","หมอก","หมอกควัน","หมอกแดง","พายุ","พายุฝนฟ้าคะนอง","พายุทอร์นาโด","พายุเฮอร์ริเคน","พายุไต้ฝุ่น","พายุไซโคลน","พายุฝุ่น","พายุทราย","พายุสุริยะ","ลม","ลมหนาว","ลมร้อน","ลมแล้ง","Chinook","Mistral","Sirocco","Monsoon","ลมมรสุม","ลมพัด","พัดลม","ทอร์นาโดทะเล","แผ่นดินไหว","ภูเขาไฟระเบิด","ลาวา","เถ้าภูเขาไฟ","ฝนหิน (Ash Rain)","ภูเขาไฟใต้ทะเล","ดินถล่ม","หินถล่ม","สึนามิ","คลื่นยักษ์","คลื่นลูกใหญ่","น้ำทะเลหนุน","น้ำเน่า","น้ำเสีย","น้ำท่วม","น้ำป่า","น้ำหลาก","Flash Flood","น้ำล้นตลิ่ง","ภัยแล้ง","คลื่นความร้อน","คลื่นความเย็น","Heat Wave","Cold Wave","ฝน (Drought)","รุ้งกินน้ำ","รุ้งคู่","Moonbow","ฮาโล (Halo)","ดวงอาทิตย์ทรงกลด","ดวงจันทร์ทรงกลด","ออโรรา","Aurora Borealis","Aurora Australis","แสงเหนือ","แสงใต้","ฟ้าผ่า","ฟ้าแลบ","เมฆ","เมฆพายุ","Cumulonimbus","Cirrus","Cumulus","Stratus","Nimbostratus","เมฆหัวทั่ง","เมฆสันเขา","เมฆรูปจาน (Lenticular)","Mammatus Clouds","Fog","Mist","หมอกฝน","น้ำขึ้น","น้ำลง","น้ำกร่อย","น้ำแดง (Red Tide)","Algae Bloom","สุริยุปราคา","จันทรุปราคา","ดาวหาง","ดาวตก (Meteor)","ฝนดาวตก","Perseids","Leonids","Geminids","อุกกาบาต (Meteorite)","Super Moon","Blood Moon","Blue Moon","Harvest Moon","Pink Moon","ดาวเคียงเดือน","Venus Transit","Mercury Transit","Sun Halo","Sundog","Green Flash","Foo Fighter Lights","Fire Tornado","Fire Whirl","Waterspout","Dust Devil","Haboob","Avalanche","Snow Roller","Ice Circle","Penitentes","Morning Glory Clouds","Fata Morgana","Ball Lightning","Brinicle","Sun Pillar","Anticrepuscular Rays","Crepuscular Rays","Brocken Spectre","Alpenglow","Rogue Wave","Tidal Bore","Rip Current","Deep Sea Methane Seep","Mantle Plume","Geyser","บ่อน้ำพุร้อน","Hot Spring","Solfatara","Fumarole","Mud Volcano","Supervolcano","Caldera","Sinkhole","Blue Hole"]),
+                        q("เป็นดาราศาสตร์/อวกาศ?",
+                          L("อวกาศ/ดาราศาสตร์",["ดวงอาทิตย์ (Sun)","ดวงจันทร์ (Moon)","โลก (Earth)","ดาวพุธ (Mercury)","ดาวศุกร์ (Venus)","ดาวอังคาร (Mars)","ดาวพฤหัสบดี (Jupiter)","ดาวเสาร์ (Saturn)","ดาวยูเรนัส (Uranus)","ดาวเนปจูน (Neptune)","ดาวพลูโต (Pluto)","ดาวแคระซีรีส","ดาวแคระอีริส","ดาวแคระฮิวเมีย","ดาวแคระมาคีมาคี","ดวงจันทร์ของดาวอังคาร (Phobos, Deimos)","ดวงจันทร์ของดาวพฤหัส (Io, Europa, Ganymede, Callisto)","ดวงจันทร์ของดาวเสาร์ (Titan, Enceladus, Rhea)","ดาวหางฮัลเลย์","ดาวหางไฮยากูทาเกะ","ดาวหาง Hale-Bopp","ดาวหาง NEOWISE","ดาวเคราะห์น้อย (Asteroid)","แถบดาวเคราะห์น้อย (Asteroid Belt)","Kuiper Belt","Oort Cloud","กาแล็กซีทางช้างเผือก (Milky Way)","กาแล็กซีแอนโดรเมด้า (Andromeda)","กาแล็กซีสามเหลี่ยม (Triangulum)","Magellanic Clouds","Whirlpool Galaxy","Sombrero Galaxy","Pinwheel Galaxy","หลุมดำ (Black Hole)","Supermassive Black Hole","Sagittarius A*","M87*","ดาวนิวตรอน (Neutron Star)","พัลซาร์ (Pulsar)","แมกนีตาร์ (Magnetar)","ซูเปอร์โนวา (Supernova)","Kilonova","Hypernova","Gamma-ray Burst","ดาวแคระขาว (White Dwarf)","ดาวแคระน้ำตาล (Brown Dwarf)","ดาวแคระแดง (Red Dwarf)","ดาวยักษ์แดง (Red Giant)","ดาวยักษ์น้ำเงิน (Blue Giant)","ดาวฤกษ์","Alpha Centauri","Proxima Centauri","Sirius","Betelgeuse","Rigel","Polaris","Vega","Arcturus","Aldebaran","Antares","Deneb","Altair","Pleiades (7 ดาวนาง)","Orion","Cassiopeia","Ursa Major","Ursa Minor","Big Dipper","Southern Cross","เนบิวลา (Nebula)","Eagle Nebula","Orion Nebula","Crab Nebula","Horsehead Nebula","Cat's Eye Nebula","Veil Nebula","Trifid Nebula","Rosette Nebula","Carina Nebula","กลุ่มดาว (Constellation)","จักรราศี","Zodiac","ราศีเมษ (Aries)","ราศีพฤษภ (Taurus)","ราศีเมถุน (Gemini)","ราศีกรกฎ (Cancer)","ราศีสิงห์ (Leo)","ราศีกันย์ (Virgo)","ราศีตุลย์ (Libra)","ราศีพิจิก (Scorpio)","ราศีธนู (Sagittarius)","ราศีมังกร (Capricorn)","ราศีกุมภ์ (Aquarius)","ราศีมีน (Pisces)","ดาวเทียม (Satellite)","ISS (International Space Station)","สถานีอวกาศ","สถานีอวกาศเทียนกง","Hubble Space Telescope","James Webb Space Telescope","Kepler Space Telescope","Chandra X-ray Observatory","Spitzer Space Telescope","ยานอวกาศ","Space Shuttle","SpaceX Dragon","Starship","Falcon 9","Falcon Heavy","New Shepard","Saturn V","Apollo Missions","Apollo 11","Voyager 1","Voyager 2","Pioneer 10","Pioneer 11","Cassini-Huygens","New Horizons","Juno","Mars Rover (Curiosity, Perseverance, Opportunity, Spirit)","Ingenuity (Helicopter)","Sputnik","Mir Space Station","Tiangong","JAXA","NASA","ESA","ISRO","Roscosmos","CNSA","Big Bang","Cosmic Microwave Background","Dark Matter","Dark Energy","สสารมืด","พลังงานมืด","Multiverse","เอกภพคู่ขนาน","Wormhole","Gravitational Waves","Quasar","Blazar","AGN (Active Galactic Nuclei)"]),
+                          L("แนวคิด/อื่นๆ",["เวลา","กาลเวลา","อดีต","ปัจจุบัน","อนาคต","นิรันดร์","ความเปลี่ยนแปลง","การเกิด","การตาย","ชีวิต","วัฏจักรชีวิต","ความเป็นจริง (Reality)","ความฝัน","ฝันร้าย","จินตนาการ","ความทรงจำ","ลืม","การรู้แจ้ง","การตื่นรู้","สติ","สมาธิ","ปัญญา","โชคชะตา","โชคดี","โชคร้าย","พรหมลิขิต","กรรม","บุญ","บาป","ความดี","ความชั่ว","ถูก","ผิด","ความจริง (Truth)","ความเท็จ","พระเจ้า","พระพรหม","พระนารายณ์","พระอิศวร","พระพุทธเจ้า","พระเยซู","อัลเลาะห์","เทวดา","เทพ","นางฟ้า","เทวทูต","ซาตาน","ปีศาจ","วิญญาณ","ผี","ผีตาโขน","นรก","สวรรค์","เสรีภาพ (Freedom)","อิสรภาพ","สิทธิ","ความเสมอภาค","ประชาธิปไตย","เผด็จการ","คอมมิวนิสต์","สังคมนิยม","เสรีนิยม","อนุรักษนิยม","ทุนนิยม","ศักดินา","ความยุติธรรม","ความอยุติธรรม","กฎหมาย","กฎ","ศีลธรรม","จริยธรรม","ความรู้","ปัญญา","การศึกษา","การเรียนรู้","วิทยาศาสตร์","ฟิสิกส์","เคมี","ชีววิทยา","คณิตศาสตร์","ตรรกศาสตร์","ปรัชญา","ศาสนา","พุทธศาสนา","คริสตศาสนา","อิสลาม","ฮินดู","ยูดาห์","ชินโต","เต๋า","ขงจื๊อ","ศาสนาซิกข์","ไสยศาสตร์","ภาษา","ภาษาไทย","ภาษาอังกฤษ","ภาษาจีน","ภาษาญี่ปุ่น","ภาษาเกาหลี","ภาษาฝรั่งเศส","ภาษาสเปน","ภาษาเยอรมัน","ภาษาอิตาลี","ภาษาโปรตุเกส","ภาษารัสเซีย","ภาษาอาหรับ","ภาษาฮินดี","ภาษาลาติน","ภาษากรีก","ภาษาสากล (Esperanto)","สี","แดง","ส้ม","เหลือง","เขียว","ฟ้า","น้ำเงิน","ม่วง","ชมพู","ดำ","ขาว","เทา","น้ำตาล","เบจ","สีไข่มุก","สีทอง","สีเงิน","สีทองแดง","ตัวเลข","0","1","2","3","4","5","6","7","8","9","10","100","1000","1 ล้าน","1 พันล้าน","Infinity (∞)","Pi (π)","e (Euler's number)","Golden Ratio (φ)","ตัวอักษร","A-Z","ก-ฮ","あ-ん","あ-ん (ฮิรางานะ)","ア-ン (คาตากานะ)","漢字 (คันจิ)","한글","1-100","รูปทรง","วงกลม","สี่เหลี่ยม","สามเหลี่ยม","วงรี","ทรงลูกบาศก์","ทรงกลม","ทรงกรวย","ทรงกระบอก","ทรงพีระมิด","ทรงเลขาคณิต","ทิศ","ทิศเหนือ","ทิศใต้","ทิศตะวันออก","ทิศตะวันตก","รสชาติ","หวาน","เค็ม","เปรี้ยว","ขม","เผ็ด","อูมามิ","ฝาด","มัน","เปรี้ยวปาก","กลิ่นกาแฟ","กลิ่นดอกไม้","กลิ่นกายภาพ","กลิ่นหอม","กลิ่นเหม็น","เสียง","เสียงหัวเราะ","เสียงร้องไห้","เสียงกรีดร้อง","เสียงกระซิบ","เสียงตะโกน","เสียงเพลง","เสียงนก","เสียงลม","เสียงทะเล","เสียงฝน","จังหวะ","ทำนอง","ฤดู (ฤดูใบไม้ผลิ, ร้อน, ใบไม้ร่วง, หนาว)","วัน (วันอาทิตย์ - วันเสาร์)","เดือน (มกราคม - ธันวาคม)","ปี","ศตวรรษ","ทศวรรษ","สหัสวรรษ","ชั่วโมง","นาที","วินาที","นาโนวินาที"])))))))))),
+        "เช่น สถานที่ แบรนด์ หนัง เพลง อารมณ์ แนวคิด")),
+    "Tip: ตัวการ์ตูนก็นับเป็น 'มีชีวิต/ตัวละคร'");
+
+  // ========== STATE ==========
+  let currentNode = TREE;
+  let history = []; // stack of {node, answer}
+
+  // ========== QUIZ RENDERING ==========
+  function renderQuiz(){
+    const body = document.getElementById('quizBody');
+    const bc = document.getElementById('breadcrumb');
+    const pb = document.getElementById('progressBar');
+    const backBtn = document.getElementById('backBtn');
+
+    // Breadcrumb
+    bc.innerHTML = history.map(h => {
+      const cls = h.answer === 'y' ? 'yes' : 'no';
+      const label = h.answer === 'y' ? 'ใช่' : 'ไม่ใช่';
+      return `<span class="crumb ${cls}"><b>${truncate(h.q, 20)}</b> → ${label}</span>`;
+    }).join('');
+
+    // Progress (estimated)
+    const depth = history.length;
+    const est = Math.min(95, depth * 15 + (currentNode.t === 'L' ? 10 : 0));
+    pb.style.width = est + '%';
+
+    backBtn.style.display = history.length > 0 ? 'inline-block' : 'none';
+
+    if(currentNode.t === 'L'){
+      // Result
+      pb.style.width = '100%';
+      body.innerHTML = `
+        <div class="result-card">
+          <h3>สรุปผล</h3>
+          <div class="cat-name">${escapeHTML(currentNode.cat)}</div>
+          ${currentNode.desc ? `<div class="cat-desc">${escapeHTML(currentNode.desc)}</div>` : ''}
+          <div class="chips">${currentNode.ex.map(e => `<span class="chip">${escapeHTML(e)}</span>`).join('')}</div>
+        </div>
+        <div class="callout" style="margin-top:12px">
+          <b>คำแนะนำ:</b> ถ้ายังไม่ใช่ในรายการ ลองคิดของคล้ายๆ ในหมวดเดียวกัน หรือย้อนกลับไปลองเปลี่ยนคำตอบคำถามก่อนหน้า
+        </div>
+      `;
+      return;
+    }
+
+    body.innerHTML = `
+      <div class="question-card">
+        <div class="question-step">คำถาม #${depth + 1}</div>
+        <div class="question-text">${escapeHTML(currentNode.q)}</div>
+        ${currentNode.h ? `<div class="question-hint">${escapeHTML(currentNode.h)}</div>` : ''}
+      </div>
+      <div class="answer-buttons">
+        <button class="answer-btn yes" onclick="answer('y')">ใช่</button>
+        <button class="answer-btn no" onclick="answer('n')">ไม่ใช่</button>
+      </div>
+    `;
+  }
+
+  function answer(a){
+    history.push({node: currentNode, answer: a, q: currentNode.q});
+    currentNode = a === 'y' ? currentNode.y : currentNode.n;
+    renderQuiz();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function goBack(){
+    if(!history.length) return;
+    const prev = history.pop();
+    currentNode = prev.node;
+    renderQuiz();
+  }
+  function resetQuiz(){
+    currentNode = TREE;
+    history = [];
+    renderQuiz();
+  }
+  function truncate(s,n){return s.length>n ? s.slice(0,n)+'…' : s}
+  function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+
+  // ========== TREE RENDERING ==========
+  function renderTree(){
+    const root = document.getElementById('treeRoot');
+    root.innerHTML = '';
+    root.appendChild(buildNode(TREE, null));
+  }
+
+  function buildNode(node, answer){
+    if(node.t === 'L'){
+      const el = document.createElement('div');
+      el.className = 'node leaf-node';
+      el.setAttribute('data-searchable', (node.cat + ' ' + node.ex.join(' ')).toLowerCase());
+      el.innerHTML = `
+        <div class="leaf-wrap">
+          <div class="leaf-title">${answer ? `<span class="node-badge ${answer}">${answer==='yes'?'ใช่':'ไม่'}</span> ` : ''}${escapeHTML(node.cat)}</div>
+          <div class="chips">${node.ex.map(e => `<span class="chip">${escapeHTML(e)}</span>`).join('')}</div>
+        </div>
+      `;
+      return el;
+    }
+    const el = document.createElement('div');
+    el.className = 'node';
+    el.setAttribute('data-searchable', node.q.toLowerCase());
+
+    const head = document.createElement('div');
+    head.className = 'node-head';
+    head.innerHTML = `
+      <span class="node-arrow">▶</span>
+      ${answer ? `<span class="node-badge ${answer}">${answer==='yes'?'ใช่':'ไม่'}</span>` : ''}
+      <span class="node-text"><span class="q">${escapeHTML(node.q)}</span></span>
+    `;
+    head.onclick = () => el.classList.toggle('open');
+    el.appendChild(head);
+
+    const body = document.createElement('div');
+    body.className = 'node-body';
+    body.appendChild(buildNode(node.y, 'yes'));
+    body.appendChild(buildNode(node.n, 'no'));
+    el.appendChild(body);
+
+    return el;
+  }
+
+  function expandAll(){
+    document.querySelectorAll('#treeRoot .node').forEach(n => n.classList.add('open'));
+  }
+  function collapseAll(){
+    document.querySelectorAll('#treeRoot .node').forEach(n => n.classList.remove('open'));
+  }
+  function expandLevel(n){
+    collapseAll();
+    const walk = (el, depth) => {
+      if(depth > n) return;
+      if(el.classList && el.classList.contains('node')) el.classList.add('open');
+      [...el.children].forEach(c => walk(c, depth + (c.classList && c.classList.contains('node') ? 1 : 0)));
+    };
+    document.querySelectorAll('#treeRoot > .node').forEach(n => walk(n, 1));
+  }
+
+  // ========== SEARCH ==========
+  function setupSearch(){
+    const input = document.getElementById('search');
+    const countEl = document.getElementById('searchCount');
+    let timer;
+    input.addEventListener('input', ()=>{
+      clearTimeout(timer);
+      timer = setTimeout(()=>doSearch(input.value.trim().toLowerCase(), countEl), 150);
+    });
+  }
+  function doSearch(query, countEl){
+    const nodes = document.querySelectorAll('#treeRoot .node, #treeRoot .leaf-node');
+    if(!query){
+      nodes.forEach(n => {
+        n.style.display = '';
+        n.classList.remove('highlight');
+      });
+      collapseAll();
+      countEl.textContent = '';
+      return;
+    }
+    // Collect matching leaf nodes
+    let matchCount = 0;
+    const matched = new Set();
+    nodes.forEach(n => {
+      const text = n.getAttribute('data-searchable') || '';
+      if(text.includes(query)){
+        matched.add(n);
+        matchCount++;
+      }
+    });
+    // Show only matching + their ancestors
+    nodes.forEach(n => {
+      const isMatch = matched.has(n);
+      const hasMatchChild = [...n.querySelectorAll('.node, .leaf-node')].some(c => matched.has(c));
+      if(isMatch || hasMatchChild){
+        n.style.display = '';
+        if(n.classList.contains('node')) n.classList.add('open');
+        if(isMatch) n.classList.add('highlight');
+        else n.classList.remove('highlight');
+      } else {
+        n.style.display = 'none';
+      }
+    });
+    countEl.textContent = `พบ ${matchCount} รายการ`;
+  }
+
+  // ========== TABS ==========
+  function switchTo(name){
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.pane === name));
+    document.querySelectorAll('.pane').forEach(p => p.classList.toggle('active', p.id === name));
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => switchTo(t.dataset.pane));
+  });
+
+  // ========== INIT ==========
+  renderQuiz();
+  renderTree();
+  setupSearch();
+</script>
+
+</body>
+</html>
