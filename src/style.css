@@ -492,3 +492,154 @@ main {
   margin-bottom: 12px;
 }
 .callout b { color: var(--text); }
+
+/* ============ BOOK BANNER ============ */
+.book-banner {
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(187, 154, 247, 0.15), rgba(125, 207, 255, 0.08));
+  border: 1px solid rgba(187, 154, 247, 0.3);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+}
+.book-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--purple);
+  letter-spacing: 0.5px;
+}
+.book-emoji { margin-right: 6px; font-size: 16px; }
+.book-strategy {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ============ QUESTION HINT / TRAP ============ */
+.q-trap {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(247, 118, 142, 0.08);
+  border-radius: 8px;
+  border-left: 3px solid var(--danger);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ============ PEEK (maybe preview) ============ */
+.peek {
+  margin-bottom: 12px;
+  padding: 14px;
+  background: rgba(224, 175, 104, 0.08);
+  border: 1px solid rgba(224, 175, 104, 0.3);
+  border-radius: var(--radius);
+}
+.peek-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--warn);
+  margin-bottom: 4px;
+}
+.peek-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.peek-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.peek-side {
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  transition: background .15s, transform .08s;
+}
+.peek-side:active { transform: scale(0.98); }
+.peek-side:hover { background: var(--panel3); }
+.peek-yes { border-color: rgba(158, 206, 106, 0.4); }
+.peek-no { border-color: rgba(247, 118, 142, 0.4); }
+.peek-side-label {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.peek-yes .peek-side-label { color: var(--green); }
+.peek-no .peek-side-label { color: var(--danger); }
+.peek-side-sample { display: flex; flex-wrap: wrap; gap: 4px; }
+.peek-side-sample .chip {
+  font-size: 10px;
+  padding: 3px 6px;
+}
+
+/* ============ LEAF CARD ============ */
+.leaf-card {
+  padding: 18px 16px;
+  background: linear-gradient(135deg, rgba(158, 206, 106, 0.08), rgba(125, 207, 255, 0.05));
+  border: 1px solid rgba(158, 206, 106, 0.3);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+}
+.leaf-header {
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.leaf-label {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--cyan);
+  margin: 4px 0 6px;
+  line-height: 1.3;
+}
+.leaf-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.leaf-chips { margin-top: 10px; }
+.leaf-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+.leaf-section h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.leaf-section ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.leaf-traps h4 { color: var(--danger); }
+
+/* ============ TOAST ============ */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%) translateY(20px);
+  padding: 12px 20px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }

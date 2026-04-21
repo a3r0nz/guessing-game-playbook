@@ -1,126 +1,89 @@
-import type { Answer, Entity, GameState, HistoryItem, Question, QuestionCandidate, ScoredCandidate } from './types';
-import { QUESTIONS, QUESTIONS_BY_ID } from './data/questions';
-import { ENTITIES } from './data/entities';
-
-/** Soft weight for "อาจจะ" answers — boosts matching, lightly penalizes non-matching */
-const MAYBE_BOOST = 0.35;
-const MAYBE_PENALTY = 0.15;
-
-/**
- * Hard filter: apply yes/no answers. maybe/unknown do NOT filter.
- */
-export function filterCandidates(all: Entity[], history: HistoryItem[]): Entity[] {
-  if (history.length === 0) return all;
-  return all.filter(e => {
-    for (const h of history) {
-      if (h.answer === 'yes'  && !e.tags.has(h.tag)) return false;
-      if (h.answer === 'no'   &&  e.tags.has(h.tag)) return false;
-      // 'maybe' / 'unknown' don't filter — handled in scoring
-    }
-    return true;
-  });
-}
-
-/**
- * Score candidates using popularity + soft boosts from 'maybe' answers.
- */
-export function scoreCandidates(candidates: Entity[], history: HistoryItem[]): ScoredCandidate[] {
-  const maybes = history.filter(h => h.answer === 'maybe');
-  return candidates
-    .map(entity => {
-      let score = entity.popularity;
-      for (const h of maybes) {
-        if (entity.tags.has(h.tag)) score += MAYBE_BOOST;
-        else score -= MAYBE_PENALTY;
-      }
-      return { entity, score };
-    })
-    .sort((a, b) => b.score - a.score);
-}
-
-/**
- * Pick the next question to ask. Criteria:
- *  1. Not already asked
- *  2. Information gain on current candidate pool (closer to 50/50 split = better)
- *  3. Tie-break with weight (ask higher-weight / more generic questions earlier)
- */
-export function pickNextQuestion(
-  candidates: Entity[],
-  asked: Set<string>,
-  pool: Question[] = QUESTIONS
-): QuestionCandidate | null {
-  if (candidates.length <= 1) return null;
-
-  const scored: QuestionCandidate[] = [];
-  for (const q of pool) {
-    if (asked.has(q.id)) continue;
-    let yesCount = 0;
-    for (const e of candidates) if (e.tags.has(q.tag)) yesCount++;
-    const noCount = candidates.length - yesCount;
-    // 0 when all same answer, 1 when perfect 50/50
-    const balance = 1 - Math.abs(yesCount - noCount) / candidates.length;
-    if (balance < 0.05) continue; // question adds nothing
-    // Combine balance (how well it splits) with human-assigned weight.
-    // Higher weight → ask earlier (fundamental questions like "living?").
-    // Balance still matters but weight is a strong nudge so openers feel natural.
-    const gain = balance * 0.6 + (q.weight / 100) * 0.4;
-    scored.push({ question: q, gain, yesCount, noCount });
-  }
-
-  if (scored.length === 0) return null;
-  scored.sort((a, b) => b.gain - a.gain);
-  return scored[0]!;
-}
-
-/** Estimate how "narrowed down" we are, in [0,1]. Based on log-remaining. */
-export function progressPercent(startCount: number, currentCount: number): number {
-  if (startCount <= 1) return 100;
-  const progress = 1 - Math.log(Math.max(currentCount, 1)) / Math.log(startCount);
-  return Math.round(Math.max(0, Math.min(1, progress)) * 100);
-}
-
-// ========== State helpers ==========
+import type { Answer, Book, GameState, HistoryItem, LeafNode, PlayNode, QNode } from './types';
+import { OPENING, BOOKS, BOOK_BY_ROOT } from './data/books';
 
 export function createState(): GameState {
-  return { history: [], askedQuestions: new Set() };
+  return { current: OPENING, book: null, history: [] };
 }
 
-export function applyAnswer(state: GameState, questionId: string, answer: Answer): GameState {
-  const q = QUESTIONS_BY_ID.get(questionId);
-  if (!q) return state;
-  const item: HistoryItem = { questionId, questionText: q.text, tag: q.tag, answer };
-  return {
-    history: [...state.history, item],
-    askedQuestions: new Set([...state.askedQuestions, questionId])
+export function isLeaf(n: PlayNode): n is LeafNode { return n.t === 'L'; }
+export function isQ(n: PlayNode): n is QNode { return n.t === 'q'; }
+
+/**
+ * Advance by one answer.
+ * 'yes' / 'no': navigate into chosen child.
+ * 'maybe' / 'unknown': DON'T advance — UI uses `peekChildren` to show both.
+ */
+export function answer(state: GameState, ans: Answer): GameState {
+  if (!isQ(state.current)) return state;
+  if (ans === 'maybe' || ans === 'unknown') return state;
+  const chosen = ans === 'yes' ? state.current.y : state.current.n;
+  const bookAtChosen = BOOK_BY_ROOT.get(chosen) ?? null;
+  const nextBook: Book | null = state.book ?? bookAtChosen;
+  const item: HistoryItem = {
+    node: state.current,
+    answer: ans,
+    bookId: nextBook?.id ?? null
   };
+  return { current: chosen, book: nextBook, history: [...state.history, item] };
 }
 
-export function undoLastAnswer(state: GameState): GameState {
+export function undo(state: GameState): GameState {
   if (state.history.length === 0) return state;
-  const next = state.history.slice(0, -1);
-  return {
-    history: next,
-    askedQuestions: new Set(next.map(h => h.questionId))
-  };
+  const last = state.history[state.history.length - 1]!;
+  const nextHistory = state.history.slice(0, -1);
+  // Recompute which book we're in by replaying history
+  let book: Book | null = null;
+  for (const h of nextHistory) {
+    const child = h.answer === 'yes' ? h.node.y : h.node.n;
+    const b = BOOK_BY_ROOT.get(child);
+    if (b) book = b;
+  }
+  return { current: last.node, book, history: nextHistory };
 }
 
-export function resetState(): GameState {
-  return createState();
+export function reset(): GameState { return createState(); }
+
+/**
+ * Merge leaves from both children — used when user picks "maybe"/"unknown".
+ * Returns up to `limit` representative typical entities from each subtree,
+ * interleaved so user sees variety.
+ */
+export function peekChildren(node: QNode, limit = 30): { yes: LeafNode[]; no: LeafNode[] } {
+  return { yes: collectLeaves(node.y), no: collectLeaves(node.n) };
+  void limit; // limit currently unused; UI decides how many to render per side
 }
 
-// ========== Top-level convenience ==========
-
-export interface EngineFrame {
-  candidates: Entity[];
-  scored: ScoredCandidate[];
-  nextQuestion: QuestionCandidate | null;
-  progress: number;
+function collectLeaves(node: PlayNode): LeafNode[] {
+  if (isLeaf(node)) return [node];
+  return [...collectLeaves(node.y), ...collectLeaves(node.n)];
 }
 
-export function computeFrame(state: GameState, startCount = ENTITIES.length): EngineFrame {
-  const candidates = filterCandidates(ENTITIES, state.history);
-  const scored = scoreCandidates(candidates, state.history);
-  const nextQuestion = pickNextQuestion(candidates, state.askedQuestions);
-  const progress = progressPercent(startCount, candidates.length);
-  return { candidates, scored, nextQuestion, progress };
+export function maxDepthRemaining(node: PlayNode): number {
+  if (isLeaf(node)) return 0;
+  return 1 + Math.max(maxDepthRemaining(node.y), maxDepthRemaining(node.n));
 }
+
+export const OPENING_DEPTH = maxDepthRemaining(OPENING);
+
+export interface Frame {
+  state: GameState;
+  atLeaf: LeafNode | null;
+  atQuestion: QNode | null;
+  bookContext: Book | null;
+  depth: number;        // questions answered
+  remaining: number;    // deeper questions still possible from current node
+  progress: number;     // 0-100
+}
+
+export function frame(state: GameState): Frame {
+  const atLeaf = isLeaf(state.current) ? state.current : null;
+  const atQuestion = isQ(state.current) ? state.current : null;
+  const depth = state.history.length;
+  const remaining = maxDepthRemaining(state.current);
+  const progress = atLeaf
+    ? 100
+    : Math.min(95, Math.round((depth / (depth + Math.max(remaining, 1))) * 100));
+  return { state, atLeaf, atQuestion, bookContext: state.book, depth, remaining, progress };
+}
+
+export { BOOKS };
